@@ -338,29 +338,29 @@ export function AdminDashboardClient({
               </p>
             </div>
 
-            {/* Quick Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Quick Action Buttons - 2x2 Grid on Mobile, Flex on Desktop */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
               <button
                 onClick={() => setIsClientModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 sm:px-3.5 sm:py-2 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> Add Client
               </button>
               <button
                 onClick={() => setIsStaffModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-white border border-pink-300 text-pink-700 hover:bg-pink-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 sm:px-3.5 sm:py-2 rounded-md bg-white border border-pink-300 text-pink-700 hover:bg-pink-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
               >
                 <UserPlus className="w-4 h-4" /> Add Caregiver
               </button>
               <button
                 onClick={() => setIsAppointmentModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 sm:px-3.5 sm:py-2 rounded-md bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
               >
                 <Calendar className="w-4 h-4 text-zinc-500" /> Schedule Shift
               </button>
               <button
                 onClick={() => handleTriggerPrint()}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-zinc-900 hover:bg-black text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 sm:px-3.5 sm:py-2 rounded-md bg-zinc-900 hover:bg-black text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
               >
                 <Printer className="w-4 h-4" /> Print Summary
               </button>
@@ -368,107 +368,107 @@ export function AdminDashboardClient({
           </div>
 
           {/* Quick Metrics Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-5">
             <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
               <div className="text-zinc-500 text-xs font-medium">Active Clients</div>
-              <div className="text-2xl font-bold text-zinc-900 mt-0.5">
+              <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
                 {clientsList.filter((c) => c.isActive).length}
               </div>
-              <div className="text-[10px] text-pink-600 font-medium mt-0.5">
-                Fredericksburg, VA area
+              <div className="text-[10px] text-pink-600 font-medium mt-0.5 truncate">
+                Fredericksburg, VA
               </div>
             </div>
 
             <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
               <div className="text-zinc-500 text-xs font-medium">Active Caregivers</div>
-              <div className="text-2xl font-bold text-zinc-900 mt-0.5">
+              <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
                 {staffList.filter((s) => s.isActive && s.role === "EMPLOYEE").length}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-0.5">
-                {staffList.filter((s) => s.role === "ADMIN").length} RN Administrator
+              <div className="text-[10px] text-zinc-500 mt-0.5 truncate">
+                {staffList.filter((s) => s.role === "ADMIN").length} RN Admin
               </div>
             </div>
 
             <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
-              <div className="text-zinc-500 text-xs font-medium">Visit Notes Logged</div>
-              <div className="text-2xl font-bold text-zinc-900 mt-0.5">
+              <div className="text-zinc-500 text-xs font-medium">Visit Notes</div>
+              <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
                 {notesList.length}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-0.5">
-                {notesList.filter((n) => n.category === "DISCHARGE_SUMMARY").length} Discharge summaries
+              <div className="text-[10px] text-zinc-500 mt-0.5 truncate">
+                {notesList.filter((n) => n.category === "DISCHARGE_SUMMARY").length} Discharges
               </div>
             </div>
 
             <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
               <div className="text-zinc-500 text-xs font-medium">Scheduled Shifts</div>
-              <div className="text-2xl font-bold text-zinc-900 mt-0.5">
+              <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
                 {appointmentsList.filter((a) => a.status === "SCHEDULED").length}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-0.5">Upcoming visits</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5 truncate">Upcoming visits</div>
             </div>
           </div>
 
-          {/* Primary Navigation Tabs */}
-          <div className="flex border-b border-zinc-200 mt-6 space-x-6">
+          {/* Primary Navigation Tabs - Horizontally Scrollable on Mobile */}
+          <div className="flex border-b border-zinc-200 mt-5 space-x-3 sm:space-x-6 overflow-x-auto whitespace-nowrap pb-0.5 -mx-4 px-4 sm:mx-0 sm:px-0">
             <button
               onClick={() => setActiveTab("activity")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
                 activeTab === "activity"
                   ? "border-pink-600 text-pink-700"
                   : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
               }`}
             >
-              <FileText className="w-4 h-4" /> Global Activity Feed
-              <span className="bg-pink-100 text-pink-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">
+              <FileText className="w-4 h-4" /> Activity Feed
+              <span className="bg-pink-100 text-pink-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5">
                 {filteredNotes.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab("clients")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
                 activeTab === "clients"
                   ? "border-pink-600 text-pink-700"
                   : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
               }`}
             >
               <Users className="w-4 h-4" /> Client Directory
-              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">
+              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5">
                 {clientsList.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab("staff")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
                 activeTab === "staff"
                   ? "border-pink-600 text-pink-700"
                   : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
               }`}
             >
               <UserPlus className="w-4 h-4" /> Staff Management
-              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">
+              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5">
                 {staffList.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab("appointments")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
                 activeTab === "appointments"
                   ? "border-pink-600 text-pink-700"
                   : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
               }`}
             >
-              <Calendar className="w-4 h-4" /> Shifts & Appointments
-              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">
+              <Calendar className="w-4 h-4" /> Shifts & Visits
+              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5">
                 {appointmentsList.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab("audit")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
                 activeTab === "audit"
                   ? "border-pink-600 text-pink-700"
                   : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
@@ -799,8 +799,8 @@ export function AdminDashboardClient({
               </button>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-2xs">
-              <table className="min-w-full divide-y divide-zinc-200 text-left text-xs">
+            <div className="bg-white border border-zinc-200 rounded-lg overflow-x-auto shadow-2xs">
+              <table className="min-w-[620px] divide-y divide-zinc-200 text-left text-xs">
                 <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Staff Member</th>
@@ -905,8 +905,8 @@ export function AdminDashboardClient({
               </button>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-2xs">
-              <table className="min-w-full divide-y divide-zinc-200 text-left text-xs">
+            <div className="bg-white border border-zinc-200 rounded-lg overflow-x-auto shadow-2xs">
+              <table className="min-w-[680px] divide-y divide-zinc-200 text-left text-xs">
                 <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Scheduled Time</th>
@@ -1015,8 +1015,8 @@ export function AdminDashboardClient({
               </p>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-2xs">
-              <table className="min-w-full divide-y divide-zinc-200 text-left text-xs">
+            <div className="bg-white border border-zinc-200 rounded-lg overflow-x-auto shadow-2xs">
+              <table className="min-w-[600px] divide-y divide-zinc-200 text-left text-xs">
                 <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Timestamp</th>
@@ -1052,7 +1052,7 @@ export function AdminDashboardClient({
       {/* =================================================================== */}
       {isStaffModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-lg border border-pink-200 max-w-md w-full p-6 relative">
+          <div className="bg-white rounded-xl shadow-lg border border-pink-200 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsStaffModalOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700"
@@ -1521,7 +1521,7 @@ export function AdminDashboardClient({
       {/* =================================================================== */}
       {isAppointmentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-lg border border-pink-200 max-w-md w-full p-6 relative">
+          <div className="bg-white rounded-xl shadow-lg border border-pink-200 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsAppointmentModalOpen(false)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700"

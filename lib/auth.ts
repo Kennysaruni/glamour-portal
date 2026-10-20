@@ -50,6 +50,27 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
   },
+  advanced: {
+    // Only enforce secure cookies if explicitly running on HTTPS
+    useSecureCookies:
+      process.env.NODE_ENV === "production" &&
+      Boolean(process.env.BETTER_AUTH_URL?.startsWith("https://")),
+    disableCSRFCheck: true,
+  },
+  trustedOrigins: async (request) => {
+    const origin = request?.headers?.get?.("origin");
+    const host = request?.headers?.get?.("host");
+    const origins = [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+    ];
+    if (origin) origins.push(origin);
+    if (host) {
+      origins.push(`http://${host}`);
+      origins.push(`https://${host}`);
+    }
+    return origins;
+  },
   secret:
     process.env.BETTER_AUTH_SECRET ||
     "7791c5965c21c4d7b09a4e66acdafb57b8f9ea6fb71bfa35752bbcfb0c4c914d",

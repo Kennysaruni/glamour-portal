@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import { getServerSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
@@ -15,19 +15,63 @@ export async function loginAction(formData: {
       return { success: false, error: "Email and password are required." };
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Call Better Auth with asResponse: true so we can extract Set-Cookie
     const res = await auth.api.signInEmail({
       body: {
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         password,
       },
-      headers: await headers(),
+      asResponse: true,
     });
 
-    if (!res || !res.user) {
-      return { success: false, error: "Invalid credentials." };
+    if (!res.ok) {
+      return { success: false, error: "Invalid email or password." };
     }
 
-    const role = (res.user as { role?: string }).role || "EMPLOYEE";
+    const data = await res.json();
+    if (!data || !data.user) {
+      return { success: false, error: "Unable to find user account." };
+    }
+
+    const cookieStore = await cookies();
+    const isHttps = Boolean(process.env.BETTER_AUTH_URL?.startsWith("https://"));
+
+    // Extract cookie from Better Auth response or fall back to data.token
+    const setCookieHeader = res.headers.get("set-cookie");
+    let tokenValue = data.token; // fallback to raw token from body
+
+    if (setCookieHeader) {
+      const tokenMatch = setCookieHeader.match(
+        /(?:better-auth\.session_token|__Secure-better-auth\.session_token)=([^;]+)/
+      );
+      if (tokenMatch && tokenMatch[1]) {
+        tokenValue = decodeURIComponent(tokenMatch[1]);
+      }
+    }
+
+    if (tokenValue) {
+      cookieStore.set("better-auth.session_token", tokenValue, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        secure: isHttps,
+      });
+
+      if (isHttps) {
+        cookieStore.set("__Secure-better-auth.session_token", tokenValue, {
+          path: "/",
+          httpOnly: true,
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 7,
+          secure: true,
+        });
+      }
+    }
+
+    const role = (data.user as { role?: string }).role || "EMPLOYEE";
     return {
       success: true,
       role,
@@ -35,17 +79,15 @@ export async function loginAction(formData: {
     };
   } catch (err: unknown) {
     const errorMsg =
-      err instanceof Error ? err.message : "Failed to sign in. Please verify your email and password.";
+      err instanceof Error ? err.message : "Failed to sign in. Please verify your credentials.";
     return { success: false, error: errorMsg };
   }
 }
 
 export async function logoutAction() {
   try {
-    const headerList = await headers();
-    await auth.api.signOut({
-      headers: headerList,
-    });
+    const cookieStore = await cookies();
+    cookieStore.delete("better-auth.session_token");
   } catch (error) {
     console.error("Logout error:", error);
   }

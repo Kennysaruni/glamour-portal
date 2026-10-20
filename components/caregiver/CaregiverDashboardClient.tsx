@@ -290,7 +290,14 @@ export function CaregiverDashboardClient({
                           {appt.location && (
                             <div className="text-xs text-zinc-500 mt-1 flex items-start gap-1.5">
                               <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
-                              <span>{appt.location}</span>
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(appt.location)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-pink-700 hover:underline"
+                              >
+                                {appt.location}
+                              </a>
                             </div>
                           )}
                         </div>
@@ -371,8 +378,15 @@ export function CaregiverDashboardClient({
                     <div>
                       <span className="text-zinc-500 font-medium block">Residence:</span>
                       <div className="flex items-center gap-1 text-zinc-900 mt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                        <span>{client.address || "Fredericksburg, VA"}</span>
+                        <MapPin className="w-3.5 h-3.5 text-pink-600 shrink-0" />
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address || "Fredericksburg, VA")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-pink-700 font-semibold hover:underline"
+                        >
+                          {client.address || "Fredericksburg, VA"}
+                        </a>
                       </div>
                     </div>
 
@@ -448,7 +462,7 @@ export function CaregiverDashboardClient({
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
                   required
-                  className="w-full text-xs font-medium border border-zinc-300 rounded-lg py-2.5 px-3 bg-zinc-50 text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500"
+                  className="w-full text-base sm:text-xs font-medium border border-zinc-300 rounded-lg py-3 sm:py-2.5 px-3 bg-zinc-50 text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500"
                 >
                   {clients.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -535,7 +549,7 @@ export function CaregiverDashboardClient({
                   placeholder="Record client observation, vitals check, mobility assistance, meals served, medication reminders, or Mary Washington Hospital discharge orders..."
                   value={narrativeContent}
                   onChange={(e) => setNarrativeContent(e.target.value)}
-                  className="w-full text-xs font-normal border border-zinc-300 rounded-lg p-3 bg-zinc-50 text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 placeholder-zinc-400 leading-relaxed font-sans"
+                  className="w-full text-base sm:text-xs font-normal border border-zinc-300 rounded-lg p-3 bg-zinc-50 text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 placeholder-zinc-400 leading-relaxed font-sans"
                 />
               </div>
 

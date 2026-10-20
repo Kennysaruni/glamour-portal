@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
+import { prisma } from "@/lib/db";
 import { Role } from "@/lib/types";
 
 export interface CurrentUserSession {
@@ -25,12 +26,63 @@ export async function getServerSession(): Promise<CurrentUserSession | null> {
     const session = await auth.api.getSession({
       headers: headerList,
     });
-    if (!session || !session.user) {
+    if (session && session.user) {
+      return session as unknown as CurrentUserSession;
+    }
+  } catch (error) {
+    // Fallback to direct cookie validation below
+  }
+
+  // Resilient fallback: inspect session token directly from cookies
+  try {
+    const cookieStore = await cookies();
+    const cookieValue =
+      cookieStore.get("better-auth.session_token")?.value ||
+      cookieStore.get("__Secure-better-auth.session_token")?.value;
+    if (!cookieValue) return null;
+
+    // Cookie token may be signed (token.signature) or raw token
+    const rawToken = cookieValue.split(".")[0];
+    if (!rawToken) return null;
+
+    let dbSession = await prisma.session.findUnique({
+      where: { token: rawToken },
+      include: { user: true },
+    });
+
+    if (!dbSession && cookieValue !== rawToken) {
+      dbSession = await prisma.session.findUnique({
+        where: { token: cookieValue },
+        include: { user: true },
+      });
+    }
+
+    if (!dbSession || !dbSession.user || !dbSession.user.isActive) {
       return null;
     }
-    return session as unknown as CurrentUserSession;
+
+    if (new Date(dbSession.expiresAt) < new Date()) {
+      return null;
+    }
+
+    return {
+      user: {
+        id: dbSession.user.id,
+        email: dbSession.user.email,
+        name: dbSession.user.name,
+        role: dbSession.user.role,
+        phone: dbSession.user.phone,
+        isActive: dbSession.user.isActive,
+      },
+      session: {
+        id: dbSession.id,
+        userId: dbSession.userId,
+        token: dbSession.token,
+        expiresAt: dbSession.expiresAt,
+      },
+    };
   } catch (error) {
-    console.error("Error retrieving server session:", error);
+    console.error("Direct session lookup error:", error);
     return null;
   }
 }
