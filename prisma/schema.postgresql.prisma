@@ -1,0 +1,203 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum CareType {
+  PERSONAL_CARE
+  COMPANION_CARE
+  RESPITE_CARE
+}
+
+enum AppointmentType {
+  HOME_CARE_SHIFT
+  MEDICAL_APPOINTMENT
+  HOSPITAL_DISCHARGE
+  INITIAL_ASSESSMENT
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum NoteCategory {
+  DAILY_CARE_LOG
+  MEDICATION_REMINDER
+  VITALS_CHECK
+  DISCHARGE_SUMMARY
+  INCIDENT_REPORT
+}
+
+// ------------------------------------------------------
+// AUTH MODELS (Better Auth Integration)
+// ------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          Role      @default(EMPLOYEE)
+  phone         String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
+  
+  assignedClients Client[]      @relation("AssignedCaregiver")
+  appointments    Appointment[]
+  clientNotes     ClientNote[]
+  auditLogs       AuditLog[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ------------------------------------------------------
+// DOMAIN MODELS
+// ------------------------------------------------------
+
+model Client {
+  id                  String   @id @default(cuid())
+  firstName           String
+  lastName            String
+  dateOfBirth         DateTime?
+  phone               String?
+  address             String?
+  emergencyContact    String?
+  emergencyPhone      String?
+  primaryCareType     CareType @default(PERSONAL_CARE)
+  carePlanSummary     String?  @db.Text
+  isActive            Boolean  @default(true)
+  
+  assignedEmployeeId  String
+  assignedEmployee    User     @relation("AssignedCaregiver", fields: [assignedEmployeeId], references: [id])
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  appointments        Appointment[]
+  notes               ClientNote[]
+
+  @@index([assignedEmployeeId])
+  @@index([lastName, firstName])
+}
+
+model Appointment {
+  id              String            @id @default(cuid())
+  clientId        String
+  client          Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  employeeId      String
+  employee        User              @relation(fields: [employeeId], references: [id])
+
+  type            AppointmentType   @default(HOME_CARE_SHIFT)
+  status          AppointmentStatus @default(SCHEDULED)
+  
+  startTime       DateTime
+  endTime         DateTime?
+  location        String?
+  summary         String?           @db.Text
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  notes           ClientNote[]
+
+  @@index([employeeId])
+  @@index([clientId])
+  @@index([startTime])
+}
+
+model ClientNote {
+  id                String       @id @default(cuid())
+  clientId          String
+  client            Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  employeeId        String
+  employee          User         @relation(fields: [employeeId], references: [id])
+
+  appointmentId     String?
+  appointment       Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  category          NoteCategory @default(DAILY_CARE_LOG)
+  adlTasksCompleted String[]
+  content           String       @db.Text
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([employeeId])
+  @@index([clientId])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  action      String
+  entityType  String
+  entityId    String
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

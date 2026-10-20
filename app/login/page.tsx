@@ -1,0 +1,214 @@
+"use client";
+
+import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { GlamourLogo } from "@/components/GlamourLogo";
+import { loginAction } from "@/lib/actions/auth-actions";
+import { Lock, Mail, AlertCircle, ArrowRight, ShieldCheck, HeartHandshake } from "lucide-react";
+
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await loginAction({ email, password });
+      if (res.success && res.redirectTo) {
+        router.push(res.redirectTo);
+        router.refresh();
+      } else {
+        setError(res.error || "Invalid email or password.");
+      }
+    });
+  };
+
+  // Quick select helper for testing/reviewing
+  const setQuickCreds = (userEmail: string, pass: string = "Password123!") => {
+    setEmail(userEmail);
+    setPassword(pass);
+    setError(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-zinc-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {/* Soft Pink Accent Bar */}
+      <div className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pink-400 via-pink-600 to-rose-500" />
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <div className="flex justify-center mb-3">
+          <GlamourLogo />
+        </div>
+        <h2 className="text-xl font-bold text-zinc-900 tracking-tight">
+          Caregiver & Staff Portal
+        </h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          Authorized personnel access for Glamour Homecare, LLC (Fredericksburg, VA)
+        </p>
+      </div>
+
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <div className="bg-white py-8 px-6 shadow-sm border border-pink-200/70 rounded-xl sm:px-10">
+          {error && (
+            <div className="mb-5 rounded-md bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider"
+              >
+                Work Email
+              </label>
+              <div className="mt-1.5 relative rounded-md shadow-2xs">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                  <Mail className="h-4 w-4" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@glamourhomecare.org"
+                  className="block w-full pl-9 pr-3 py-2 border border-zinc-300 rounded-md text-sm placeholder-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider"
+              >
+                Password
+              </label>
+              <div className="mt-1.5 relative rounded-md shadow-2xs">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                  <Lock className="h-4 w-4" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="block w-full pl-9 pr-3 py-2 border border-zinc-300 rounded-md text-sm placeholder-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-xs text-sm font-semibold text-white bg-pink-600 hover:bg-pink-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors disabled:opacity-60 cursor-pointer"
+              >
+                {isPending ? (
+                  <span>Authenticating...</span>
+                ) : (
+                  <>
+                    <span>Sign In to Portal</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Quick Demo Access Bar for Testing/Reviewing */}
+          <div className="mt-6 pt-6 border-t border-zinc-200">
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider text-center mb-2.5">
+              Select Demo Account to Test:
+            </p>
+            <div className="grid grid-cols-1 gap-2">
+              <button
+                type="button"
+                onClick={() => setQuickCreds("shavonnah@glamourhomecare.org")}
+                className="flex items-center justify-between px-3 py-2 text-xs rounded-md border border-pink-200 bg-pink-50/70 hover:bg-pink-100 text-zinc-800 transition-colors text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-pink-600 shrink-0" />
+                  <div>
+                    <span className="font-semibold block">Shavonnah (RN Owner)</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      shavonnah@glamourhomecare.org
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] bg-pink-200/70 text-pink-800 px-1.5 py-0.5 rounded font-medium">
+                  ADMIN
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setQuickCreds("martha@glamourhomecare.org")}
+                className="flex items-center justify-between px-3 py-2 text-xs rounded-md border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-800 transition-colors text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <HeartHandshake className="w-4 h-4 text-zinc-600 shrink-0" />
+                  <div>
+                    <span className="font-semibold block">Martha Jenkins</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      martha@glamourhomecare.org
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] bg-zinc-200 text-zinc-700 px-1.5 py-0.5 rounded font-medium">
+                  CAREGIVER
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setQuickCreds("gloria@glamourhomecare.org")}
+                className="flex items-center justify-between px-3 py-2 text-xs rounded-md border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-800 transition-colors text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <HeartHandshake className="w-4 h-4 text-zinc-600 shrink-0" />
+                  <div>
+                    <span className="font-semibold block">Gloria Ramirez</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      gloria@glamourhomecare.org
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] bg-zinc-200 text-zinc-700 px-1.5 py-0.5 rounded font-medium">
+                  CAREGIVER
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Security & HIPAA Compliance Notice */}
+        <div className="mt-6 text-center text-xs text-zinc-400">
+          <p>Strict HIPAA-Compliant Healthcare Network</p>
+          <p className="mt-0.5 text-[11px]">
+            Public registrations are restricted. New accounts are provisioned by agency administration.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -6,22 +6,35 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "tsx prisma/seed.ts",
+    "db:postgres": "node scripts/switch-to-postgres.js",
+    "db:sqlite": "node scripts/switch-to-sqlite.js"
   },
   "dependencies": {
     "@better-auth/infra": "^0.4.20",
+    "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
+    "better-auth": "^1.7.12",
+    "lucide-react": "^1.60.0",
     "next": "16.4.2",
+    "prisma": "^6.19.3",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
