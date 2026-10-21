@@ -44,15 +44,9 @@ export default function LoginPage() {
       <div className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-pink-400 via-pink-600 to-rose-500 z-50" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="flex justify-center mb-3">
-          <GlamourLogo />
+        <div className="flex justify-center mb-1">
+          <GlamourLogo size={56} />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">
-          Caregiver & Staff Portal
-        </h2>
-        <p className="mt-1 text-xs text-zinc-500 max-w-xs mx-auto">
-          Authorized personnel access for Glamour Homecare, LLC (Fredericksburg, VA)
-        </p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md w-full">
@@ -133,10 +127,10 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Quick Demo Access Bar for Mobile / Desktop Reviewing */}
-          <div className="mt-6 pt-5 border-t border-zinc-200">
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider text-center mb-2.5">
-              Select Demo Account to Test:
+          {/* Quick Demo Access Bar for Mobile / Desktop */}
+          <div className="mt-5 pt-4 border-t border-zinc-200">
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider text-center mb-2">
+              Demo Accounts
             </p>
             <div className="grid grid-cols-1 gap-2">
               <button
@@ -199,12 +193,10 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Security & HIPAA Notice */}
-        <div className="mt-6 text-center text-xs text-zinc-400">
-          <p>Strict HIPAA-Compliant Healthcare Network</p>
-          <p className="mt-0.5 text-[11px]">
-            Public registrations are restricted. New accounts are provisioned by agency administration.
-          </p>
+        {/* Security Notice */}
+        <div className="mt-5 text-center text-xs text-zinc-400 flex items-center justify-center gap-1.5">
+          <Lock className="w-3.5 h-3.5" />
+          <span>HIPAA Compliant • Authorized Personnel Only</span>
         </div>
       </div>
     </div>

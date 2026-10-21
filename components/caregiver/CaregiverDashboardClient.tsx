@@ -130,9 +130,6 @@ export function CaregiverDashboardClient({
         <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-pink-600 block">
-                Caregiver Field Portal
-              </span>
               <h1 className="text-xl font-bold text-zinc-900 leading-tight">
                 Welcome, {caregiver.name}
               </h1>
@@ -209,7 +206,7 @@ export function CaregiverDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
-                My Assigned Shifts & Visits
+                Upcoming Shifts
               </h2>
               <span className="text-xs text-zinc-500">
                 {appointments.filter((a) => a.status === "SCHEDULED").length} Upcoming
@@ -334,9 +331,8 @@ export function CaregiverDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
-                My Assigned Patients
+                My Patients
               </h2>
-              <span className="text-xs text-zinc-500">Row-Level Isolated Access</span>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -427,15 +423,9 @@ export function CaregiverDashboardClient({
         {activeTab === "log" && (
           <div className="bg-white border border-pink-200/80 rounded-xl p-5 sm:p-7 shadow-xs">
             <div className="border-b border-zinc-200 pb-3 mb-5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-pink-600 block">
-                Care Visit Documentation
-              </span>
-              <h2 className="text-lg font-bold text-zinc-900 mt-0.5">
-                Submit Daily Care Log & Narrative
+              <h2 className="text-lg font-bold text-zinc-900">
+                Log Care Visit
               </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                Tap ADL completion checkboxes and enter visit notes or discharge transition text.
-              </p>
             </div>
 
             {formStatus?.success && (
@@ -453,10 +443,10 @@ export function CaregiverDashboardClient({
             )}
 
             <form onSubmit={handleSubmitVisit} className="space-y-5">
-              {/* Step 1: Select Client */}
+              {/* Select Client */}
               <div>
                 <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5">
-                  1. Select Assigned Patient *
+                  Patient *
                 </label>
                 <select
                   value={selectedClientId}
@@ -472,10 +462,10 @@ export function CaregiverDashboardClient({
                 </select>
               </div>
 
-              {/* Step 2: Select Category */}
+              {/* Select Category */}
               <div>
                 <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5">
-                  2. Visit Category *
+                  Category *
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {Object.entries(NOTE_CATEGORIES).map(([key, val]) => {
@@ -498,11 +488,11 @@ export function CaregiverDashboardClient({
                 </div>
               </div>
 
-              {/* Step 3: Fast Single-Thumb ADL Checklist Grid */}
+              {/* ADL Checklist */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-bold text-zinc-800 uppercase tracking-wider">
-                    3. ADL Tasks Completed (Tap to Toggle)
+                    ADL Tasks Completed
                   </label>
                   <span className="text-[11px] text-pink-600 font-semibold">
                     {selectedAdlTasks.length} Selected
@@ -538,15 +528,15 @@ export function CaregiverDashboardClient({
                 </div>
               </div>
 
-              {/* Step 4: Narrative Visit Notes / Hospital Discharge Text */}
+              {/* Visit Notes */}
               <div>
                 <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5">
-                  4. Narrative Clinical Notes / Hospital Discharge Summary *
+                  Visit Notes *
                 </label>
                 <textarea
                   rows={5}
                   required
-                  placeholder="Record client observation, vitals check, mobility assistance, meals served, medication reminders, or Mary Washington Hospital discharge orders..."
+                  placeholder="Enter visit notes, vitals, or observations..."
                   value={narrativeContent}
                   onChange={(e) => setNarrativeContent(e.target.value)}
                   className="w-full text-base sm:text-xs font-normal border border-zinc-300 rounded-lg p-3 bg-zinc-50 text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 placeholder-zinc-400 leading-relaxed font-sans"
@@ -581,10 +571,10 @@ export function CaregiverDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
-                My Recent Visit Logs
+                Visit History
               </h2>
               <span className="text-xs text-zinc-500">
-                {recentNotes.length} Submitted Notes
+                {recentNotes.length} Notes
               </span>
             </div>
 

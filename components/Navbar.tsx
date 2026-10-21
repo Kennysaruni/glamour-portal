@@ -37,16 +37,11 @@ export function Navbar({ user }: NavbarProps) {
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo & Agency Info */}
+          {/* Logo */}
           <div className="flex items-center gap-3">
             <Link href={isAdmin ? "/admin" : "/app"} className="focus:outline-hidden">
-              <GlamourLogo />
+              <GlamourLogo size={38} />
             </Link>
-            <div className="hidden lg:flex items-center pl-3 border-l border-zinc-200 text-xs text-zinc-500 font-medium">
-              <span>Fredericksburg, VA</span>
-              <span className="mx-2 text-zinc-300">•</span>
-              <span className="text-pink-700 font-semibold">Nurse-Owned Agency</span>
-            </div>
           </div>
 
           {/* User Profile & Actions */}

@@ -326,16 +326,12 @@ export function AdminDashboardClient({
             <div>
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-pink-100 text-pink-800 border border-pink-200">
-                  <Shield className="w-3.5 h-3.5" /> RN Owner / Agency Admin
+                  <Shield className="w-3.5 h-3.5" /> RN Admin
                 </span>
-                <span className="text-xs text-zinc-500">HIPAA Compliant Record System</span>
               </div>
               <h1 className="text-2xl font-bold text-zinc-900 mt-1">
-                Agency Administration & Clinical Oversight
+                Clinical Oversight & Administration
               </h1>
-              <p className="text-xs text-zinc-600 mt-0.5">
-                Monitoring client care plans, caregiver visit narratives, ADL completion, and Mary Washington Hospital discharge summaries.
-              </p>
             </div>
 
             {/* Quick Action Buttons - 2x2 Grid on Mobile, Flex on Desktop */}
@@ -374,8 +370,8 @@ export function AdminDashboardClient({
               <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
                 {clientsList.filter((c) => c.isActive).length}
               </div>
-              <div className="text-[10px] text-pink-600 font-medium mt-0.5 truncate">
-                Fredericksburg, VA
+              <div className="text-[10px] text-zinc-400 font-medium mt-0.5 truncate">
+                Enrolled Patients
               </div>
             </div>
 
@@ -589,11 +585,11 @@ export function AdminDashboardClient({
                               {NOTE_CATEGORY_LABELS[note.category as NoteCategory] || note.category}
                             </span>
                             <span className="text-xs font-bold text-zinc-900">
-                              Patient: {note.client?.firstName} {note.client?.lastName}
+                              {note.client?.firstName} {note.client?.lastName}
                             </span>
                             <span className="text-xs text-zinc-400">•</span>
                             <span className="text-xs text-zinc-600 font-medium">
-                              Caregiver: {note.employee?.name}
+                              {note.employee?.name}
                             </span>
                           </div>
 
@@ -624,9 +620,8 @@ export function AdminDashboardClient({
                         {/* ADL Checklist Badges */}
                         {note.adlTasksCompleted && note.adlTasksCompleted.length > 0 && (
                           <div className="mb-3">
-                            <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                              <CheckSquare className="w-3.5 h-3.5 text-pink-600" /> Completed ADL
-                              Tasks:
+                            <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                              <CheckSquare className="w-3.5 h-3.5 text-pink-600" /> ADLs Completed:
                             </div>
                             <div className="flex flex-wrap gap-1.5">
                               {note.adlTasksCompleted.map((task: string, idx: number) => (
@@ -661,12 +656,9 @@ export function AdminDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-zinc-900">
-                  Client Directory & Care Plan Assignments
+                <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                  Client Directory
                 </h2>
-                <p className="text-xs text-zinc-500">
-                  Manage patient intake, emergency contacts, primary care types, and assigned caregivers.
-                </p>
               </div>
               <button
                 onClick={() => setIsClientModalOpen(true)}
@@ -735,7 +727,7 @@ export function AdminDashboardClient({
                     {client.phone && (
                       <div className="flex items-center gap-1.5">
                         <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                        <span>Client Phone: {client.phone}</span>
+                        <span>{client.phone}</span>
                       </div>
                     )}
                     {client.emergencyContact && (
@@ -751,8 +743,8 @@ export function AdminDashboardClient({
 
                   {client.carePlanSummary && (
                     <div className="mt-3 pt-3 border-t border-zinc-100">
-                      <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-                        Care Plan Summary:
+                      <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                        Care Plan
                       </div>
                       <p className="text-xs text-zinc-700 mt-1 leading-relaxed bg-zinc-50 p-2.5 rounded border border-zinc-200/60">
                         {client.carePlanSummary}
@@ -762,13 +754,13 @@ export function AdminDashboardClient({
 
                   <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-zinc-500">Assigned Caregiver:</span>
+                      <span className="text-zinc-500">Caregiver:</span>
                       <span className="font-semibold text-pink-700">
                         {client.assignedEmployee?.name || "Unassigned"}
                       </span>
                     </div>
                     <div className="text-[11px] text-zinc-400">
-                      {client.notesCount || 0} Visit Notes • {client.appointmentsCount || 0} Shifts
+                      {client.notesCount || 0} Notes • {client.appointmentsCount || 0} Shifts
                     </div>
                   </div>
                 </div>
@@ -784,12 +776,9 @@ export function AdminDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-zinc-900">
-                  Caregivers & Staff Members
+                <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                  Caregivers & Staff
                 </h2>
-                <p className="text-xs text-zinc-500">
-                  Provision caregiver accounts, set temporary passwords, and control active status.
-                </p>
               </div>
               <button
                 onClick={() => setIsStaffModalOpen(true)}
@@ -890,12 +879,9 @@ export function AdminDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-zinc-900">
-                  Home Care Shifts & Medical Transport Visits
+                <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                  Scheduled Shifts
                 </h2>
-                <p className="text-xs text-zinc-500">
-                  Schedule caregiver shifts, initial assessments, and discharge transition visits.
-                </p>
               </div>
               <button
                 onClick={() => setIsAppointmentModalOpen(true)}
@@ -1007,12 +993,9 @@ export function AdminDashboardClient({
         {activeTab === "audit" && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-sm font-bold text-zinc-900">
-                HIPAA Compliance Audit Trail
+              <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                Audit Trail
               </h2>
-              <p className="text-xs text-zinc-500">
-                Immutable records of user provisioning, visit note submissions, and client assignments.
-              </p>
             </div>
 
             <div className="bg-white border border-zinc-200 rounded-lg overflow-x-auto shadow-2xs">

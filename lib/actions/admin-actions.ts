@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { NoteCategory, CareType, AppointmentStatus, AppointmentType } from "@/lib/types";
 
-// Helper to normalize ADL tasks array
+
 function parseAdlTasks(raw: string | string[] | null | undefined): string[] {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw;
@@ -18,9 +18,7 @@ function parseAdlTasks(raw: string | string[] | null | undefined): string[] {
   }
 }
 
-// ============================================================================
-// STAFF MANAGEMENT
-// ============================================================================
+
 
 export async function getStaffList() {
   await requireAdmin();
@@ -486,10 +484,10 @@ export async function getGlobalActivityFeed(filters?: {
     appointmentId: n.appointmentId,
     appointment: n.appointment
       ? {
-          id: n.appointment.id,
-          type: n.appointment.type,
-          startTime: n.appointment.startTime.toISOString(),
-        }
+        id: n.appointment.id,
+        type: n.appointment.type,
+        startTime: n.appointment.startTime.toISOString(),
+      }
       : null,
     category: n.category as NoteCategory,
     adlTasksCompleted: parseAdlTasks(n.adlTasksCompleted),
