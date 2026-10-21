@@ -18,16 +18,15 @@ function parseAdlTasks(raw: string | string[] | null | undefined): string[] {
 }
 
 // ============================================================================
-// CAREGIVER DASHBOARD DATA (Strict Row-Level Isolation)
+// CAREGIVER DATA FETCHERS (Strict Row-Level Isolation)
 // ============================================================================
 
-export async function getCaregiverDashboardData() {
+export async function getAssignedClients() {
   const session = await requireAuth();
   const userId = session.user.id;
 
-  // 1. Fetch strictly assigned clients
   const assignedClients = await prisma.client.findMany({
-    where: {
+    where: session.user.role === "ADMIN" ? {} : {
       assignedEmployeeId: userId,
       isActive: true,
     },
@@ -42,10 +41,31 @@ export async function getCaregiverDashboardData() {
     },
   });
 
-  // 2. Fetch caregiver's schedule (upcoming and past 7 days)
+  return assignedClients.map((c) => ({
+    id: c.id,
+    firstName: c.firstName,
+    lastName: c.lastName,
+    dateOfBirth: c.dateOfBirth ? c.dateOfBirth.toISOString().split("T")[0] : null,
+    phone: c.phone,
+    address: c.address,
+    emergencyContact: c.emergencyContact,
+    emergencyPhone: c.emergencyPhone,
+    primaryCareType: c.primaryCareType as CareType,
+    carePlanSummary: c.carePlanSummary,
+    isActive: c.isActive,
+    assignedEmployeeId: c.assignedEmployeeId,
+    notesCount: c._count.notes,
+    appointmentsCount: c._count.appointments,
+  }));
+}
+
+export async function getCaregiverAppointments() {
+  const session = await requireAuth();
+  const userId = session.user.id;
+
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
   const appointments = await prisma.appointment.findMany({
-    where: {
+    where: session.user.role === "ADMIN" ? {} : {
       employeeId: userId,
       startTime: { gte: sevenDaysAgo },
     },
@@ -66,13 +86,29 @@ export async function getCaregiverDashboardData() {
     },
   });
 
-  // 3. Fetch recent notes submitted by this caregiver
+  return appointments.map((a) => ({
+    id: a.id,
+    clientId: a.clientId,
+    client: a.client,
+    type: a.type as AppointmentType,
+    status: a.status as AppointmentStatus,
+    startTime: a.startTime.toISOString(),
+    endTime: a.endTime ? a.endTime.toISOString() : null,
+    location: a.location,
+    summary: a.summary,
+  }));
+}
+
+export async function getCaregiverNotes() {
+  const session = await requireAuth();
+  const userId = session.user.id;
+
   const recentNotes = await prisma.clientNote.findMany({
-    where: {
+    where: session.user.role === "ADMIN" ? {} : {
       employeeId: userId,
     },
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 50,
     include: {
       client: {
         select: {
@@ -85,6 +121,25 @@ export async function getCaregiverDashboardData() {
     },
   });
 
+  return recentNotes.map((n) => ({
+    id: n.id,
+    clientId: n.clientId,
+    client: n.client,
+    category: n.category as NoteCategory,
+    adlTasksCompleted: parseAdlTasks(n.adlTasksCompleted),
+    content: n.content,
+    createdAt: n.createdAt.toISOString(),
+  }));
+}
+
+export async function getCaregiverDashboardData() {
+  const session = await requireAuth();
+  const [clients, appointments, recentNotes] = await Promise.all([
+    getAssignedClients(),
+    getCaregiverAppointments(),
+    getCaregiverNotes(),
+  ]);
+
   return {
     caregiver: {
       id: session.user.id,
@@ -92,40 +147,9 @@ export async function getCaregiverDashboardData() {
       email: session.user.email,
       role: session.user.role,
     },
-    clients: assignedClients.map((c) => ({
-      id: c.id,
-      firstName: c.firstName,
-      lastName: c.lastName,
-      dateOfBirth: c.dateOfBirth ? c.dateOfBirth.toISOString().split("T")[0] : null,
-      phone: c.phone,
-      address: c.address,
-      emergencyContact: c.emergencyContact,
-      emergencyPhone: c.emergencyPhone,
-      primaryCareType: c.primaryCareType as CareType,
-      carePlanSummary: c.carePlanSummary,
-      notesCount: c._count.notes,
-      appointmentsCount: c._count.appointments,
-    })),
-    appointments: appointments.map((a) => ({
-      id: a.id,
-      clientId: a.clientId,
-      client: a.client,
-      type: a.type as AppointmentType,
-      status: a.status as AppointmentStatus,
-      startTime: a.startTime.toISOString(),
-      endTime: a.endTime ? a.endTime.toISOString() : null,
-      location: a.location,
-      summary: a.summary,
-    })),
-    recentNotes: recentNotes.map((n) => ({
-      id: n.id,
-      clientId: n.clientId,
-      client: n.client,
-      category: n.category as NoteCategory,
-      adlTasksCompleted: parseAdlTasks(n.adlTasksCompleted),
-      content: n.content,
-      createdAt: n.createdAt.toISOString(),
-    })),
+    clients,
+    appointments,
+    recentNotes,
   };
 }
 

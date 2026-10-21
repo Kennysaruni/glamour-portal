@@ -33,12 +33,19 @@ export async function getServerSession(): Promise<CurrentUserSession | null> {
     // Fallback to direct cookie validation below
   }
 
-  // Resilient fallback: inspect session token directly from cookies
+  // Resilient fallback: inspect session token directly from cookies or Authorization header
   try {
+    const headerList = await headers();
+    const authHeader = headerList.get("authorization");
+    const bearerToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.substring(7).trim()
+      : null;
+
     const cookieStore = await cookies();
     const cookieValue =
       cookieStore.get("better-auth.session_token")?.value ||
-      cookieStore.get("__Secure-better-auth.session_token")?.value;
+      cookieStore.get("__Secure-better-auth.session_token")?.value ||
+      bearerToken;
     if (!cookieValue) return null;
 
     // Cookie token may be signed (token.signature) or raw token
