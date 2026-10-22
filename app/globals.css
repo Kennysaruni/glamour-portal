@@ -20,33 +20,4 @@ body {
   min-height: 100vh;
 }
 
-/* Print styling for clinical exports and hospital discharge summaries */
-@media print {
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-  }
-  
-  .no-print,
-  nav,
-  header,
-  .print-hidden,
-  button:not(.print-include) {
-    display: none !important;
-  }
-  
-  .print-visible {
-    display: block !important;
-  }
 
-  .print-page {
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .print-card {
-    border: 1px solid #e4e4e7 !important;
-    box-shadow: none !important;
-    break-inside: avoid;
-  }
-}

@@ -178,6 +178,10 @@ model ClientNote {
   adlTasksCompleted String[]
   content           String       @db.Text
   
+  attachmentUrl     String?      // Stored URL or file path for uploaded PDF or PNG summary
+  attachmentName    String?      // Original filename e.g. "Visit_Summary_Oct22.pdf"
+  attachmentType    String?      // "pdf" | "png" or MIME type
+  
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 

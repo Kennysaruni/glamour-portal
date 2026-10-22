@@ -492,6 +492,9 @@ export async function getGlobalActivityFeed(filters?: {
     category: n.category as NoteCategory,
     adlTasksCompleted: parseAdlTasks(n.adlTasksCompleted),
     content: n.content,
+    attachmentUrl: n.attachmentUrl,
+    attachmentName: n.attachmentName,
+    attachmentType: n.attachmentType,
     createdAt: n.createdAt.toISOString(),
     updatedAt: n.updatedAt.toISOString(),
   }));

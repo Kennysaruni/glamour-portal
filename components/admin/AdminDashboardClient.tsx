@@ -6,7 +6,6 @@ import {
   UserPlus,
   FileText,
   Calendar,
-  Printer,
   Search,
   Filter,
   CheckCircle,
@@ -23,6 +22,7 @@ import {
   Edit,
   X,
   ExternalLink,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   createStaffMember,
@@ -92,8 +92,6 @@ export function AdminDashboardClient({
   const [isEditClientModalOpen, setIsEditClientModalOpen] = useState(false);
   const [clientToEdit, setClientToEdit] = useState<any | null>(null);
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [printSelectedNote, setPrintSelectedNote] = useState<any | null>(null);
 
   // Form states
   const [staffForm, setStaffForm] = useState({
@@ -306,21 +304,10 @@ export function AdminDashboardClient({
     });
   };
 
-  // Action: Trigger browser native print
-  const handleTriggerPrint = (note?: any) => {
-    if (note) {
-      setPrintSelectedNote(note);
-    }
-    setIsPrintModalOpen(true);
-    setTimeout(() => {
-      window.print();
-    }, 200);
-  };
-
   return (
     <div className="min-h-screen bg-zinc-50 pb-16">
       {/* Top Banner & Header Summary */}
-      <div className="bg-white border-b border-pink-200/70 shadow-2xs no-print">
+      <div className="bg-white border-b border-pink-200/70 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -334,31 +321,25 @@ export function AdminDashboardClient({
               </h1>
             </div>
 
-            {/* Quick Action Buttons - 2x2 Grid on Mobile, Flex on Desktop */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
               <button
                 onClick={() => setIsClientModalOpen(true)}
-                className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 sm:px-3.5 sm:py-2 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                className="inline-flex justify-center items-center gap-1.5 px-3.5 py-2 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> Add Client
               </button>
               <button
                 onClick={() => setIsStaffModalOpen(true)}
-                className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 sm:px-3.5 sm:py-2 rounded-md bg-white border border-pink-300 text-pink-700 hover:bg-pink-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                className="inline-flex justify-center items-center gap-1.5 px-3.5 py-2 rounded-md bg-white border border-pink-300 text-pink-700 hover:bg-pink-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
               >
                 <UserPlus className="w-4 h-4" /> Add Caregiver
               </button>
               <button
                 onClick={() => setIsAppointmentModalOpen(true)}
-                className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 sm:px-3.5 sm:py-2 rounded-md bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                className="inline-flex justify-center items-center gap-1.5 px-3.5 py-2 rounded-md bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
               >
                 <Calendar className="w-4 h-4 text-zinc-500" /> Schedule Shift
-              </button>
-              <button
-                onClick={() => handleTriggerPrint()}
-                className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 sm:px-3.5 sm:py-2 rounded-md bg-zinc-900 hover:bg-black text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
-              >
-                <Printer className="w-4 h-4" /> Print Summary
               </button>
             </div>
           </div>
@@ -607,13 +588,6 @@ export function AdminDashboardClient({
                                 minute: "2-digit",
                               })}
                             </span>
-                            <button
-                              onClick={() => handleTriggerPrint(note)}
-                              title="Print this specific note"
-                              className="ml-2 inline-flex items-center gap-1 px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-[11px] font-medium transition-colors"
-                            >
-                              <Printer className="w-3 h-3 text-zinc-500" /> Print
-                            </button>
                           </div>
                         </div>
 
@@ -640,6 +614,33 @@ export function AdminDashboardClient({
                         <div className="text-xs text-zinc-800 leading-relaxed whitespace-pre-wrap font-sans bg-zinc-50/70 p-3 rounded-md border border-zinc-200/70">
                           {note.content}
                         </div>
+
+                        {/* Attached Summary (PDF or PNG) */}
+                        {note.attachmentUrl && (
+                          <div className="mt-3 pt-2.5 border-t border-zinc-200/60 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-xs">
+                              {note.attachmentType === "pdf" ? (
+                                <FileText className="w-4 h-4 text-rose-600 shrink-0" />
+                              ) : (
+                                <ImageIcon className="w-4 h-4 text-pink-600 shrink-0" />
+                              )}
+                              <span className="font-semibold text-zinc-800 truncate max-w-xs">
+                                {note.attachmentName || "Attached Summary Document"}
+                              </span>
+                              <span className="uppercase text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
+                                {note.attachmentType || "FILE"}
+                              </span>
+                            </div>
+                            <a
+                              href={note.attachmentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-pink-600 hover:text-pink-800 underline"
+                            >
+                              <ExternalLink className="w-3 h-3" /> View / Download
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -762,6 +763,16 @@ export function AdminDashboardClient({
                     <div className="text-[11px] text-zinc-400">
                       {client.notesCount || 0} Notes • {client.appointmentsCount || 0} Shifts
                     </div>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-zinc-100 flex items-center justify-end">
+                    <a
+                      href={`/clients/${client.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      <ClipboardList className="w-3.5 h-3.5" />
+                      <span>View Full Profile & History</span>
+                    </a>
                   </div>
                 </div>
               ))}
@@ -1661,91 +1672,6 @@ export function AdminDashboardClient({
           </div>
         </div>
       )}
-
-      {/* =================================================================== */}
-      {/* PRINTABLE REPORT VIEW (Native window.print with @media print)      */}
-      {/* =================================================================== */}
-      <div id="print-section" className="hidden print:block print:p-8 bg-white">
-        <div className="border-b-2 border-pink-600 pb-4 mb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
-                GLAMOUR HOMECARE, LLC
-              </h1>
-              <p className="text-xs text-zinc-600">
-                Nurse-Owned Non-Skilled Home Care Agency • Fredericksburg, VA
-              </p>
-              <p className="text-xs text-zinc-500">Phone: (540) 555-0199 • HIPAA Compliant Clinical Summary</p>
-            </div>
-            <div className="text-right text-xs text-zinc-500">
-              <p className="font-semibold text-zinc-900">
-                Report Date: {new Date().toLocaleDateString("en-US", { dateStyle: "long" })}
-              </p>
-              <p>Generated by: {currentUser.name}</p>
-            </div>
-          </div>
-        </div>
-
-        <h2 className="text-base font-bold text-zinc-900 mb-4 uppercase tracking-wider border-b border-zinc-200 pb-1">
-          {printSelectedNote
-            ? `CLINICAL REPORT: ${NOTE_CATEGORY_LABELS[printSelectedNote.category as NoteCategory] || printSelectedNote.category}`
-            : "AGENCY CLINICAL ACTIVITY & DISCHARGE SUMMARY REPORT"}
-        </h2>
-
-        {/* Notes to Print */}
-        <div className="space-y-6">
-          {(printSelectedNote ? [printSelectedNote] : filteredNotes).map((note, index) => (
-            <div
-              key={note.id || index}
-              className="border border-zinc-300 rounded p-4 break-inside-avoid"
-            >
-              <div className="flex justify-between items-baseline border-b border-zinc-200 pb-2 mb-2">
-                <div>
-                  <span className="font-bold text-sm text-zinc-900">
-                    Patient: {note.client?.firstName} {note.client?.lastName}
-                  </span>
-                  <span className="text-xs text-zinc-500 ml-2">
-                    (Care Type: {CARE_TYPE_LABELS[note.client?.primaryCareType as CareType] || note.client?.primaryCareType})
-                  </span>
-                </div>
-                <div className="text-xs text-zinc-600">
-                  Caregiver: <span className="font-semibold">{note.employee?.name}</span> •{" "}
-                  {new Date(note.createdAt).toLocaleString()}
-                </div>
-              </div>
-
-              <div className="text-xs font-semibold text-pink-700 uppercase mb-2">
-                Category: {NOTE_CATEGORY_LABELS[note.category as NoteCategory] || note.category}
-              </div>
-
-              {note.adlTasksCompleted && note.adlTasksCompleted.length > 0 && (
-                <div className="text-xs text-zinc-700 mb-2">
-                  <span className="font-semibold">ADL Tasks Completed: </span>
-                  {note.adlTasksCompleted.join(", ")}
-                </div>
-              )}
-
-              <div className="text-xs text-zinc-800 whitespace-pre-wrap leading-relaxed mt-2 pt-2 border-t border-zinc-100 font-sans">
-                {note.content}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Agency Sign-Off Block */}
-        <div className="mt-12 pt-6 border-t-2 border-zinc-300 grid grid-cols-2 gap-8 text-xs text-zinc-700 break-inside-avoid">
-          <div>
-            <div className="border-b border-zinc-400 h-8 mb-1"></div>
-            <p className="font-semibold">Attending Registered Nurse (RN Owner) Signature</p>
-            <p className="text-[10px] text-zinc-500">Shavonnah, RN • License # VA-RN-772104</p>
-          </div>
-          <div>
-            <div className="border-b border-zinc-400 h-8 mb-1"></div>
-            <p className="font-semibold">Assigned Caregiver Verification</p>
-            <p className="text-[10px] text-zinc-500">Glamour Homecare, LLC Clinical Records</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

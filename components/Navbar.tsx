@@ -31,7 +31,7 @@ export function Navbar({ user }: NavbarProps) {
   const isOnAdmin = pathname.startsWith("/admin");
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-pink-200/60 shadow-xs no-print">
+    <header className="sticky top-0 z-40 bg-white border-b border-pink-200/60 shadow-xs">
       {/* Soft Pink Accent Bar */}
       <div className="h-1.5 w-full bg-gradient-to-r from-pink-400 via-pink-600 to-rose-500" />
 

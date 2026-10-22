@@ -128,6 +128,9 @@ export async function getCaregiverNotes() {
     category: n.category as NoteCategory,
     adlTasksCompleted: parseAdlTasks(n.adlTasksCompleted),
     content: n.content,
+    attachmentUrl: n.attachmentUrl,
+    attachmentName: n.attachmentName,
+    attachmentType: n.attachmentType,
     createdAt: n.createdAt.toISOString(),
   }));
 }
@@ -154,6 +157,133 @@ export async function getCaregiverDashboardData() {
 }
 
 // ============================================================================
+// CLIENT DETAILS & HISTORY (Protected by Role & Row-Level Isolation)
+// ============================================================================
+
+export async function getClientDetailsAndHistory(clientId: string) {
+  const session = await requireAuth();
+  const userId = session.user.id;
+
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    include: {
+      assignedEmployee: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+        },
+      },
+    },
+  });
+
+  if (!client) {
+    return { success: false, error: "Client not found." };
+  }
+
+  // Row-Level Access Control: Caregivers may only view clients assigned to them
+  if (session.user.role !== "ADMIN" && client.assignedEmployeeId !== userId) {
+    return {
+      success: false,
+      error: "Access Denied: You do not have authorization to view this patient's clinical records.",
+    };
+  }
+
+  // Fetch all notes/summaries for this client
+  const notes = await prisma.clientNote.findMany({
+    where: { clientId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      employee: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      appointment: {
+        select: {
+          id: true,
+          type: true,
+          startTime: true,
+        },
+      },
+    },
+  });
+
+  // Fetch all shifts / appointments for this client
+  const appointments = await prisma.appointment.findMany({
+    where: { clientId },
+    orderBy: { startTime: "desc" },
+    include: {
+      employee: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return {
+    success: true,
+    client: {
+      id: client.id,
+      firstName: client.firstName,
+      lastName: client.lastName,
+      dateOfBirth: client.dateOfBirth ? client.dateOfBirth.toISOString().split("T")[0] : null,
+      phone: client.phone,
+      address: client.address,
+      emergencyContact: client.emergencyContact,
+      emergencyPhone: client.emergencyPhone,
+      primaryCareType: client.primaryCareType as CareType,
+      carePlanSummary: client.carePlanSummary,
+      isActive: client.isActive,
+      assignedEmployeeId: client.assignedEmployeeId,
+      assignedEmployee: client.assignedEmployee,
+      createdAt: client.createdAt.toISOString(),
+      updatedAt: client.updatedAt.toISOString(),
+    },
+    notes: notes.map((n) => ({
+      id: n.id,
+      clientId: n.clientId,
+      employeeId: n.employeeId,
+      employee: n.employee,
+      appointmentId: n.appointmentId,
+      appointment: n.appointment
+        ? {
+            id: n.appointment.id,
+            type: n.appointment.type as AppointmentType,
+            startTime: n.appointment.startTime.toISOString(),
+          }
+        : null,
+      category: n.category as NoteCategory,
+      adlTasksCompleted: parseAdlTasks(n.adlTasksCompleted),
+      content: n.content,
+      attachmentUrl: n.attachmentUrl,
+      attachmentName: n.attachmentName,
+      attachmentType: n.attachmentType,
+      createdAt: n.createdAt.toISOString(),
+    })),
+    appointments: appointments.map((a) => ({
+      id: a.id,
+      clientId: a.clientId,
+      employeeId: a.employeeId,
+      employee: a.employee,
+      type: a.type as AppointmentType,
+      status: a.status as AppointmentStatus,
+      startTime: a.startTime.toISOString(),
+      endTime: a.endTime ? a.endTime.toISOString() : null,
+      location: a.location,
+      summary: a.summary,
+      createdAt: a.createdAt.toISOString(),
+    })),
+  };
+}
+
+// ============================================================================
 // SUBMIT VISIT LOG
 // ============================================================================
 
@@ -163,6 +293,9 @@ export async function submitVisitLog(data: {
   category: NoteCategory;
   adlTasksCompleted: string[];
   content: string;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
+  attachmentType?: string | null;
 }) {
   const session = await requireAuth();
   const userId = session.user.id;
@@ -196,6 +329,9 @@ export async function submitVisitLog(data: {
       category: data.category,
       adlTasksCompleted: JSON.stringify(data.adlTasksCompleted || []),
       content: data.content.trim(),
+      attachmentUrl: data.attachmentUrl || null,
+      attachmentName: data.attachmentName || null,
+      attachmentType: data.attachmentType || null,
     },
   });
 
@@ -219,6 +355,7 @@ export async function submitVisitLog(data: {
 
   revalidatePath("/app");
   revalidatePath("/admin");
+  revalidatePath(`/clients/${data.clientId}`);
 
   return { success: true, noteId: note.id };
 }

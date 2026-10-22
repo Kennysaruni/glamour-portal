@@ -133,6 +133,9 @@ export interface ClientNoteData {
   category: NoteCategory | string;
   adlTasksCompleted: string[];
   content: string;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
+  attachmentType?: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
 }
