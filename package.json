@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
@@ -12,6 +13,7 @@
     "db:sqlite": "node scripts/switch-to-sqlite.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1155.0",
     "@better-auth/infra": "^0.4.20",
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
