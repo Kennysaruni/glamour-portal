@@ -1,10 +1,47 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+// ------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum CareType {
+  PERSONAL_CARE
+  COMPANION_CARE
+  RESPITE_CARE
+}
+
+enum AppointmentType {
+  HOME_CARE_SHIFT
+  MEDICAL_APPOINTMENT
+  HOSPITAL_DISCHARGE
+  INITIAL_ASSESSMENT
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum NoteCategory {
+  DAILY_CARE_LOG
+  MEDICATION_REMINDER
+  VITALS_CHECK
+  DISCHARGE_SUMMARY
+  INCIDENT_REPORT
 }
 
 // ------------------------------------------------------
@@ -17,7 +54,7 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
-  role          String    @default("EMPLOYEE") // Role: ADMIN | EMPLOYEE
+  role          Role      @default(EMPLOYEE)
   phone         String?
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
@@ -83,8 +120,8 @@ model Client {
   address             String?
   emergencyContact    String?
   emergencyPhone      String?
-  primaryCareType     String   @default("PERSONAL_CARE") // PERSONAL_CARE | COMPANION_CARE | RESPITE_CARE
-  carePlanSummary     String?
+  primaryCareType     CareType @default(PERSONAL_CARE)
+  carePlanSummary     String?  @db.Text
   isActive            Boolean  @default(true)
   
   assignedEmployeeId  String
@@ -108,13 +145,13 @@ model Appointment {
   employeeId      String
   employee        User              @relation(fields: [employeeId], references: [id])
 
-  type            String            @default("HOME_CARE_SHIFT") // HOME_CARE_SHIFT | MEDICAL_APPOINTMENT | HOSPITAL_DISCHARGE | INITIAL_ASSESSMENT
-  status          String            @default("SCHEDULED")       // SCHEDULED | COMPLETED | CANCELLED | NO_SHOW
+  type            AppointmentType   @default(HOME_CARE_SHIFT)
+  status          AppointmentStatus @default(SCHEDULED)
   
   startTime       DateTime
   endTime         DateTime?
   location        String?
-  summary         String?
+  summary         String?           @db.Text
 
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -137,9 +174,9 @@ model ClientNote {
   appointmentId     String?
   appointment       Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
-  category          String       @default("DAILY_CARE_LOG") // DAILY_CARE_LOG | MEDICATION_REMINDER | VITALS_CHECK | DISCHARGE_SUMMARY | INCIDENT_REPORT
-  adlTasksCompleted String       @default("[]")            // JSON-encoded string of tasks for SQLite compatibility
-  content           String
+  category          NoteCategory @default(DAILY_CARE_LOG)
+  adlTasksCompleted String       @default("[]")
+  content           String       @db.Text
   
   attachmentUrl     String?      // Stored URL or file path for uploaded PDF or PNG summary
   attachmentName    String?      // Original filename e.g. "Visit_Summary_Oct22.pdf"

@@ -1,7 +1,7 @@
 # Caddyfile configuration for Glamour Homecare Portal
 # Automated Let's Encrypt TLS / HTTPS Termination on AWS EC2
 
-portal.glamourhomecare.org {
+56-228-23-80.sslip.io, portal.glamourhomecare.org {
     # Reverse proxy to the Next.js standalone container
     reverse_proxy localhost:3000 {
         header_up X-Real-IP {remote_host}

@@ -175,7 +175,7 @@ model ClientNote {
   appointment       Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
   category          NoteCategory @default(DAILY_CARE_LOG)
-  adlTasksCompleted String[]
+  adlTasksCompleted String       @default("[]")
   content           String       @db.Text
   
   attachmentUrl     String?      // Stored URL or file path for uploaded PDF or PNG summary

@@ -12,12 +12,14 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 # Stage 2: Rebuild source code
+# Stage 2: Rebuild source code
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma Client
+# Ensure production PostgreSQL schema is active
+RUN if [ -f prisma/schema.postgresql.prisma ]; then cp prisma/schema.postgresql.prisma prisma/schema.prisma; fi
 RUN npx prisma generate
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -39,9 +41,10 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
-# Set correct permissions for prerender cache & standalone
+# Set correct permissions for prerender cache, uploads & standalone
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
+RUN mkdir -p public/uploads && chown -R nextjs:nodejs public/uploads
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

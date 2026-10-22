@@ -15,6 +15,8 @@ services:
       - NODE_ENV=production
     env_file:
       - .env
+    volumes:
+      - ./public/uploads:/app/public/uploads
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/login"]
       interval: 30s
