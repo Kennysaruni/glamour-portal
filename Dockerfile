@@ -2,16 +2,16 @@
 # Optimized for AWS EC2 t3.micro (1 GB RAM free tier)
 
 FROM node:22-alpine AS base
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
 
 # Stage 1: Install dependencies
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Stage 2: Rebuild source code
 # Stage 2: Rebuild source code
 FROM base AS builder
 WORKDIR /app
@@ -49,6 +49,8 @@ RUN mkdir -p public/uploads && chown -R nextjs:nodejs public/uploads
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
 USER nextjs
 
