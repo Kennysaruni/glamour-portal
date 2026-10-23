@@ -306,150 +306,126 @@ export function AdminDashboardClient({
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 pb-16">
+    <div className="min-h-screen bg-slate-50 pb-16">
       {/* Top Banner & Header Summary */}
-      <div className="bg-white border-b border-pink-200/70 shadow-2xs">
+      <div className="bg-white border-b border-slate-200/80 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-pink-100 text-pink-800 border border-pink-200">
-                  <Shield className="w-3.5 h-3.5" /> RN Admin
-                </span>
-              </div>
-              <h1 className="text-2xl font-bold text-zinc-900 mt-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 Clinical Oversight & Administration
               </h1>
-            </div>
-
-            {/* Quick Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <button
-                onClick={() => setIsClientModalOpen(true)}
-                className="inline-flex justify-center items-center gap-1.5 px-3.5 py-2 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-              >
-                <Plus className="w-4 h-4" /> Add Client
-              </button>
-              <button
-                onClick={() => setIsStaffModalOpen(true)}
-                className="inline-flex justify-center items-center gap-1.5 px-3.5 py-2 rounded-md bg-white border border-pink-300 text-pink-700 hover:bg-pink-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
-              >
-                <UserPlus className="w-4 h-4" /> Add Caregiver
-              </button>
-              <button
-                onClick={() => setIsAppointmentModalOpen(true)}
-                className="inline-flex justify-center items-center gap-1.5 px-3.5 py-2 rounded-md bg-white border border-zinc-300 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
-              >
-                <Calendar className="w-4 h-4 text-zinc-500" /> Schedule Shift
-              </button>
+              <p className="text-xs text-slate-500 mt-1">
+                Agency operations, staff provisioning, client care plans, and HIPAA compliance audit trail.
+              </p>
             </div>
           </div>
 
           {/* Quick Metrics Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-5">
-            <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
-              <div className="text-zinc-500 text-xs font-medium">Active Clients</div>
-              <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs">
+              <div className="text-slate-500 text-xs font-medium">Active Clients</div>
+              <div className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-1">
                 {clientsList.filter((c) => c.isActive).length}
               </div>
-              <div className="text-[10px] text-zinc-400 font-medium mt-0.5 truncate">
+              <div className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">
                 Enrolled Patients
               </div>
             </div>
 
-            <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
-              <div className="text-zinc-500 text-xs font-medium">Active Caregivers</div>
-              <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs">
+              <div className="text-slate-500 text-xs font-medium">Active Caregivers</div>
+              <div className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-1">
                 {staffList.filter((s) => s.isActive && s.role === "EMPLOYEE").length}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-0.5 truncate">
+              <div className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">
                 {staffList.filter((s) => s.role === "ADMIN").length} RN Admin
               </div>
             </div>
 
-            <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
-              <div className="text-zinc-500 text-xs font-medium">Visit Notes</div>
-              <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs">
+              <div className="text-slate-500 text-xs font-medium">Visit Notes</div>
+              <div className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-1">
                 {notesList.length}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-0.5 truncate">
+              <div className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">
                 {notesList.filter((n) => n.category === "DISCHARGE_SUMMARY").length} Discharges
               </div>
             </div>
 
-            <div className="bg-zinc-50 border border-zinc-200/80 rounded-lg p-3">
-              <div className="text-zinc-500 text-xs font-medium">Scheduled Shifts</div>
-              <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-0.5">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs">
+              <div className="text-slate-500 text-xs font-medium">Scheduled Shifts</div>
+              <div className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-1">
                 {appointmentsList.filter((a) => a.status === "SCHEDULED").length}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-0.5 truncate">Upcoming visits</div>
+              <div className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">Upcoming visits</div>
             </div>
           </div>
 
           {/* Primary Navigation Tabs - Horizontally Scrollable on Mobile */}
-          <div className="flex border-b border-zinc-200 mt-5 space-x-3 sm:space-x-6 overflow-x-auto whitespace-nowrap pb-0.5 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex border-b border-slate-200 mt-6 space-x-3 sm:space-x-6 overflow-x-auto whitespace-nowrap pb-0.5 -mx-4 px-4 sm:mx-0 sm:px-0">
             <button
               onClick={() => setActiveTab("activity")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "activity"
-                  ? "border-pink-600 text-pink-700"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
+                  ? "border-rose-600 text-rose-700"
+                  : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
               <FileText className="w-4 h-4" /> Activity Feed
-              <span className="bg-pink-100 text-pink-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5">
+              <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full ml-0.5">
                 {filteredNotes.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab("clients")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "clients"
-                  ? "border-pink-600 text-pink-700"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
+                  ? "border-rose-600 text-rose-700"
+                  : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
               <Users className="w-4 h-4" /> Client Directory
-              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5">
+              <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full ml-0.5">
                 {clientsList.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab("staff")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "staff"
-                  ? "border-pink-600 text-pink-700"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
+                  ? "border-rose-600 text-rose-700"
+                  : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
               <UserPlus className="w-4 h-4" /> Staff Management
-              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5">
+              <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full ml-0.5">
                 {staffList.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab("appointments")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "appointments"
-                  ? "border-pink-600 text-pink-700"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
+                  ? "border-rose-600 text-rose-700"
+                  : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
               <Calendar className="w-4 h-4" /> Shifts & Visits
-              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5">
+              <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full ml-0.5">
                 {appointmentsList.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab("audit")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-colors shrink-0 cursor-pointer ${
+              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "audit"
-                  ? "border-pink-600 text-pink-700"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 hover:border-zinc-300"
+                  ? "border-rose-600 text-rose-700"
+                  : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
               <Activity className="w-4 h-4" /> Audit Logs
@@ -466,18 +442,18 @@ export function AdminDashboardClient({
         {activeTab === "activity" && (
           <div className="space-y-4">
             {/* Filter Bar */}
-            <div className="bg-white border border-pink-200/80 rounded-lg p-4 shadow-2xs no-print">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs no-print">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-semibold text-zinc-600 flex items-center gap-1">
-                    <Filter className="w-3.5 h-3.5 text-pink-600" /> Filters:
+                  <span className="text-xs font-semibold text-slate-600 flex items-center gap-1">
+                    <Filter className="w-3.5 h-3.5 text-slate-500" /> Filters:
                   </span>
 
                   {/* Filter: Category */}
                   <select
                     value={selectedCategoryFilter}
                     onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                    className="text-xs bg-zinc-50 border border-zinc-300 rounded-md py-1.5 px-2.5 text-zinc-800 focus:outline-hidden focus:ring-1 focus:ring-pink-500"
+                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-rose-500"
                   >
                     <option value="ALL">All Categories</option>
                     {Object.entries(NOTE_CATEGORIES).map(([key, val]) => (
@@ -491,7 +467,7 @@ export function AdminDashboardClient({
                   <select
                     value={selectedCaregiverFilter}
                     onChange={(e) => setSelectedCaregiverFilter(e.target.value)}
-                    className="text-xs bg-zinc-50 border border-zinc-300 rounded-md py-1.5 px-2.5 text-zinc-800 focus:outline-hidden focus:ring-1 focus:ring-pink-500"
+                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-rose-500"
                   >
                     <option value="ALL">All Caregivers</option>
                     {staffList.map((s) => (
@@ -505,7 +481,7 @@ export function AdminDashboardClient({
                   <select
                     value={selectedClientFilter}
                     onChange={(e) => setSelectedClientFilter(e.target.value)}
-                    className="text-xs bg-zinc-50 border border-zinc-300 rounded-md py-1.5 px-2.5 text-zinc-800 focus:outline-hidden focus:ring-1 focus:ring-pink-500"
+                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-rose-500"
                   >
                     <option value="ALL">All Clients</option>
                     {clientsList.map((c) => (
@@ -518,7 +494,7 @@ export function AdminDashboardClient({
 
                 {/* Search Bar */}
                 <div className="relative w-full lg:w-72">
-                  <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zinc-400">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                     <Search className="w-3.5 h-3.5" />
                   </div>
                   <input
@@ -526,7 +502,7 @@ export function AdminDashboardClient({
                     placeholder="Search clinical narratives..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full text-xs pl-8 pr-3 py-1.5 border border-zinc-300 rounded-md bg-zinc-50 focus:outline-hidden focus:ring-1 focus:ring-pink-500"
+                    className="w-full text-xs pl-9 pr-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500 text-slate-900 placeholder-slate-400"
                   />
                 </div>
               </div>
@@ -534,10 +510,10 @@ export function AdminDashboardClient({
 
             {/* Notes List */}
             {filteredNotes.length === 0 ? (
-              <div className="bg-white border border-zinc-200 rounded-lg p-10 text-center">
-                <FileText className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-                <h3 className="text-sm font-semibold text-zinc-800">No visit notes found</h3>
-                <p className="text-xs text-zinc-500 mt-1">
+              <div className="bg-white border border-slate-200/80 rounded-xl p-10 text-center shadow-xs">
+                <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <h3 className="text-sm font-semibold text-slate-800">No visit notes found</h3>
+                <p className="text-xs text-slate-500 mt-1">
                   Try adjusting your category or caregiver filters.
                 </p>
               </div>
@@ -548,35 +524,31 @@ export function AdminDashboardClient({
                   return (
                     <div
                       key={note.id}
-                      className={`bg-white rounded-lg border shadow-2xs transition-all ${
-                        isDischarge
-                          ? "border-pink-300 bg-linear-to-r from-pink-50/30 to-white"
-                          : "border-zinc-200"
-                      }`}
+                      className="bg-white rounded-xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all"
                     >
                       <div className="p-4 sm:p-5">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 pb-3 mb-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
                           <div className="flex items-center gap-2">
                             <span
-                              className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider ${
+                              className={`px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider ${
                                 isDischarge
-                                  ? "bg-rose-100 text-rose-800 border border-rose-200"
-                                  : "bg-pink-100 text-pink-800 border border-pink-200"
+                                  ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                                  : "bg-slate-100 text-slate-700 border border-slate-200/60"
                               }`}
                             >
                               {NOTE_CATEGORY_LABELS[note.category as NoteCategory] || note.category}
                             </span>
-                            <span className="text-xs font-bold text-zinc-900">
+                            <span className="text-xs font-bold text-slate-900">
                               {note.client?.firstName} {note.client?.lastName}
                             </span>
-                            <span className="text-xs text-zinc-400">•</span>
-                            <span className="text-xs text-zinc-600 font-medium">
+                            <span className="text-xs text-slate-300">•</span>
+                            <span className="text-xs text-slate-600 font-medium">
                               {note.employee?.name}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2 text-xs text-zinc-500">
-                            <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />
                             <span>
                               {new Date(note.createdAt).toLocaleDateString("en-US", {
                                 month: "short",
@@ -595,14 +567,14 @@ export function AdminDashboardClient({
                         {/* ADL Checklist Badges */}
                         {note.adlTasksCompleted && note.adlTasksCompleted.length > 0 && (
                           <div className="mb-3">
-                            <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                              <CheckSquare className="w-3.5 h-3.5 text-pink-600" /> ADLs Completed:
+                            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                              <CheckSquare className="w-3.5 h-3.5 text-slate-500" /> ADLs Completed:
                             </div>
                             <div className="flex flex-wrap gap-1.5">
                               {note.adlTasksCompleted.map((task: string, idx: number) => (
                                 <span
                                   key={idx}
-                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-800 border border-zinc-200"
+                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200/80"
                                 >
                                   {task}
                                 </span>
@@ -612,23 +584,23 @@ export function AdminDashboardClient({
                         )}
 
                         {/* Narrative Content */}
-                        <div className="text-xs text-zinc-800 leading-relaxed whitespace-pre-wrap font-sans bg-zinc-50/70 p-3 rounded-md border border-zinc-200/70">
+                        <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans bg-slate-50/70 p-3 rounded-lg border border-slate-200/60">
                           {note.content}
                         </div>
 
                         {/* Attached Summary (PDF or PNG) */}
                         {note.attachmentUrl && (
-                          <div className="mt-3 pt-2.5 border-t border-zinc-200/60 flex items-center justify-between">
+                          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
                             <div className="flex items-center gap-2 text-xs">
                               {note.attachmentType === "pdf" ? (
                                 <FileText className="w-4 h-4 text-rose-600 shrink-0" />
                               ) : (
-                                <ImageIcon className="w-4 h-4 text-pink-600 shrink-0" />
+                                <ImageIcon className="w-4 h-4 text-slate-600 shrink-0" />
                               )}
-                              <span className="font-semibold text-zinc-800 truncate max-w-xs">
+                              <span className="font-semibold text-slate-800 truncate max-w-xs">
                                 {note.attachmentName || "Attached Summary Document"}
                               </span>
-                              <span className="uppercase text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
+                              <span className="uppercase text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
                                 {note.attachmentType || "FILE"}
                               </span>
                             </div>
@@ -636,7 +608,7 @@ export function AdminDashboardClient({
                               href={getDocumentUrl(note.attachmentUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs font-semibold text-pink-600 hover:text-pink-800 underline"
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 underline"
                             >
                               <ExternalLink className="w-3 h-3" /> View / Download
                             </a>
@@ -648,6 +620,7 @@ export function AdminDashboardClient({
                 })}
               </div>
             )}
+
           </div>
         )}
 
@@ -658,15 +631,16 @@ export function AdminDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Client Directory
                 </h2>
+                <p className="text-xs text-slate-500">All registered patients and clinical care assignments.</p>
               </div>
               <button
                 onClick={() => setIsClientModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" /> Add New Client
+                <Plus className="w-4 h-4" /> Add New Client
               </button>
             </div>
 
@@ -674,37 +648,35 @@ export function AdminDashboardClient({
               {clientsList.map((client) => (
                 <div
                   key={client.id}
-                  className={`bg-white rounded-lg border p-5 shadow-2xs relative ${
-                    client.isActive ? "border-zinc-200" : "border-zinc-200 bg-zinc-50 opacity-75"
+                  className={`bg-white rounded-xl border p-5 shadow-xs relative transition-all ${
+                    client.isActive ? "border-slate-200/80 hover:border-slate-300" : "border-slate-200/50 bg-slate-50/50 opacity-75"
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold text-zinc-900">
+                        <h3 className="text-base font-bold text-slate-900">
                           {client.firstName} {client.lastName}
                         </h3>
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
                             client.primaryCareType === "PERSONAL_CARE"
-                              ? "bg-pink-100 text-pink-800 border border-pink-200"
-                              : client.primaryCareType === "RESPITE_CARE"
-                              ? "bg-purple-100 text-purple-800 border border-purple-200"
-                              : "bg-blue-100 text-blue-800 border border-blue-200"
+                              ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                              : "bg-slate-100 text-slate-700 border border-slate-200/60"
                           }`}
                         >
                           {CARE_TYPE_LABELS[client.primaryCareType as CareType] ||
                             client.primaryCareType}
                         </span>
                         {!client.isActive && (
-                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-zinc-200 text-zinc-600">
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">
                             Inactive
                           </span>
                         )}
                       </div>
 
                       {client.dateOfBirth && (
-                        <p className="text-xs text-zinc-500 mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5">
                           DOB: {client.dateOfBirth}
                         </p>
                       )}
@@ -712,28 +684,28 @@ export function AdminDashboardClient({
 
                     <button
                       onClick={() => openEditClient(client)}
-                      className="p-1 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                       title="Edit Client"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="mt-3 space-y-1.5 text-xs text-zinc-600">
+                  <div className="mt-3 space-y-1.5 text-xs text-slate-600">
                     {client.address && (
                       <div className="flex items-start gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                         <span>{client.address}</span>
                       </div>
                     )}
                     {client.phone && (
                       <div className="flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{client.phone}</span>
                       </div>
                     )}
                     {client.emergencyContact && (
-                      <div className="flex items-center gap-1.5 text-rose-700 bg-rose-50/70 p-2 rounded border border-rose-100 mt-2">
+                      <div className="flex items-center gap-1.5 text-rose-700 bg-rose-50/70 p-2.5 rounded-lg border border-rose-100 mt-2">
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
                         <span className="font-medium">
                           Emergency: {client.emergencyContact}{" "}
@@ -744,34 +716,34 @@ export function AdminDashboardClient({
                   </div>
 
                   {client.carePlanSummary && (
-                    <div className="mt-3 pt-3 border-t border-zinc-100">
-                      <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                    <div className="mt-3 pt-3 border-t border-slate-100">
+                      <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                         Care Plan
                       </div>
-                      <p className="text-xs text-zinc-700 mt-1 leading-relaxed bg-zinc-50 p-2.5 rounded border border-zinc-200/60">
+                      <p className="text-xs text-slate-700 mt-1 leading-relaxed bg-slate-50/70 p-2.5 rounded-lg border border-slate-200/60">
                         {client.carePlanSummary}
                       </p>
                     </div>
                   )}
 
-                  <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs">
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-zinc-500">Caregiver:</span>
-                      <span className="font-semibold text-pink-700">
+                      <span className="text-slate-500">Caregiver:</span>
+                      <span className="font-semibold text-slate-800">
                         {client.assignedEmployee?.name || "Unassigned"}
                       </span>
                     </div>
-                    <div className="text-[11px] text-zinc-400">
+                    <div className="text-[11px] text-slate-400">
                       {client.notesCount || 0} Notes • {client.appointmentsCount || 0} Shifts
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-zinc-100 flex items-center justify-end">
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-end">
                     <a
                       href={`/clients/${client.id}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      <ClipboardList className="w-3.5 h-3.5" />
+                      <ClipboardList className="w-3.5 h-3.5 text-slate-500" />
                       <span>View Full Profile & History</span>
                     </a>
                   </div>
@@ -788,21 +760,22 @@ export function AdminDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Caregivers & Staff
                 </h2>
+                <p className="text-xs text-slate-500">Manage caregiver credentials, roles, and client caseloads.</p>
               </div>
               <button
                 onClick={() => setIsStaffModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
-                <UserPlus className="w-3.5 h-3.5" /> Provision New Staff
+                <UserPlus className="w-4 h-4" /> Provision New Staff
               </button>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-lg overflow-x-auto shadow-2xs">
-              <table className="min-w-[620px] divide-y divide-zinc-200 text-left text-xs">
-                <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase tracking-wider">
+            <div className="bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
+              <table className="min-w-[620px] divide-y divide-slate-200 text-left text-xs">
+                <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Staff Member</th>
                     <th className="px-4 py-3">Role</th>
@@ -812,17 +785,17 @@ export function AdminDashboardClient({
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200">
+                <tbody className="divide-y divide-slate-100">
                   {staffList.map((staff) => (
-                    <tr key={staff.id} className="hover:bg-zinc-50/70 transition-colors">
-                      <td className="px-4 py-3 font-semibold text-zinc-900">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-md bg-pink-100 text-pink-800 font-bold flex items-center justify-center text-xs">
+                    <tr key={staff.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-4 py-3 font-semibold text-slate-900">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">
                             {staff.name.charAt(0)}
                           </div>
                           <div>
-                            <div>{staff.name}</div>
-                            <div className="text-[11px] text-zinc-400 font-normal">
+                            <div className="text-slate-900 font-semibold">{staff.name}</div>
+                            <div className="text-[11px] text-slate-400 font-normal">
                               {staff.email}
                             </div>
                           </div>
@@ -833,19 +806,19 @@ export function AdminDashboardClient({
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
                             staff.role === "ADMIN"
-                              ? "bg-rose-100 text-rose-800 border border-rose-200"
-                              : "bg-zinc-100 text-zinc-800 border border-zinc-200"
+                              ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                              : "bg-slate-100 text-slate-700 border border-slate-200/60"
                           }`}
                         >
                           {staff.role}
                         </span>
                       </td>
 
-                      <td className="px-4 py-3 text-zinc-600">
-                        {staff.phone || <span className="text-zinc-400">N/A</span>}
+                      <td className="px-4 py-3 text-slate-600">
+                        {staff.phone || <span className="text-slate-400">N/A</span>}
                       </td>
 
-                      <td className="px-4 py-3 font-medium text-zinc-700">
+                      <td className="px-4 py-3 font-medium text-slate-700">
                         {staff.assignedClientsCount || 0} Patients
                       </td>
 
@@ -855,7 +828,7 @@ export function AdminDashboardClient({
                             <CheckCircle className="w-3.5 h-3.5" /> Active
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-zinc-400 font-semibold text-xs">
+                          <span className="inline-flex items-center gap-1 text-slate-400 font-semibold text-xs">
                             Suspended
                           </span>
                         )}
@@ -866,10 +839,10 @@ export function AdminDashboardClient({
                           <button
                             onClick={() => handleToggleStaff(staff.id, staff.isActive)}
                             disabled={isPending}
-                            className={`text-xs px-2.5 py-1 rounded font-medium transition-colors ${
+                            className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
                               staff.isActive
-                                ? "text-rose-700 hover:bg-rose-50 border border-rose-200"
-                                : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200"
+                                ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
+                                : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
                             }`}
                           >
                             {staff.isActive ? "Deactivate" : "Activate"}
@@ -891,21 +864,22 @@ export function AdminDashboardClient({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Scheduled Shifts
                 </h2>
+                <p className="text-xs text-slate-500">Upcoming visits, discharge transitions, and caregiver shifts.</p>
               </div>
               <button
                 onClick={() => setIsAppointmentModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
-                <Calendar className="w-3.5 h-3.5" /> Schedule New Shift
+                <Calendar className="w-4 h-4" /> Schedule New Shift
               </button>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-lg overflow-x-auto shadow-2xs">
-              <table className="min-w-[680px] divide-y divide-zinc-200 text-left text-xs">
-                <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase tracking-wider">
+            <div className="bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
+              <table className="min-w-[680px] divide-y divide-slate-200 text-left text-xs">
+                <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Scheduled Time</th>
                     <th className="px-4 py-3">Patient</th>
@@ -916,10 +890,10 @@ export function AdminDashboardClient({
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200">
+                <tbody className="divide-y divide-slate-100">
                   {appointmentsList.map((appt) => (
-                    <tr key={appt.id} className="hover:bg-zinc-50/70 transition-colors">
-                      <td className="px-4 py-3 font-semibold text-zinc-900">
+                    <tr key={appt.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-4 py-3 font-semibold text-slate-900">
                         <div>
                           {new Date(appt.startTime).toLocaleDateString("en-US", {
                             month: "short",
@@ -927,7 +901,7 @@ export function AdminDashboardClient({
                             year: "numeric",
                           })}
                         </div>
-                        <div className="text-[11px] text-zinc-500 font-normal">
+                        <div className="text-[11px] text-slate-500 font-normal">
                           {new Date(appt.startTime).toLocaleTimeString("en-US", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -940,21 +914,21 @@ export function AdminDashboardClient({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 font-medium text-zinc-900">
+                      <td className="px-4 py-3 font-medium text-slate-900">
                         {appt.client?.firstName} {appt.client?.lastName}
                       </td>
 
-                      <td className="px-4 py-3 text-pink-700 font-medium">
+                      <td className="px-4 py-3 text-slate-700 font-medium">
                         {appt.employee?.name}
                       </td>
 
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
                           {APPOINTMENT_TYPE_LABELS[appt.type as AppointmentType] || appt.type}
                         </span>
                       </td>
 
-                      <td className="px-4 py-3 text-zinc-500 max-w-xs truncate">
+                      <td className="px-4 py-3 text-slate-500 max-w-xs truncate">
                         {appt.location || "Client residence"}
                       </td>
 
@@ -962,10 +936,10 @@ export function AdminDashboardClient({
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                             appt.status === "COMPLETED"
-                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
                               : appt.status === "SCHEDULED"
-                              ? "bg-blue-100 text-blue-800 border border-blue-200"
-                              : "bg-rose-100 text-rose-800 border border-rose-200"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                              : "bg-slate-100 text-slate-600 border border-slate-200/60"
                           }`}
                         >
                           {APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus] ||
@@ -978,13 +952,13 @@ export function AdminDashboardClient({
                           <div className="inline-flex gap-1.5">
                             <button
                               onClick={() => handleUpdateStatus(appt.id, "COMPLETED")}
-                              className="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded text-[11px] font-semibold"
+                              className="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/70 rounded-md text-[11px] font-semibold cursor-pointer"
                             >
                               Complete
                             </button>
                             <button
                               onClick={() => handleUpdateStatus(appt.id, "CANCELLED")}
-                              className="px-2 py-1 bg-zinc-100 text-zinc-600 hover:bg-zinc-200 rounded text-[11px]"
+                              className="px-2.5 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-md text-[11px] cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -1005,14 +979,15 @@ export function AdminDashboardClient({
         {activeTab === "audit" && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                 Audit Trail
               </h2>
+              <p className="text-xs text-slate-500">Immutable HIPAA compliance log of staff access and clinical changes.</p>
             </div>
 
-            <div className="bg-white border border-zinc-200 rounded-lg overflow-x-auto shadow-2xs">
-              <table className="min-w-[600px] divide-y divide-zinc-200 text-left text-xs">
-                <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase tracking-wider">
+            <div className="bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
+              <table className="min-w-[600px] divide-y divide-slate-200 text-left text-xs">
+                <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Timestamp</th>
                     <th className="px-4 py-3">User</th>
@@ -1021,18 +996,18 @@ export function AdminDashboardClient({
                     <th className="px-4 py-3">Entity ID</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 font-mono text-[11px]">
+                <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                   {auditLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-zinc-50/70">
-                      <td className="px-4 py-2.5 text-zinc-500 whitespace-nowrap">
+                    <tr key={log.id} className="hover:bg-slate-50/60">
+                      <td className="px-4 py-2.5 text-slate-500 whitespace-nowrap">
                         {new Date(log.createdAt).toLocaleString()}
                       </td>
-                      <td className="px-4 py-2.5 font-sans font-medium text-zinc-900">
+                      <td className="px-4 py-2.5 font-sans font-medium text-slate-900">
                         {log.userName} ({log.userRole})
                       </td>
-                      <td className="px-4 py-2.5 text-pink-700 font-bold">{log.action}</td>
-                      <td className="px-4 py-2.5 text-zinc-600">{log.entityType}</td>
-                      <td className="px-4 py-2.5 text-zinc-400">{log.entityId}</td>
+                      <td className="px-4 py-2.5 text-rose-600 font-bold">{log.action}</td>
+                      <td className="px-4 py-2.5 text-slate-600">{log.entityType}</td>
+                      <td className="px-4 py-2.5 text-slate-400">{log.entityId}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1046,72 +1021,75 @@ export function AdminDashboardClient({
       {/* MODAL 1: ADD STAFF MEMBER                                          */}
       {/* =================================================================== */}
       {isStaffModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-lg border border-pink-200 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsStaffModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
                 <UserPlus className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-zinc-900">Provision Staff Account</h3>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">Provision Staff Account</h3>
+                <p className="text-xs text-slate-500">Create new caregiver or administrator credentials</p>
+              </div>
             </div>
 
             {formError && (
-              <div className="mb-4 p-2.5 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800">
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-medium text-rose-800">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleCreateStaff} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateStaff} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Full Name</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Full Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Martha Jenkins"
                   value={staffForm.name}
                   onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })}
-                  className="w-full border border-zinc-300 rounded px-3 py-2 focus:ring-1 focus:ring-pink-500"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Work Email</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Work Email</label>
                 <input
                   type="email"
                   required
                   placeholder="name@glamourhomecare.org"
                   value={staffForm.email}
                   onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
-                  className="w-full border border-zinc-300 rounded px-3 py-2 focus:ring-1 focus:ring-pink-500"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Phone Number</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Phone Number</label>
                 <input
                   type="tel"
                   placeholder="(540) 555-0100"
                   value={staffForm.phone}
                   onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
-                  className="w-full border border-zinc-300 rounded px-3 py-2 focus:ring-1 focus:ring-pink-500"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Role</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Role</label>
                 <select
                   value={staffForm.role}
                   onChange={(e) =>
                     setStaffForm({ ...staffForm, role: e.target.value as "ADMIN" | "EMPLOYEE" })
                   }
-                  className="w-full border border-zinc-300 rounded px-3 py-2 focus:ring-1 focus:ring-pink-500 bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 >
                   <option value="EMPLOYEE">Caregiver (Employee - Restricted Row Isolation)</option>
                   <option value="ADMIN">RN Administrator (Full Agency Access)</option>
@@ -1119,7 +1097,7 @@ export function AdminDashboardClient({
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Temporary Initial Password
                 </label>
                 <input
@@ -1128,22 +1106,22 @@ export function AdminDashboardClient({
                   placeholder="Minimum 8 characters"
                   value={staffForm.tempPassword}
                   onChange={(e) => setStaffForm({ ...staffForm, tempPassword: e.target.value })}
-                  className="w-full border border-zinc-300 rounded px-3 py-2 focus:ring-1 focus:ring-pink-500"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
-              <div className="pt-3 flex justify-end gap-2">
+              <div className="pt-2 flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsStaffModalOpen(false)}
-                  className="px-3 py-2 border border-zinc-300 rounded text-zinc-700 hover:bg-zinc-50"
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded font-semibold disabled:opacity-50"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
                 >
                   {isPending ? "Creating..." : "Create Account"}
                 </button>
@@ -1157,78 +1135,81 @@ export function AdminDashboardClient({
       {/* MODAL 2: ADD NEW CLIENT                                            */}
       {/* =================================================================== */}
       {isClientModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-lg border border-pink-200 max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsClientModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
                 <Users className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-zinc-900">Add New Client (Patient)</h3>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">Add New Client (Patient)</h3>
+                <p className="text-xs text-slate-500">Create client profile and assign care supervisor</p>
+              </div>
             </div>
 
             {formError && (
-              <div className="mb-4 p-2.5 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800">
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-medium text-rose-800">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleCreateClient} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateClient} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">First Name</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">First Name</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Eleanor"
                     value={clientForm.firstName}
                     onChange={(e) => setClientForm({ ...clientForm, firstName: e.target.value })}
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Last Name</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Last Name</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Vance"
                     value={clientForm.lastName}
                     onChange={(e) => setClientForm({ ...clientForm, lastName: e.target.value })}
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Date of Birth</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Date of Birth</label>
                   <input
                     type="date"
                     value={clientForm.dateOfBirth}
                     onChange={(e) => setClientForm({ ...clientForm, dateOfBirth: e.target.value })}
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Client Phone</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Client Phone</label>
                   <input
                     type="tel"
                     placeholder="(540) 555-0123"
                     value={clientForm.phone}
                     onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Residence Address (Fredericksburg, VA)
                 </label>
                 <input
@@ -1236,13 +1217,13 @@ export function AdminDashboardClient({
                   placeholder="Street, City, VA Zip"
                   value={clientForm.address}
                   onChange={(e) => setClientForm({ ...clientForm, address: e.target.value })}
-                  className="w-full border border-zinc-300 rounded px-3 py-2"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Emergency Contact Name
                   </label>
                   <input
@@ -1252,11 +1233,11 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientForm({ ...clientForm, emergencyContact: e.target.value })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Emergency Phone
                   </label>
                   <input
@@ -1266,14 +1247,14 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientForm({ ...clientForm, emergencyPhone: e.target.value })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Primary Care Type
                   </label>
                   <select
@@ -1284,7 +1265,7 @@ export function AdminDashboardClient({
                         primaryCareType: e.target.value as CareType,
                       })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2 bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   >
                     {Object.entries(CARE_TYPES).map(([k, v]) => (
                       <option key={k} value={v}>
@@ -1295,7 +1276,7 @@ export function AdminDashboardClient({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Assign to Caregiver
                   </label>
                   <select
@@ -1303,7 +1284,7 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientForm({ ...clientForm, assignedEmployeeId: e.target.value })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2 bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   >
                     {staffList.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -1315,7 +1296,7 @@ export function AdminDashboardClient({
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Care Plan & Clinical Overview
                 </label>
                 <textarea
@@ -1325,22 +1306,22 @@ export function AdminDashboardClient({
                   onChange={(e) =>
                     setClientForm({ ...clientForm, carePlanSummary: e.target.value })
                   }
-                  className="w-full border border-zinc-300 rounded px-3 py-2"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
-              <div className="pt-3 flex justify-end gap-2">
+              <div className="pt-2 flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsClientModalOpen(false)}
-                  className="px-3 py-2 border border-zinc-300 rounded text-zinc-700 hover:bg-zinc-50"
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded font-semibold disabled:opacity-50"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
                 >
                   {isPending ? "Saving..." : "Add Client"}
                 </button>
@@ -1354,34 +1335,37 @@ export function AdminDashboardClient({
       {/* MODAL 3: EDIT CLIENT                                               */}
       {/* =================================================================== */}
       {isEditClientModalOpen && clientToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-lg border border-pink-200 max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsEditClientModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
                 <Edit className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-zinc-900">
-                Edit Client: {clientToEdit.firstName} {clientToEdit.lastName}
-              </h3>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">
+                  Edit Client: {clientToEdit.firstName} {clientToEdit.lastName}
+                </h3>
+                <p className="text-xs text-slate-500">Update medical care plan, status, and assignment</p>
+              </div>
             </div>
 
             {formError && (
-              <div className="mb-4 p-2.5 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800">
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-medium text-rose-800">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleSaveEditClient} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveEditClient} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">First Name</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">First Name</label>
                   <input
                     type="text"
                     required
@@ -1389,11 +1373,11 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientToEdit({ ...clientToEdit, firstName: e.target.value })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Last Name</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Last Name</label>
                   <input
                     type="text"
                     required
@@ -1401,24 +1385,24 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientToEdit({ ...clientToEdit, lastName: e.target.value })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Address</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Address</label>
                 <input
                   type="text"
                   value={clientToEdit.address || ""}
                   onChange={(e) => setClientToEdit({ ...clientToEdit, address: e.target.value })}
-                  className="w-full border border-zinc-300 rounded px-3 py-2"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Care Type</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Care Type</label>
                   <select
                     value={clientToEdit.primaryCareType}
                     onChange={(e) =>
@@ -1427,7 +1411,7 @@ export function AdminDashboardClient({
                         primaryCareType: e.target.value as CareType,
                       })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2 bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   >
                     {Object.entries(CARE_TYPES).map(([k, v]) => (
                       <option key={k} value={v}>
@@ -1438,7 +1422,7 @@ export function AdminDashboardClient({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Assigned Caregiver
                   </label>
                   <select
@@ -1449,7 +1433,7 @@ export function AdminDashboardClient({
                         assignedEmployeeId: e.target.value,
                       })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2 bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   >
                     {staffList.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -1461,7 +1445,7 @@ export function AdminDashboardClient({
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Care Plan Summary</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Care Plan Summary</label>
                 <textarea
                   rows={3}
                   value={clientToEdit.carePlanSummary || ""}
@@ -1471,11 +1455,11 @@ export function AdminDashboardClient({
                       carePlanSummary: e.target.value,
                     })
                   }
-                  className="w-full border border-zinc-300 rounded px-3 py-2"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2.5 pt-1">
                 <input
                   type="checkbox"
                   id="clientIsActive"
@@ -1483,25 +1467,25 @@ export function AdminDashboardClient({
                   onChange={(e) =>
                     setClientToEdit({ ...clientToEdit, isActive: e.target.checked })
                   }
-                  className="rounded text-pink-600 focus:ring-pink-500"
+                  className="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4"
                 />
-                <label htmlFor="clientIsActive" className="font-semibold text-zinc-700">
+                <label htmlFor="clientIsActive" className="text-xs font-medium text-slate-700">
                   Client is currently active and receiving care
                 </label>
               </div>
 
-              <div className="pt-3 flex justify-end gap-2">
+              <div className="pt-2 flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsEditClientModalOpen(false)}
-                  className="px-3 py-2 border border-zinc-300 rounded text-zinc-700 hover:bg-zinc-50"
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded font-semibold disabled:opacity-50"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
                 >
                   {isPending ? "Updating..." : "Save Changes"}
                 </button>
@@ -1515,31 +1499,34 @@ export function AdminDashboardClient({
       {/* MODAL 4: SCHEDULE SHIFT / APPOINTMENT                              */}
       {/* =================================================================== */}
       {isAppointmentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-lg border border-pink-200 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsAppointmentModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
                 <Calendar className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-zinc-900">Schedule Caregiver Shift</h3>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">Schedule Caregiver Shift</h3>
+                <p className="text-xs text-slate-500">Assign shift time, client, and visit goals</p>
+              </div>
             </div>
 
             {formError && (
-              <div className="mb-4 p-2.5 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800">
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-medium text-rose-800">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleCreateAppointment} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateAppointment} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Select Client</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Select Client</label>
                 <select
                   value={appointmentForm.clientId}
                   onChange={(e) => {
@@ -1552,7 +1539,7 @@ export function AdminDashboardClient({
                       location: c?.address || "",
                     });
                   }}
-                  className="w-full border border-zinc-300 rounded px-3 py-2 bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 >
                   {clientsList.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1563,13 +1550,13 @@ export function AdminDashboardClient({
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Assign Caregiver</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Assign Caregiver</label>
                 <select
                   value={appointmentForm.employeeId}
                   onChange={(e) =>
                     setAppointmentForm({ ...appointmentForm, employeeId: e.target.value })
                   }
-                  className="w-full border border-zinc-300 rounded px-3 py-2 bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 >
                   {staffList.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -1580,7 +1567,7 @@ export function AdminDashboardClient({
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Visit / Shift Type</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Visit / Shift Type</label>
                 <select
                   value={appointmentForm.type}
                   onChange={(e) =>
@@ -1589,7 +1576,7 @@ export function AdminDashboardClient({
                       type: e.target.value as AppointmentType,
                     })
                   }
-                  className="w-full border border-zinc-300 rounded px-3 py-2 bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 >
                   {Object.entries(APPOINTMENT_TYPES).map(([k, v]) => (
                     <option key={k} value={v}>
@@ -1601,7 +1588,7 @@ export function AdminDashboardClient({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">Start Time</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Start Time</label>
                   <input
                     type="datetime-local"
                     required
@@ -1609,24 +1596,24 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setAppointmentForm({ ...appointmentForm, startTime: e.target.value })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">End Time</label>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">End Time</label>
                   <input
                     type="datetime-local"
                     value={appointmentForm.endTime}
                     onChange={(e) =>
                       setAppointmentForm({ ...appointmentForm, endTime: e.target.value })
                     }
-                    className="w-full border border-zinc-300 rounded px-3 py-2"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Location / Address</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Location / Address</label>
                 <input
                   type="text"
                   placeholder="e.g. 104 Washington Ave, Fredericksburg, VA"
@@ -1634,12 +1621,12 @@ export function AdminDashboardClient({
                   onChange={(e) =>
                     setAppointmentForm({ ...appointmentForm, location: e.target.value })
                   }
-                  className="w-full border border-zinc-300 rounded px-3 py-2"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Visit Objectives & Notes
                 </label>
                 <textarea
@@ -1649,22 +1636,22 @@ export function AdminDashboardClient({
                   onChange={(e) =>
                     setAppointmentForm({ ...appointmentForm, summary: e.target.value })
                   }
-                  className="w-full border border-zinc-300 rounded px-3 py-2"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
                 />
               </div>
 
-              <div className="pt-3 flex justify-end gap-2">
+              <div className="pt-2 flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsAppointmentModalOpen(false)}
-                  className="px-3 py-2 border border-zinc-300 rounded text-zinc-700 hover:bg-zinc-50"
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded font-semibold disabled:opacity-50"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
                 >
                   {isPending ? "Scheduling..." : "Schedule Shift"}
                 </button>

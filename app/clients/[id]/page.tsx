@@ -35,22 +35,22 @@ export default async function ClientDetailPage({
   if (!data.success) {
     const isForbidden = data.error?.includes("Access Denied");
     return (
-      <div className="min-h-screen bg-zinc-50 flex flex-col">
+      <div className="min-h-screen bg-slate-50 flex flex-col">
         <Navbar user={session.user} />
         <div className="max-w-xl mx-auto px-4 py-16 text-center">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 mb-4">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mb-4">
             <ShieldAlert className="w-7 h-7" />
           </div>
-          <h1 className="text-xl font-bold text-zinc-900">
+          <h1 className="text-xl font-bold text-slate-900">
             {isForbidden ? "Restricted Patient Record" : "Patient Record Not Found"}
           </h1>
-          <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
+          <p className="text-xs text-slate-600 mt-2 leading-relaxed">
             {data.error || "The requested client record could not be located."}
           </p>
           <div className="mt-6">
             <Link
               href={session.user.role === "ADMIN" ? "/admin" : "/app"}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Return to {session.user.role === "ADMIN" ? "Admin Portal" : "Caregiver Portal"}</span>
@@ -62,7 +62,7 @@ export default async function ClientDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar user={session.user} />
       <ClientDetailView
         client={data.client}

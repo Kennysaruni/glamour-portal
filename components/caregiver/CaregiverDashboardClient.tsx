@@ -233,47 +233,51 @@ export function CaregiverDashboardClient({
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 pb-20">
-      {/* Top Mobile Caregiver Header */}
-      <div className="bg-white border-b border-pink-200/70 shadow-2xs">
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* Caregiver Portal Sub-Header - Clean & Functional */}
+      <div className="bg-white border-b border-slate-200/80 shadow-2xs">
         <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-xl font-bold text-zinc-900 leading-tight">
-                Welcome, {caregiver.name}
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                Caregiver Field Portal
               </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Clinical visit documentation, ADL verification, and patient shifts.
+              </p>
             </div>
-            <div className="text-right">
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-pink-100 text-pink-800 border border-pink-200">
-                {clients.length} Assigned Clients
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
+                <Users className="w-3.5 h-3.5 text-slate-500" />
+                <span>{clients.length} Assigned {clients.length === 1 ? "Patient" : "Patients"}</span>
               </span>
             </div>
           </div>
 
-          {/* Mobile Bottom-Bar / Sub-Tabs Navigation */}
-          <div className="grid grid-cols-4 gap-1.5 mt-4 bg-zinc-100 p-1 rounded-lg border border-zinc-200">
+          {/* Sub-Tabs Navigation */}
+          <div className="grid grid-cols-4 gap-1.5 mt-4 bg-slate-100/80 p-1 rounded-xl border border-slate-200/70">
             <button
               onClick={() => setActiveTab("schedule")}
-              className={`py-2 text-xs font-semibold rounded-md transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer ${
+              className={`py-2.5 px-2 text-xs font-semibold rounded-lg transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer min-h-[44px] ${
                 activeTab === "schedule"
-                  ? "bg-white text-pink-700 shadow-2xs font-bold"
-                  : "text-zinc-600 hover:text-zinc-900"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold border border-slate-200/60"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Calendar className="w-4 h-4 text-pink-600 shrink-0" />
+              <Calendar className={`w-4 h-4 shrink-0 ${activeTab === "schedule" ? "text-rose-600" : "text-slate-500"}`} />
               <span>Schedule</span>
             </button>
 
             <button
               onClick={() => setActiveTab("clients")}
-              className={`py-2 text-xs font-semibold rounded-md transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer ${
+              className={`py-2.5 px-2 text-xs font-semibold rounded-lg transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer min-h-[44px] ${
                 activeTab === "clients"
-                  ? "bg-white text-pink-700 shadow-2xs font-bold"
-                  : "text-zinc-600 hover:text-zinc-900"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold border border-slate-200/60"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Users className="w-4 h-4 text-pink-600 shrink-0" />
-              <span>My Clients</span>
+              <Users className={`w-4 h-4 shrink-0 ${activeTab === "clients" ? "text-rose-600" : "text-slate-500"}`} />
+              <span>My Patients</span>
             </button>
 
             <button
@@ -281,10 +285,10 @@ export function CaregiverDashboardClient({
                 setActiveTab("log");
                 setFormStatus(null);
               }}
-              className={`py-2 text-xs font-semibold rounded-md transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer ${
+              className={`py-2.5 px-2 text-xs font-semibold rounded-lg transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer min-h-[44px] ${
                 activeTab === "log"
-                  ? "bg-pink-600 text-white shadow-xs font-bold"
-                  : "text-pink-700 hover:text-pink-900"
+                  ? "bg-rose-600 text-white shadow-xs font-bold"
+                  : "text-rose-700 hover:text-rose-900 hover:bg-rose-50/50"
               }`}
             >
               <CheckSquare className="w-4 h-4 shrink-0" />
@@ -293,13 +297,13 @@ export function CaregiverDashboardClient({
 
             <button
               onClick={() => setActiveTab("history")}
-              className={`py-2 text-xs font-semibold rounded-md transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer ${
+              className={`py-2.5 px-2 text-xs font-semibold rounded-lg transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer min-h-[44px] ${
                 activeTab === "history"
-                  ? "bg-white text-pink-700 shadow-2xs font-bold"
-                  : "text-zinc-600 hover:text-zinc-900"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold border border-slate-200/60"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <ClipboardList className="w-4 h-4 text-pink-600 shrink-0" />
+              <ClipboardList className={`w-4 h-4 shrink-0 ${activeTab === "history" ? "text-rose-600" : "text-slate-500"}`} />
               <span>Past Logs</span>
             </button>
           </div>
@@ -314,19 +318,22 @@ export function CaregiverDashboardClient({
         {activeTab === "schedule" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
-                Upcoming Shifts
-              </h2>
-              <span className="text-xs text-zinc-500">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  Upcoming Shifts
+                </h2>
+                <p className="text-xs text-slate-500">Your scheduled visits and patient assignments.</p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200/70">
                 {appointments.filter((a) => a.status === "SCHEDULED").length} Upcoming
               </span>
             </div>
 
             {appointments.length === 0 ? (
-              <div className="bg-white border border-zinc-200 rounded-lg p-8 text-center">
-                <Calendar className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-zinc-700">No shifts scheduled</p>
-                <p className="text-[11px] text-zinc-500 mt-1">
+              <div className="bg-white border border-slate-200/80 rounded-xl p-8 text-center shadow-xs">
+                <Calendar className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-slate-800">No shifts scheduled</p>
+                <p className="text-[11px] text-slate-500 mt-1">
                   Your supervisor will post upcoming visits to your calendar.
                 </p>
               </div>
@@ -338,20 +345,20 @@ export function CaregiverDashboardClient({
                   return (
                     <div
                       key={appt.id}
-                      className={`bg-white border rounded-lg p-4 shadow-2xs transition-all ${
+                      className={`bg-white border rounded-xl p-4 sm:p-5 shadow-xs transition-all ${
                         isScheduled
-                          ? "border-pink-300 ring-1 ring-pink-100"
-                          : "border-zinc-200 opacity-80"
+                          ? "border-slate-200/90 hover:border-slate-300"
+                          : "border-slate-200/60 opacity-80"
                       }`}
                     >
-                      <div className="flex items-start justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2">
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                                 isDischarge
-                                  ? "bg-rose-100 text-rose-800 border border-rose-200"
-                                  : "bg-pink-100 text-pink-800 border border-pink-200"
+                                  ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                                  : "bg-slate-100 text-slate-700 border border-slate-200/60"
                               }`}
                             >
                               {APPOINTMENT_TYPE_LABELS[appt.type as AppointmentType] || appt.type}
@@ -359,8 +366,8 @@ export function CaregiverDashboardClient({
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                                 appt.status === "COMPLETED"
-                                  ? "bg-emerald-100 text-emerald-800"
-                                  : "bg-blue-100 text-blue-800"
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                                  : "bg-amber-50 text-amber-700 border border-amber-200/60"
                               }`}
                             >
                               {APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus] ||
@@ -368,12 +375,12 @@ export function CaregiverDashboardClient({
                             </span>
                           </div>
 
-                          <h3 className="text-base font-bold text-zinc-900 mt-1.5">
+                          <h3 className="text-base font-bold text-slate-900 mt-1.5">
                             {appt.client?.firstName} {appt.client?.lastName}
                           </h3>
 
-                          <div className="text-xs text-zinc-600 font-medium mt-1 flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                          <div className="text-xs text-slate-600 font-medium mt-1 flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span>
                               {new Date(appt.startTime).toLocaleDateString("en-US", {
                                 weekday: "short",
@@ -394,13 +401,13 @@ export function CaregiverDashboardClient({
                           </div>
 
                           {appt.location && (
-                            <div className="text-xs text-zinc-500 mt-1 flex items-start gap-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
+                            <div className="text-xs text-slate-500 mt-1 flex items-start gap-1.5">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                               <a
                                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(appt.location)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-pink-700 hover:underline"
+                                className="text-slate-700 hover:text-rose-600 hover:underline"
                               >
                                 {appt.location}
                               </a>
@@ -411,7 +418,7 @@ export function CaregiverDashboardClient({
                         {isScheduled && (
                           <button
                             onClick={() => handleLogShiftVisit(appt)}
-                            className="inline-flex items-center gap-1 px-3 py-2 rounded-md bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
+                            className="inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0 cursor-pointer min-h-[38px]"
                           >
                             <span>Log Visit</span>
                             <ChevronRight className="w-3.5 h-3.5" />
@@ -420,8 +427,8 @@ export function CaregiverDashboardClient({
                       </div>
 
                       {appt.summary && (
-                        <div className="mt-3 pt-2.5 border-t border-zinc-100 text-xs text-zinc-700 bg-zinc-50/70 p-2 rounded">
-                          <span className="font-semibold text-zinc-500">Visit Summary: </span>
+                        <div className="mt-3 pt-2.5 border-t border-slate-100 text-xs text-slate-700 bg-slate-50/70 p-2.5 rounded-lg border border-slate-200/50">
+                          <span className="font-semibold text-slate-600">Visit Summary: </span>
                           {appt.summary}
                         </div>
                       )}
@@ -439,77 +446,85 @@ export function CaregiverDashboardClient({
         {activeTab === "clients" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
-                My Patients
-              </h2>
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  My Patients
+                </h2>
+                <p className="text-xs text-slate-500">Assigned patient list and clinical care plans.</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               {clients.map((client) => (
                 <div
                   key={client.id}
-                  className="bg-white border border-pink-200/80 rounded-lg p-4 sm:p-5 shadow-2xs"
+                  className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs hover:border-slate-300 transition-all"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 pb-3 mb-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base font-bold text-zinc-900">
-                          {client.firstName} {client.lastName}
-                        </h3>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-pink-100 text-pink-800 border border-pink-200 uppercase tracking-wider">
-                          {CARE_TYPE_LABELS[client.primaryCareType as CareType] ||
-                            client.primaryCareType}
-                        </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center shrink-0">
+                        {client.firstName[0]}{client.lastName[0]}
                       </div>
-                      {client.dateOfBirth && (
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                          Date of Birth: {client.dateOfBirth}
-                        </p>
-                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-bold text-slate-900">
+                            {client.firstName} {client.lastName}
+                          </h3>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200/60 uppercase tracking-wider">
+                            {CARE_TYPE_LABELS[client.primaryCareType as CareType] ||
+                              client.primaryCareType}
+                          </span>
+                        </div>
+                        {client.dateOfBirth && (
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            DOB: {client.dateOfBirth}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                       <a
                         href={`/clients/${client.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-semibold transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
                       >
-                        <ClipboardList className="w-3.5 h-3.5" /> Full History
+                        <ClipboardList className="w-3.5 h-3.5 text-slate-500" /> Full History
                       </a>
                       <button
                         onClick={() => {
                           setSelectedClientId(client.id);
                           setActiveTab("log");
                         }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-pink-300 text-pink-700 hover:bg-pink-50 text-xs font-semibold transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                       >
                         <CheckSquare className="w-3.5 h-3.5" /> Start Visit Note
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-zinc-700">
-                    <div>
-                      <span className="text-zinc-500 font-medium block">Residence:</span>
-                      <div className="flex items-center gap-1 text-zinc-900 mt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-pink-600 shrink-0" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
+                    <div className="bg-slate-50/70 border border-slate-200/60 rounded-lg p-2.5">
+                      <span className="text-slate-500 font-medium block">Residence:</span>
+                      <div className="flex items-center gap-1 text-slate-900 mt-0.5">
+                        <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                         <a
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address || "Fredericksburg, VA")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-pink-700 font-semibold hover:underline"
+                          className="text-slate-800 font-semibold hover:text-rose-600 hover:underline"
                         >
                           {client.address || "Fredericksburg, VA"}
                         </a>
                       </div>
                     </div>
 
-                    <div>
-                      <span className="text-zinc-500 font-medium block">Emergency Contact:</span>
-                      <div className="flex items-center gap-1 text-rose-700 font-semibold mt-0.5">
+                    <div className="bg-slate-50/70 border border-slate-200/60 rounded-lg p-2.5">
+                      <span className="text-slate-500 font-medium block">Emergency Contact:</span>
+                      <div className="flex items-center gap-1 text-slate-900 font-semibold mt-0.5">
                         <Phone className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                         <a
                           href={client.emergencyPhone ? `tel:${client.emergencyPhone}` : "#"}
-                          className="hover:underline"
+                          className="hover:underline text-rose-700"
                         >
                           {client.emergencyContact || "Emergency Contact"}{" "}
                           {client.emergencyPhone && `(${client.emergencyPhone})`}
@@ -519,11 +534,11 @@ export function CaregiverDashboardClient({
                   </div>
 
                   {client.carePlanSummary && (
-                    <div className="mt-3 pt-3 border-t border-zinc-100">
-                      <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider block mb-1">
+                    <div className="mt-3 pt-3 border-t border-slate-100">
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
                         Active Care Plan:
                       </span>
-                      <p className="text-xs text-zinc-800 bg-zinc-50 p-2.5 rounded border border-zinc-200/60 leading-relaxed">
+                      <p className="text-xs text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60 leading-relaxed">
                         {client.carePlanSummary}
                       </p>
                     </div>
@@ -538,11 +553,12 @@ export function CaregiverDashboardClient({
         {/* VIEW 3: LOG VISIT FORM (Touch-Optimized ADL Grid)                 */}
         {/* ================================================================= */}
         {activeTab === "log" && (
-          <div className="bg-white border border-pink-200/80 rounded-xl p-5 sm:p-7 shadow-xs">
-            <div className="border-b border-zinc-200 pb-3 mb-5">
-              <h2 className="text-lg font-bold text-zinc-900">
+          <div className="bg-white border border-slate-200/80 rounded-xl sm:rounded-2xl p-5 sm:p-7 shadow-xs">
+            <div className="border-b border-slate-100 pb-3 mb-5">
+              <h2 className="text-lg font-bold text-slate-900">
                 Log Care Visit
               </h2>
+              <p className="text-xs text-slate-500 mt-0.5">Document patient care, vital signs, completed ADLs, and clinical summaries.</p>
             </div>
 
             {formStatus?.success && (
@@ -562,14 +578,14 @@ export function CaregiverDashboardClient({
             <form onSubmit={handleSubmitVisit} className="space-y-5">
               {/* Select Client */}
               <div>
-                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
                   Patient *
                 </label>
                 <select
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
                   required
-                  className="w-full text-base sm:text-xs font-medium border border-zinc-300 rounded-lg py-3 sm:py-2.5 px-3 bg-zinc-50 text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500"
+                  className="w-full text-base sm:text-xs font-medium border border-slate-300 rounded-xl py-3 sm:py-2.5 px-3 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
                 >
                   {clients.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -581,7 +597,7 @@ export function CaregiverDashboardClient({
 
               {/* Select Category */}
               <div>
-                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
                   Category *
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -594,8 +610,8 @@ export function CaregiverDashboardClient({
                         onClick={() => setSelectedCategory(val as NoteCategory)}
                         className={`py-2 px-3 rounded-lg text-xs font-semibold text-center border transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-pink-600 text-white border-pink-600 shadow-2xs"
-                            : "bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100"
+                            ? "bg-rose-600 text-white border-rose-600 shadow-2xs"
+                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100/80"
                         }`}
                       >
                         {NOTE_CATEGORY_LABELS[val as NoteCategory]}
@@ -608,10 +624,10 @@ export function CaregiverDashboardClient({
               {/* ADL Checklist */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                     ADL Tasks Completed
                   </label>
-                  <span className="text-[11px] text-pink-600 font-semibold">
+                  <span className="text-[11px] text-rose-600 font-semibold">
                     {selectedAdlTasks.length} Selected
                   </span>
                 </div>
@@ -623,18 +639,18 @@ export function CaregiverDashboardClient({
                         key={task}
                         type="button"
                         onClick={() => toggleAdlTask(task)}
-                        className={`flex items-center justify-between p-3 rounded-lg border text-xs font-semibold transition-all cursor-pointer select-none active:scale-98 ${
+                        className={`flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer select-none active:scale-98 ${
                           isChecked
-                            ? "bg-pink-50/90 border-pink-400 text-pink-900 shadow-2xs"
-                            : "bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                            ? "bg-rose-50 border-rose-400 text-rose-900 ring-1 ring-rose-200 shadow-2xs"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                         }`}
                       >
                         <span>{task}</span>
                         <div
                           className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
                             isChecked
-                              ? "bg-pink-600 border-pink-600 text-white"
-                              : "border-zinc-300 bg-zinc-50"
+                              ? "bg-rose-600 border-rose-600 text-white"
+                              : "border-slate-300 bg-slate-50"
                           }`}
                         >
                           {isChecked && <CheckSquare className="w-3.5 h-3.5" />}
@@ -647,7 +663,7 @@ export function CaregiverDashboardClient({
 
               {/* File Upload Box (PDF or PNG) */}
               <div>
-                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5 flex items-center justify-between">
                   <span>Attach Summary Document (PDF or PNG)</span>
                   {uploadState === "completed" && (
                     <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 normal-case bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -657,12 +673,12 @@ export function CaregiverDashboardClient({
                 </label>
 
                 {uploadState === "uploading" ? (
-                  <div className="border border-pink-200 bg-pink-50/50 rounded-xl p-4 text-center">
-                    <Loader2 className="w-6 h-6 text-pink-600 animate-spin mx-auto mb-2" />
-                    <div className="text-xs font-bold text-pink-900">Uploading Document to Secure Storage...</div>
-                    <div className="text-[11px] text-zinc-500 mt-1">Encrypting and uploading {attachedFile?.name}</div>
-                    <div className="w-full bg-pink-100 h-1.5 rounded-full mt-3 overflow-hidden">
-                      <div className="bg-gradient-to-r from-pink-500 to-rose-600 h-full w-2/3 animate-pulse rounded-full" />
+                  <div className="border border-slate-200 bg-slate-50 rounded-xl p-4 text-center">
+                    <Loader2 className="w-6 h-6 text-rose-600 animate-spin mx-auto mb-2" />
+                    <div className="text-xs font-bold text-slate-900">Uploading Document to Secure Storage...</div>
+                    <div className="text-[11px] text-slate-500 mt-1">Encrypting and uploading {attachedFile?.name}</div>
+                    <div className="w-full bg-slate-200 h-1.5 rounded-full mt-3 overflow-hidden">
+                      <div className="bg-gradient-to-r from-rose-500 to-rose-600 h-full w-2/3 animate-pulse rounded-full" />
                     </div>
                   </div>
                 ) : uploadState === "completed" && uploadedDoc ? (
@@ -674,14 +690,14 @@ export function CaregiverDashboardClient({
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-zinc-900 truncate max-w-[180px] sm:max-w-xs">
+                            <span className="text-xs font-bold text-slate-900 truncate max-w-[180px] sm:max-w-xs">
                               {uploadedDoc.originalName}
                             </span>
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
                               <CheckCircle2 className="w-3 h-3 text-emerald-700" /> Complete
                             </span>
                           </div>
-                          <div className="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-2">
+                          <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
                             <span>{(uploadedDoc.size / (1024 * 1024)).toFixed(2)} MB</span>
                             <span>•</span>
                             <span className="text-emerald-700 font-medium">Encrypted & Ready</span>
@@ -694,9 +710,9 @@ export function CaregiverDashboardClient({
                           href={getDocumentUrl(uploadedDoc.url)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold shadow-2xs"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold shadow-2xs"
                         >
-                          <ExternalLink className="w-3 h-3 text-zinc-500" />
+                          <ExternalLink className="w-3 h-3 text-slate-500" />
                           <span>Preview</span>
                         </a>
                         <button
@@ -706,7 +722,7 @@ export function CaregiverDashboardClient({
                             setUploadedDoc(null);
                             setUploadState("idle");
                           }}
-                          className="p-1.5 text-zinc-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer"
                           title="Remove attached file"
                         >
                           <X className="w-4 h-4" />
@@ -715,18 +731,18 @@ export function CaregiverDashboardClient({
                     </div>
                   </div>
                 ) : (
-                  <div className="border-2 border-dashed border-pink-200 rounded-lg p-4 bg-pink-50/30 text-center hover:bg-pink-50/60 transition-colors relative">
+                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-5 bg-slate-50/50 text-center hover:bg-slate-50 transition-colors relative">
                     <input
                       type="file"
                       accept=".pdf,.png,application/pdf,image/png"
                       onChange={handleFileChange}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <Upload className="w-6 h-6 text-pink-600 mx-auto mb-1.5" />
-                    <div className="text-xs font-semibold text-zinc-800">
+                    <Upload className="w-6 h-6 text-slate-500 mx-auto mb-1.5" />
+                    <div className="text-xs font-semibold text-slate-800">
                       Tap to upload PDF summary or PNG photo
                     </div>
-                    <div className="text-[11px] text-zinc-500 mt-0.5">
+                    <div className="text-[11px] text-slate-500 mt-0.5">
                       Accepted: PDF (.pdf) or PNG (.png) • Max 15MB
                     </div>
                     {uploadError && (
@@ -740,7 +756,7 @@ export function CaregiverDashboardClient({
 
               {/* Visit Notes */}
               <div>
-                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
                   Visit Notes
                 </label>
                 <textarea
@@ -748,7 +764,7 @@ export function CaregiverDashboardClient({
                   placeholder="Enter visit notes, vitals, or clinical observations..."
                   value={narrativeContent}
                   onChange={(e) => setNarrativeContent(e.target.value)}
-                  className="w-full text-base sm:text-xs font-normal border border-zinc-300 rounded-lg p-3 bg-zinc-50 text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 placeholder-zinc-400 leading-relaxed font-sans"
+                  className="w-full text-base sm:text-xs font-normal border border-slate-300 rounded-xl p-3 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500 placeholder-slate-400 leading-relaxed font-sans"
                 />
               </div>
 
@@ -757,7 +773,7 @@ export function CaregiverDashboardClient({
                 <button
                   type="submit"
                   disabled={isPending || isUploading}
-                  className="w-full py-3.5 px-4 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-bold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+                  className="w-full py-3.5 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                 >
                   {isUploading ? (
                     <span>Uploading Summary Document...</span>
@@ -781,19 +797,22 @@ export function CaregiverDashboardClient({
         {activeTab === "history" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
-                Visit History
-              </h2>
-              <span className="text-xs text-zinc-500">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  Visit History
+                </h2>
+                <p className="text-xs text-slate-500">Historical visit logs submitted by you.</p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200/70">
                 {recentNotes.length} Notes
               </span>
             </div>
 
             {recentNotes.length === 0 ? (
-              <div className="bg-white border border-zinc-200 rounded-lg p-8 text-center">
-                <ClipboardList className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-zinc-700">No logs submitted yet</p>
-                <p className="text-[11px] text-zinc-500 mt-1">
+              <div className="bg-white border border-slate-200/80 rounded-xl p-8 text-center shadow-xs">
+                <ClipboardList className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-slate-800">No logs submitted yet</p>
+                <p className="text-[11px] text-slate-500 mt-1">
                   Use the "Log Visit" tab to record your first patient visit notes.
                 </p>
               </div>
@@ -802,18 +821,18 @@ export function CaregiverDashboardClient({
                 {recentNotes.map((note) => (
                   <div
                     key={note.id}
-                    className="bg-white border border-zinc-200 rounded-lg p-4 shadow-2xs"
+                    className="bg-white border border-slate-200/80 rounded-xl p-4 sm:p-5 shadow-xs"
                   >
-                    <div className="flex items-center justify-between border-b border-zinc-100 pb-2 mb-2">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-pink-100 text-pink-800 border border-pink-200">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/60">
                           {NOTE_CATEGORY_LABELS[note.category as NoteCategory] || note.category}
                         </span>
-                        <span className="text-xs font-bold text-zinc-900">
+                        <span className="text-xs font-bold text-slate-900">
                           {note.client?.firstName} {note.client?.lastName}
                         </span>
                       </div>
-                      <span className="text-[11px] text-zinc-400">
+                      <span className="text-[11px] text-slate-400">
                         {new Date(note.createdAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -827,11 +846,11 @@ export function CaregiverDashboardClient({
                     </div>
 
                     {note.adlTasksCompleted && note.adlTasksCompleted.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-2">
+                      <div className="flex flex-wrap gap-1 mb-2.5">
                         {note.adlTasksCompleted.map((task: string, i: number) => (
                           <span
                             key={i}
-                            className="text-[10px] bg-zinc-100 text-zinc-700 px-1.5 py-0.5 rounded border border-zinc-200 font-medium"
+                            className="text-[10px] bg-slate-50 text-slate-700 px-2 py-0.5 rounded border border-slate-200 font-medium"
                           >
                             {task}
                           </span>
@@ -839,20 +858,20 @@ export function CaregiverDashboardClient({
                       </div>
                     )}
 
-                    <p className="text-xs text-zinc-700 whitespace-pre-wrap leading-relaxed bg-zinc-50 p-2.5 rounded border border-zinc-200/60 font-sans">
+                    <p className="text-xs text-slate-800 whitespace-pre-wrap leading-relaxed bg-slate-50/70 p-3 rounded-lg border border-slate-200/60 font-sans">
                       {note.content}
                     </p>
 
                     {/* Attachment Card */}
                     {note.attachmentUrl && (
-                      <div className="mt-2.5 pt-2 border-t border-zinc-100 flex items-center justify-between">
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-xs">
                           {note.attachmentType === "pdf" ? (
-                            <FileText className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                            <FileText className="w-4 h-4 text-rose-600 shrink-0" />
                           ) : (
-                            <ImageIcon className="w-3.5 h-3.5 text-pink-600 shrink-0" />
+                            <ImageIcon className="w-4 h-4 text-slate-600 shrink-0" />
                           )}
-                          <span className="font-semibold text-zinc-800 truncate max-w-[180px] sm:max-w-xs">
+                          <span className="font-semibold text-slate-800 truncate max-w-[180px] sm:max-w-xs">
                             {note.attachmentName || "Attached Summary"}
                           </span>
                         </div>
@@ -860,7 +879,7 @@ export function CaregiverDashboardClient({
                           href={getDocumentUrl(note.attachmentUrl)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-pink-600 hover:text-pink-800"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700"
                         >
                           <ExternalLink className="w-3 h-3" /> View Document
                         </a>

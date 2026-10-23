@@ -35,7 +35,7 @@ export default async function AdminPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar user={session.user} />
       <AdminDashboardClient
         initialStaff={staff}

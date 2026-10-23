@@ -23,7 +23,7 @@ export default async function CaregiverPage() {
   const dashboardData = await getCaregiverDashboardData();
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar user={session.user} />
       <CaregiverDashboardClient initialData={dashboardData} />
     </div>

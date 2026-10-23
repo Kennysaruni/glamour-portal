@@ -30,14 +30,14 @@ export function GlamourLogo({
       {showText && (
         <div className="flex flex-col text-left">
           <div className="flex items-center gap-1">
-            <span className="font-bold tracking-tight text-zinc-900 text-base sm:text-lg leading-tight">
+            <span className="font-bold tracking-tight text-slate-900 text-base sm:text-lg leading-tight">
               GLAMOUR
             </span>
-            <span className="font-semibold tracking-tight text-pink-600 text-base sm:text-lg leading-tight">
+            <span className="font-semibold tracking-tight text-rose-600 text-base sm:text-lg leading-tight">
               HOMECARE
             </span>
           </div>
-          <span className="text-[10px] font-medium tracking-wide uppercase text-zinc-400">
+          <span className="text-[10px] font-medium tracking-wide uppercase text-slate-400">
             Staff Portal
           </span>
         </div>
