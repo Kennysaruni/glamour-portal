@@ -23,7 +23,9 @@ import {
   Image as ImageIcon,
   X,
   Plus,
+  Loader2,
 } from "lucide-react";
+import { getDocumentUrl } from "@/lib/document-utils";
 import {
   CARE_TYPE_LABELS,
   NOTE_CATEGORIES,
@@ -65,6 +67,14 @@ export function ClientDetailView({
   const [selectedAdlTasks, setSelectedAdlTasks] = useState<string[]>([]);
   const [narrativeContent, setNarrativeContent] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [uploadState, setUploadState] = useState<"idle" | "uploading" | "completed" | "error">("idle");
+  const [uploadedDoc, setUploadedDoc] = useState<{
+    url: string;
+    originalName: string;
+    fileType: string;
+    size: number;
+  } | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [formStatus, setFormStatus] = useState<{ success?: boolean; error?: string } | null>(null);
@@ -78,7 +88,7 @@ export function ClientDetailView({
     );
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -99,23 +109,55 @@ export function ClientDetailView({
     }
 
     setAttachedFile(file);
+    setUploadState("uploading");
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok || !uploadData.success) {
+        throw new Error(uploadData.error || "File upload failed.");
+      }
+
+      setUploadedDoc({
+        url: uploadData.url,
+        originalName: uploadData.originalName,
+        fileType: uploadData.fileType,
+        size: uploadData.size,
+      });
+      setUploadState("completed");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Upload error";
+      setUploadError(msg);
+      setUploadState("error");
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus(null);
 
-    if (!narrativeContent.trim() && !attachedFile) {
+    if (!narrativeContent.trim() && !attachedFile && !uploadedDoc) {
       setFormStatus({ error: "Please provide clinical notes or upload a PDF/PNG summary document." });
       return;
     }
 
-    startTransition(async () => {
-      let attachmentUrl: string | undefined;
-      let attachmentName: string | undefined;
-      let attachmentType: string | undefined;
+    if (uploadState === "uploading") {
+      setFormStatus({ error: "Please wait for document upload to complete before submitting." });
+      return;
+    }
 
-      if (attachedFile) {
+    startTransition(async () => {
+      let attachmentUrl: string | undefined = uploadedDoc?.url;
+      let attachmentName: string | undefined = uploadedDoc?.originalName;
+      let attachmentType: string | undefined = uploadedDoc?.fileType;
+
+      if (attachedFile && !uploadedDoc) {
         setIsUploading(true);
         try {
           const formData = new FormData();
@@ -157,6 +199,8 @@ export function ClientDetailView({
         setNarrativeContent("");
         setSelectedAdlTasks([]);
         setAttachedFile(null);
+        setUploadedDoc(null);
+        setUploadState("idle");
 
         // Prepend optimistic note
         const newNoteItem = {
@@ -470,7 +514,7 @@ export function ClientDetailView({
                               </div>
                             </div>
                             <a
-                              href={note.attachmentUrl}
+                              href={getDocumentUrl(note.attachmentUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-2xs transition-colors"
@@ -483,11 +527,11 @@ export function ClientDetailView({
                           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-pink-50/60 border border-pink-200/80 rounded-xl gap-3">
                             <div className="flex items-center gap-3">
                               <button
-                                onClick={() => setPreviewImageUrl(note.attachmentUrl)}
+                                onClick={() => setPreviewImageUrl(getDocumentUrl(note.attachmentUrl))}
                                 className="w-12 h-12 rounded-lg border border-pink-200 overflow-hidden bg-zinc-100 shrink-0 cursor-pointer relative group"
                               >
                                 <img
-                                  src={note.attachmentUrl}
+                                  src={getDocumentUrl(note.attachmentUrl)}
                                   alt="Clinical Summary"
                                   className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
                                 />
@@ -501,14 +545,14 @@ export function ClientDetailView({
                             </div>
                             <div className="flex items-center gap-2">
                               <button
-                                onClick={() => setPreviewImageUrl(note.attachmentUrl)}
+                                onClick={() => setPreviewImageUrl(getDocumentUrl(note.attachmentUrl))}
                                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-pink-300 text-pink-700 hover:bg-pink-50 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
                               >
                                 <ImageIcon className="w-3.5 h-3.5" />
                                 <span>Preview</span>
                               </button>
                               <a
-                                href={note.attachmentUrl}
+                                href={getDocumentUrl(note.attachmentUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-2xs transition-colors"
@@ -716,37 +760,87 @@ export function ClientDetailView({
                   <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-2">
                     Upload PDF Summary or PNG Document
                   </label>
-                  <div className="border-2 border-dashed border-pink-300 rounded-xl p-5 bg-pink-50/40 text-center hover:bg-pink-50/70 transition-colors relative">
-                    <input
-                      type="file"
-                      accept=".pdf,.png,application/pdf,image/png"
-                      onChange={handleFileChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <Upload className="w-8 h-8 text-pink-600 mx-auto mb-2" />
-                    <div className="text-xs font-bold text-zinc-800">
-                      {attachedFile ? attachedFile.name : "Click or drag & drop to upload document"}
-                    </div>
-                    <div className="text-[11px] text-zinc-500 mt-1">
-                      Supported formats: <span className="font-semibold text-pink-700">PDF (.pdf)</span> or <span className="font-semibold text-pink-700">PNG (.png)</span> • Max 15MB
-                    </div>
 
-                    {attachedFile && (
-                      <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-pink-200 rounded-lg text-xs font-medium text-pink-800">
-                        <span>{(attachedFile.size / (1024 * 1024)).toFixed(2)} MB</span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setAttachedFile(null);
-                          }}
-                          className="text-zinc-400 hover:text-zinc-600 ml-1 cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
+                  {uploadState === "uploading" ? (
+                    <div className="border border-pink-200 bg-pink-50/50 rounded-xl p-4 text-center">
+                      <Loader2 className="w-6 h-6 text-pink-600 animate-spin mx-auto mb-2" />
+                      <div className="text-xs font-bold text-pink-900">Uploading Document to Secure Storage...</div>
+                      <div className="text-[11px] text-zinc-500 mt-1">Encrypting and uploading {attachedFile?.name}</div>
+                      <div className="w-full bg-pink-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                        <div className="bg-gradient-to-r from-pink-500 to-rose-600 h-full w-2/3 animate-pulse rounded-full" />
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : uploadState === "completed" && uploadedDoc ? (
+                    <div className="border-2 border-emerald-200 bg-emerald-50/40 rounded-xl p-3.5 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                            {uploadedDoc.fileType.toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-zinc-900 truncate max-w-[180px] sm:max-w-xs">
+                                {uploadedDoc.originalName}
+                              </span>
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-700" /> Complete
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-2">
+                              <span>{(uploadedDoc.size / (1024 * 1024)).toFixed(2)} MB</span>
+                              <span>•</span>
+                              <span className="text-emerald-700 font-medium">Encrypted & Ready</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={getDocumentUrl(uploadedDoc.url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold shadow-2xs"
+                          >
+                            <ExternalLink className="w-3 h-3 text-zinc-500" />
+                            <span>Preview</span>
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAttachedFile(null);
+                              setUploadedDoc(null);
+                              setUploadState("idle");
+                            }}
+                            className="p-1.5 text-zinc-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer"
+                            title="Remove attached file"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-pink-300 rounded-xl p-5 bg-pink-50/40 text-center hover:bg-pink-50/70 transition-colors relative">
+                      <input
+                        type="file"
+                        accept=".pdf,.png,application/pdf,image/png"
+                        onChange={handleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <Upload className="w-8 h-8 text-pink-600 mx-auto mb-2" />
+                      <div className="text-xs font-bold text-zinc-800">
+                        Click or drag & drop to upload document
+                      </div>
+                      <div className="text-[11px] text-zinc-500 mt-1">
+                        Supported formats: <span className="font-semibold text-pink-700">PDF (.pdf)</span> or <span className="font-semibold text-pink-700">PNG (.png)</span> • Max 15MB
+                      </div>
+                      {uploadError && (
+                        <div className="mt-2 text-xs text-rose-600 font-medium bg-rose-50 p-1.5 rounded border border-rose-200">
+                          {uploadError}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Narrative Clinical Notes */}
@@ -805,7 +899,7 @@ export function ClientDetailView({
               <X className="w-5 h-5" />
             </button>
             <img
-              src={previewImageUrl}
+              src={getDocumentUrl(previewImageUrl)}
               alt="Clinical Document Preview"
               className="max-h-[85vh] w-auto mx-auto rounded-lg object-contain"
             />

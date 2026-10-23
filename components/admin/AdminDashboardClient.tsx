@@ -24,6 +24,7 @@ import {
   ExternalLink,
   Image as ImageIcon,
 } from "lucide-react";
+import { getDocumentUrl } from "@/lib/document-utils";
 import {
   createStaffMember,
   toggleStaffStatus,
@@ -632,7 +633,7 @@ export function AdminDashboardClient({
                               </span>
                             </div>
                             <a
-                              href={note.attachmentUrl}
+                              href={getDocumentUrl(note.attachmentUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-xs font-semibold text-pink-600 hover:text-pink-800 underline"

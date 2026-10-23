@@ -20,9 +20,11 @@ import {
   Upload,
   X,
   ExternalLink,
+  Loader2,
   Image as ImageIcon,
 } from "lucide-react";
 import { submitVisitLog } from "@/lib/actions/caregiver-actions";
+import { getDocumentUrl } from "@/lib/document-utils";
 import {
   ADL_TASKS,
   NOTE_CATEGORIES,
@@ -64,6 +66,14 @@ export function CaregiverDashboardClient({
   const [selectedAdlTasks, setSelectedAdlTasks] = useState<string[]>([]);
   const [narrativeContent, setNarrativeContent] = useState<string>("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [uploadState, setUploadState] = useState<"idle" | "uploading" | "completed" | "error">("idle");
+  const [uploadedDoc, setUploadedDoc] = useState<{
+    url: string;
+    originalName: string;
+    fileType: string;
+    size: number;
+  } | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const [formStatus, setFormStatus] = useState<{
@@ -73,7 +83,7 @@ export function CaregiverDashboardClient({
 
   const [isPending, startTransition] = useTransition();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -94,6 +104,33 @@ export function CaregiverDashboardClient({
     }
 
     setAttachedFile(file);
+    setUploadState("uploading");
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok || !uploadData.success) {
+        throw new Error(uploadData.error || "File upload failed.");
+      }
+
+      setUploadedDoc({
+        url: uploadData.url,
+        originalName: uploadData.originalName,
+        fileType: uploadData.fileType,
+        size: uploadData.size,
+      });
+      setUploadState("completed");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Upload error";
+      setUploadError(msg);
+      setUploadState("error");
+    }
   };
 
   // Helper: Toggle ADL task on/off (optimized for mobile touch)
@@ -124,17 +161,22 @@ export function CaregiverDashboardClient({
       return;
     }
 
-    if (!narrativeContent.trim() && !attachedFile) {
+    if (!narrativeContent.trim() && !attachedFile && !uploadedDoc) {
       setFormStatus({ error: "Please enter narrative visit notes or upload a PDF/PNG summary." });
       return;
     }
 
-    startTransition(async () => {
-      let attachmentUrl: string | undefined;
-      let attachmentName: string | undefined;
-      let attachmentType: string | undefined;
+    if (uploadState === "uploading") {
+      setFormStatus({ error: "Please wait for document upload to complete before submitting." });
+      return;
+    }
 
-      if (attachedFile) {
+    startTransition(async () => {
+      let attachmentUrl: string | undefined = uploadedDoc?.url;
+      let attachmentName: string | undefined = uploadedDoc?.originalName;
+      let attachmentType: string | undefined = uploadedDoc?.fileType;
+
+      if (attachedFile && !uploadedDoc) {
         setIsUploading(true);
         try {
           const formData = new FormData();
@@ -166,7 +208,7 @@ export function CaregiverDashboardClient({
         appointmentId: selectedAppointmentId || undefined,
         category: selectedCategory,
         adlTasksCompleted: selectedAdlTasks,
-        content: narrativeContent || (attachedFile ? `Attached summary: ${attachedFile.name}` : ""),
+        content: narrativeContent || (attachmentName ? `Attached summary: ${attachmentName}` : (attachedFile ? `Attached summary: ${attachedFile.name}` : "")),
         attachmentUrl,
         attachmentName,
         attachmentType,
@@ -178,6 +220,9 @@ export function CaregiverDashboardClient({
         setSelectedAdlTasks([]);
         setSelectedAppointmentId("");
         setAttachedFile(null);
+        setUploadedDoc(null);
+        setUploadState("idle");
+        setUploadError(null);
         setTimeout(() => {
           window.location.reload();
         }, 1200);
@@ -602,40 +647,95 @@ export function CaregiverDashboardClient({
 
               {/* File Upload Box (PDF or PNG) */}
               <div>
-                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5">
-                  Attach Summary Document (PDF or PNG)
-                </label>
-                <div className="border-2 border-dashed border-pink-200 rounded-lg p-4 bg-pink-50/30 text-center hover:bg-pink-50/60 transition-colors relative">
-                  <input
-                    type="file"
-                    accept=".pdf,.png,application/pdf,image/png"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <Upload className="w-6 h-6 text-pink-600 mx-auto mb-1.5" />
-                  <div className="text-xs font-semibold text-zinc-800">
-                    {attachedFile ? attachedFile.name : "Tap to upload PDF summary or PNG photo"}
-                  </div>
-                  <div className="text-[11px] text-zinc-500 mt-0.5">
-                    Accepted: PDF (.pdf) or PNG (.png) • Max 15MB
-                  </div>
-
-                  {attachedFile && (
-                    <div className="mt-2.5 inline-flex items-center gap-2 px-2.5 py-1 bg-white border border-pink-200 rounded text-xs text-pink-800 font-medium">
-                      <span>{(attachedFile.size / (1024 * 1024)).toFixed(2)} MB</span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setAttachedFile(null);
-                        }}
-                        className="text-zinc-400 hover:text-zinc-600 ml-1 cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Attach Summary Document (PDF or PNG)</span>
+                  {uploadState === "completed" && (
+                    <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 normal-case bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Upload Complete
+                    </span>
                   )}
-                </div>
+                </label>
+
+                {uploadState === "uploading" ? (
+                  <div className="border border-pink-200 bg-pink-50/50 rounded-xl p-4 text-center">
+                    <Loader2 className="w-6 h-6 text-pink-600 animate-spin mx-auto mb-2" />
+                    <div className="text-xs font-bold text-pink-900">Uploading Document to Secure Storage...</div>
+                    <div className="text-[11px] text-zinc-500 mt-1">Encrypting and uploading {attachedFile?.name}</div>
+                    <div className="w-full bg-pink-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                      <div className="bg-gradient-to-r from-pink-500 to-rose-600 h-full w-2/3 animate-pulse rounded-full" />
+                    </div>
+                  </div>
+                ) : uploadState === "completed" && uploadedDoc ? (
+                  <div className="border-2 border-emerald-200 bg-emerald-50/40 rounded-xl p-3.5 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                          {uploadedDoc.fileType.toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-zinc-900 truncate max-w-[180px] sm:max-w-xs">
+                              {uploadedDoc.originalName}
+                            </span>
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-700" /> Complete
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-2">
+                            <span>{(uploadedDoc.size / (1024 * 1024)).toFixed(2)} MB</span>
+                            <span>•</span>
+                            <span className="text-emerald-700 font-medium">Encrypted & Ready</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={getDocumentUrl(uploadedDoc.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-semibold shadow-2xs"
+                        >
+                          <ExternalLink className="w-3 h-3 text-zinc-500" />
+                          <span>Preview</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAttachedFile(null);
+                            setUploadedDoc(null);
+                            setUploadState("idle");
+                          }}
+                          className="p-1.5 text-zinc-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer"
+                          title="Remove attached file"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-pink-200 rounded-lg p-4 bg-pink-50/30 text-center hover:bg-pink-50/60 transition-colors relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.png,application/pdf,image/png"
+                      onChange={handleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Upload className="w-6 h-6 text-pink-600 mx-auto mb-1.5" />
+                    <div className="text-xs font-semibold text-zinc-800">
+                      Tap to upload PDF summary or PNG photo
+                    </div>
+                    <div className="text-[11px] text-zinc-500 mt-0.5">
+                      Accepted: PDF (.pdf) or PNG (.png) • Max 15MB
+                    </div>
+                    {uploadError && (
+                      <div className="mt-2 text-xs text-rose-600 font-medium bg-rose-50 p-1.5 rounded border border-rose-200">
+                        {uploadError}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Visit Notes */}
@@ -757,7 +857,7 @@ export function CaregiverDashboardClient({
                           </span>
                         </div>
                         <a
-                          href={note.attachmentUrl}
+                          href={getDocumentUrl(note.attachmentUrl)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs font-semibold text-pink-600 hover:text-pink-800"

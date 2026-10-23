@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     const s3Bucket = process.env.AWS_S3_BUCKET;
-    const s3Region = process.env.AWS_REGION || "us-east-1";
+    const s3Region = process.env.AWS_REGION || "eu-north-1";
 
     // If AWS S3 is configured, upload directly to S3
     if (s3Bucket) {
@@ -82,10 +82,13 @@ export async function POST(req: NextRequest) {
       );
 
       const s3Url = `https://${s3Bucket}.s3.${s3Region}.amazonaws.com/${s3Key}`;
+      const documentProxyUrl = `/api/documents?key=${encodeURIComponent(s3Key)}`;
 
       return NextResponse.json({
         success: true,
-        url: s3Url,
+        url: documentProxyUrl,
+        rawS3Url: s3Url,
+        s3Key: s3Key,
         originalName: file.name,
         fileType: ext,
         size: file.size,
