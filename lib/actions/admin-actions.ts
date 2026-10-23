@@ -118,6 +118,13 @@ export async function toggleStaffStatus(userId: string, isActive: boolean) {
     data: { isActive },
   });
 
+  if (!isActive) {
+    // Immediately revoke all active sessions for this suspended account
+    await prisma.session.deleteMany({
+      where: { userId },
+    });
+  }
+
   await prisma.auditLog.create({
     data: {
       userId: adminSession.user.id,
@@ -504,12 +511,38 @@ export async function getGlobalActivityFeed(filters?: {
 // AUDIT LOGS
 // ============================================================================
 
-export async function getAuditLogs() {
+export async function getAuditLogs(options?: {
+  startDate?: string;
+  endDate?: string;
+  action?: string;
+  limit?: number;
+}) {
   await requireAdmin();
 
+  const take = Math.min(options?.limit || 100, 250);
+  const where: Record<string, unknown> = {};
+
+  if (options?.startDate || options?.endDate) {
+    const dateFilter: Record<string, Date> = {};
+    if (options.startDate) {
+      dateFilter.gte = new Date(options.startDate);
+    }
+    if (options.endDate) {
+      const end = new Date(options.endDate);
+      end.setHours(23, 59, 59, 999);
+      dateFilter.lte = end;
+    }
+    where.createdAt = dateFilter;
+  }
+
+  if (options?.action && options.action !== "ALL") {
+    where.action = options.action;
+  }
+
   const logs = await prisma.auditLog.findMany({
+    where,
     orderBy: { createdAt: "desc" },
-    take: 50,
+    take,
     include: {
       user: {
         select: {
@@ -525,8 +558,8 @@ export async function getAuditLogs() {
   return logs.map((l) => ({
     id: l.id,
     userId: l.userId,
-    userName: l.user.name,
-    userRole: l.user.role,
+    userName: l.user?.name || "System",
+    userRole: l.user?.role || "SYSTEM",
     action: l.action,
     entityType: l.entityType,
     entityId: l.entityId,

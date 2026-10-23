@@ -69,13 +69,13 @@ export function Navbar({ user }: NavbarProps) {
               </div>
             )}
 
-            {/* User Profile Badge (Unified Header Spot) */}
-            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200/70">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0">
+            {/* Desktop User Profile Badge */}
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200/70">
+              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0">
                 {user.name ? user.name.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-xs font-semibold text-slate-900 leading-tight max-w-[120px] sm:max-w-none truncate">
+                <span className="text-xs font-semibold text-slate-900 leading-tight">
                   {user.name}
                 </span>
                 <span className="text-[10px] flex items-center gap-1">
@@ -92,15 +92,23 @@ export function Navbar({ user }: NavbarProps) {
               </div>
             </div>
 
+            {/* Mobile Character Avatar (e.g. M for Martha Jenkins next to sign out button) */}
+            <div
+              className="sm:hidden w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs"
+              title={user.name}
+            >
+              {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+            </div>
+
             {/* Logout Button */}
             <button
               onClick={handleLogout}
               disabled={isPending}
               title="Sign Out"
-              className="inline-flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 active:bg-slate-200 transition-colors focus:outline-hidden cursor-pointer min-h-[38px]"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/80 active:bg-slate-200 transition-colors focus:outline-hidden cursor-pointer min-h-[36px] sm:min-h-[38px]"
             >
               <LogOut className="w-4 h-4 text-slate-500 shrink-0" />
-              <span className="hidden sm:inline">
+              <span className="text-xs font-medium">
                 {isPending ? "Signing out..." : "Sign Out"}
               </span>
             </button>
@@ -108,31 +116,42 @@ export function Navbar({ user }: NavbarProps) {
         </div>
       </div>
 
-      {/* Mobile-Only Sub-Header Switcher for Admin */}
-      {isAdmin && (
-        <div className="sm:hidden flex items-center justify-around border-t border-slate-200/80 bg-slate-50/90 py-1.5 px-3 text-xs font-semibold">
-          <Link
-            href="/admin"
-            className={`px-4 py-1.5 rounded-md transition-all text-xs font-semibold ${
-              isOnAdmin
-                ? "bg-rose-600 text-white shadow-2xs"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Admin Dashboard
-          </Link>
-          <Link
-            href="/app"
-            className={`px-4 py-1.5 rounded-md transition-all text-xs font-semibold ${
-              !isOnAdmin
-                ? "bg-rose-600 text-white shadow-2xs"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Caregiver View
-          </Link>
+      {/* Mobile-Only Sub-Header: Welcome, {Name} & View Switcher */}
+      <div className="sm:hidden border-t border-slate-200/80 bg-slate-50/95 px-4 py-2 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-slate-500 font-normal">Welcome,</span>
+          <span className="font-semibold text-slate-900 truncate">{user.name}</span>
         </div>
-      )}
+
+        {isAdmin ? (
+          <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200 text-[11px] font-semibold shrink-0 ml-2">
+            <Link
+              href="/admin"
+              className={`px-2 py-0.5 rounded transition-all ${
+                isOnAdmin
+                  ? "bg-rose-600 text-white shadow-2xs font-semibold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Admin
+            </Link>
+            <Link
+              href="/app"
+              className={`px-2 py-0.5 rounded transition-all ${
+                !isOnAdmin
+                  ? "bg-rose-600 text-white shadow-2xs font-semibold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Caregiver
+            </Link>
+          </div>
+        ) : (
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-white border border-slate-200/80 text-slate-600 shrink-0 ml-2">
+            Caregiver
+          </span>
+        )}
+      </div>
     </header>
   );
 }

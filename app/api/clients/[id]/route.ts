@@ -18,7 +18,19 @@ export async function GET(
     return NextResponse.json({ error: "Client ID is required" }, { status: 400 });
   }
 
-  const result = await getClientDetailsAndHistory(id);
+  const { searchParams } = new URL(req.url);
+  const startDate = searchParams.get("startDate") || undefined;
+  const endDate = searchParams.get("endDate") || undefined;
+  const category = searchParams.get("category") || undefined;
+  const limitParam = searchParams.get("limit");
+  const limit = limitParam ? parseInt(limitParam, 10) : 100;
+
+  const result = await getClientDetailsAndHistory(id, {
+    startDate,
+    endDate,
+    category,
+    limit,
+  });
 
   if (!result.success) {
     if (result.error?.includes("Access Denied")) {

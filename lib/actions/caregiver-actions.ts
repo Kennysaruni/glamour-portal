@@ -160,7 +160,15 @@ export async function getCaregiverDashboardData() {
 // CLIENT DETAILS & HISTORY (Protected by Role & Row-Level Isolation)
 // ============================================================================
 
-export async function getClientDetailsAndHistory(clientId: string) {
+export async function getClientDetailsAndHistory(
+  clientId: string,
+  options?: {
+    startDate?: string;
+    endDate?: string;
+    category?: string;
+    limit?: number;
+  }
+) {
   const session = await requireAuth();
   const userId = session.user.id;
 
@@ -191,9 +199,31 @@ export async function getClientDetailsAndHistory(clientId: string) {
     };
   }
 
-  // Fetch all notes/summaries for this client
+  // Fetch bounded notes/summaries for this client with date filtering
+  const notesWhere: Record<string, unknown> = { clientId };
+
+  if (options?.startDate || options?.endDate) {
+    const dateFilter: Record<string, Date> = {};
+    if (options.startDate) {
+      dateFilter.gte = new Date(options.startDate);
+    }
+    if (options.endDate) {
+      const end = new Date(options.endDate);
+      end.setHours(23, 59, 59, 999);
+      dateFilter.lte = end;
+    }
+    notesWhere.createdAt = dateFilter;
+  }
+
+  if (options?.category && options.category !== "ALL") {
+    notesWhere.category = options.category;
+  }
+
+  const notesTake = Math.min(options?.limit || 100, 250);
+
   const notes = await prisma.clientNote.findMany({
-    where: { clientId },
+    where: notesWhere,
+    take: notesTake,
     orderBy: { createdAt: "desc" },
     include: {
       employee: {

@@ -24,6 +24,9 @@ import {
   X,
   Plus,
   Loader2,
+  Filter,
+  RotateCcw,
+  RefreshCw,
 } from "lucide-react";
 import { getDocumentUrl } from "@/lib/document-utils";
 import {
@@ -61,6 +64,60 @@ export function ClientDetailView({
   const [activeTab, setActiveTab] = useState<"history" | "appointments" | "careplan" | "upload">("history");
   const [notes, setNotes] = useState(initialNotes);
   const [appointments] = useState(initialAppointments);
+
+  // Filters for Client Visit Notes / Summaries
+  const [noteStartDate, setNoteStartDate] = useState("");
+  const [noteEndDate, setNoteEndDate] = useState("");
+  const [noteCategoryFilter, setNoteCategoryFilter] = useState("ALL");
+  const [isFetchingNotes, setIsFetchingNotes] = useState(false);
+
+  const handleFetchFilteredNotes = async (override?: {
+    startDate?: string;
+    endDate?: string;
+    category?: string;
+  }) => {
+    setIsFetchingNotes(true);
+    try {
+      const start = override?.startDate !== undefined ? override.startDate : noteStartDate;
+      const end = override?.endDate !== undefined ? override.endDate : noteEndDate;
+      const cat = override?.category !== undefined ? override.category : noteCategoryFilter;
+
+      const params = new URLSearchParams();
+      if (start) params.set("startDate", start);
+      if (end) params.set("endDate", end);
+      if (cat && cat !== "ALL") params.set("category", cat);
+      params.set("limit", "100");
+
+      const res = await fetch(`/api/clients/${client.id}?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.notes) {
+          setNotes(data.notes);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch filtered notes:", err);
+    } finally {
+      setIsFetchingNotes(false);
+    }
+  };
+
+  const setNotePreset = (days: number | "all") => {
+    if (days === "all") {
+      setNoteStartDate("");
+      setNoteEndDate("");
+      handleFetchFilteredNotes({ startDate: "", endDate: "" });
+      return;
+    }
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+    const startStr = start.toISOString().split("T")[0];
+    const endStr = end.toISOString().split("T")[0];
+    setNoteStartDate(startStr);
+    setNoteEndDate(endStr);
+    handleFetchFilteredNotes({ startDate: startStr, endDate: endStr });
+  };
 
   // New Note / Summary Form State
   const [category, setCategory] = useState<NoteCategory>("DAILY_CARE_LOG");
@@ -415,6 +472,116 @@ export function ClientDetailView({
           {/* TAB 1: VISIT HISTORY & SUMMARIES */}
           {activeTab === "history" && (
             <div className="space-y-4">
+              {/* Filter and Action Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                    Visit Logs & Clinical Summaries
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Chronological audit of caregiver visit logs, ADLs, and physician discharge summaries.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200/80 px-2.5 py-1 rounded-md">
+                    Showing {notes.length} records (max 100/fetch)
+                  </span>
+                  <button
+                    onClick={() => handleFetchFilteredNotes()}
+                    disabled={isFetchingNotes}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 hover:bg-slate-50 rounded-lg text-xs font-medium text-slate-700 shadow-2xs cursor-pointer transition-colors"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isFetchingNotes ? "animate-spin" : ""}`} />
+                    <span>Refresh</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Filter Controls Card */}
+              <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-xs font-medium text-slate-500 mr-1">Date Range:</span>
+                    {[
+                      { label: "Today", days: 0 },
+                      { label: "7 Days", days: 7 },
+                      { label: "30 Days", days: 30 },
+                      { label: "All Time", days: "all" as const },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        onClick={() => setNotePreset(preset.days)}
+                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {(noteStartDate || noteEndDate || noteCategoryFilter !== "ALL") && (
+                    <button
+                      onClick={() => {
+                        setNoteStartDate("");
+                        setNoteEndDate("");
+                        setNoteCategoryFilter("ALL");
+                        handleFetchFilteredNotes({ startDate: "", endDate: "", category: "ALL" });
+                      }}
+                      className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" /> Clear Filters
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-600 mb-1">From Date</label>
+                    <input
+                      type="date"
+                      value={noteStartDate}
+                      onChange={(e) => setNoteStartDate(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-600 mb-1">To Date</label>
+                    <input
+                      type="date"
+                      value={noteEndDate}
+                      onChange={(e) => setNoteEndDate(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-600 mb-1">Clinical Category</label>
+                    <select
+                      value={noteCategoryFilter}
+                      onChange={(e) => setNoteCategoryFilter(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                    >
+                      <option value="ALL">All Categories</option>
+                      {Object.entries(NOTE_CATEGORIES).map(([key, val]) => (
+                        <option key={key} value={val}>
+                          {NOTE_CATEGORY_LABELS[val as NoteCategory] || val}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={() => handleFetchFilteredNotes()}
+                    disabled={isFetchingNotes}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                  >
+                    <Filter className="w-3.5 h-3.5" />
+                    <span>{isFetchingNotes ? "Loading..." : "Filter Notes"}</span>
+                  </button>
+                </div>
+              </div>
               {notes.length === 0 ? (
                 <div className="bg-white border border-slate-200/80 rounded-xl p-10 text-center">
                   <FileText className="w-10 h-10 text-slate-300 mx-auto mb-2" />

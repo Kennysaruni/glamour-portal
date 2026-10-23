@@ -23,6 +23,8 @@ import {
   X,
   ExternalLink,
   Image as ImageIcon,
+  RotateCcw,
+  RefreshCw,
 } from "lucide-react";
 import { getDocumentUrl } from "@/lib/document-utils";
 import {
@@ -80,6 +82,73 @@ export function AdminDashboardClient({
   const [appointmentsList, setAppointmentsList] = useState(initialAppointments);
   const [notesList, setNotesList] = useState(initialNotes);
   const [auditLogs, setAuditLogs] = useState(initialAuditLogs);
+
+  // Filters for Audit Log Trail
+  const [auditStartDate, setAuditStartDate] = useState("");
+  const [auditEndDate, setAuditEndDate] = useState("");
+  const [auditActionFilter, setAuditActionFilter] = useState("ALL");
+  const [auditSearchQuery, setAuditSearchQuery] = useState("");
+  const [isFetchingAuditLogs, setIsFetchingAuditLogs] = useState(false);
+
+  const handleApplyAuditFilters = async (overrideParams?: {
+    startDate?: string;
+    endDate?: string;
+    action?: string;
+  }) => {
+    setIsFetchingAuditLogs(true);
+    try {
+      const start = overrideParams?.startDate !== undefined ? overrideParams.startDate : auditStartDate;
+      const end = overrideParams?.endDate !== undefined ? overrideParams.endDate : auditEndDate;
+      const act = overrideParams?.action !== undefined ? overrideParams.action : auditActionFilter;
+
+      const params = new URLSearchParams();
+      if (start) params.set("startDate", start);
+      if (end) params.set("endDate", end);
+      if (act && act !== "ALL") params.set("action", act);
+      params.set("limit", "100");
+
+      const res = await fetch(`/api/audit-logs?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.auditLogs) {
+          setAuditLogs(data.auditLogs);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch audit logs:", e);
+    } finally {
+      setIsFetchingAuditLogs(false);
+    }
+  };
+
+  const setAuditPreset = (days: number | "all") => {
+    if (days === "all") {
+      setAuditStartDate("");
+      setAuditEndDate("");
+      handleApplyAuditFilters({ startDate: "", endDate: "" });
+      return;
+    }
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+    const startStr = start.toISOString().split("T")[0];
+    const endStr = end.toISOString().split("T")[0];
+    setAuditStartDate(startStr);
+    setAuditEndDate(endStr);
+    handleApplyAuditFilters({ startDate: startStr, endDate: endStr });
+  };
+
+  const filteredAuditLogs = auditLogs.filter((log: any) => {
+    if (!auditSearchQuery.trim()) return true;
+    const q = auditSearchQuery.toLowerCase();
+    return (
+      (log.userName && log.userName.toLowerCase().includes(q)) ||
+      (log.userRole && log.userRole.toLowerCase().includes(q)) ||
+      (log.action && log.action.toLowerCase().includes(q)) ||
+      (log.entityType && log.entityType.toLowerCase().includes(q)) ||
+      (log.entityId && log.entityId.toLowerCase().includes(q))
+    );
+  });
 
   // Filters for Global Activity Feed
   const [selectedCaregiverFilter, setSelectedCaregiverFilter] = useState("ALL");
@@ -773,8 +842,9 @@ export function AdminDashboardClient({
               </button>
             </div>
 
-            <div className="bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
-              <table className="min-w-[620px] divide-y divide-slate-200 text-left text-xs">
+            {/* Desktop Table */}
+            <div className="hidden sm:block bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
+              <table className="min-w-[620px] w-full divide-y divide-slate-200 text-left text-xs">
                 <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Staff Member</th>
@@ -854,6 +924,71 @@ export function AdminDashboardClient({
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden space-y-3">
+              {staffList.map((staff) => (
+                <div key={staff.id} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs space-y-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">
+                        {staff.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="text-slate-900 font-semibold">{staff.name}</div>
+                        <div className="text-[11px] text-slate-400 font-normal">{staff.email}</div>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
+                        staff.role === "ADMIN"
+                          ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                          : "bg-slate-100 text-slate-700 border border-slate-200/60"
+                      }`}
+                    >
+                      {staff.role}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-slate-100 text-slate-600">
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Phone</span>
+                      <span className="font-medium text-slate-800">{staff.phone || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Assigned Clients</span>
+                      <span className="font-medium text-slate-800">{staff.assignedClientsCount || 0} Patients</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    {staff.isActive ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
+                        <CheckCircle className="w-3.5 h-3.5" /> Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-slate-400 font-semibold text-xs">
+                        Suspended
+                      </span>
+                    )}
+
+                    {staff.id !== currentUser.id && (
+                      <button
+                        onClick={() => handleToggleStaff(staff.id, staff.isActive)}
+                        disabled={isPending}
+                        className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                          staff.isActive
+                            ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
+                            : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
+                        }`}
+                      >
+                        {staff.isActive ? "Deactivate" : "Activate"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -877,8 +1012,9 @@ export function AdminDashboardClient({
               </button>
             </div>
 
-            <div className="bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
-              <table className="min-w-[680px] divide-y divide-slate-200 text-left text-xs">
+            {/* Desktop Table */}
+            <div className="hidden sm:block bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
+              <table className="min-w-[680px] w-full divide-y divide-slate-200 text-left text-xs">
                 <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Scheduled Time</th>
@@ -970,6 +1106,68 @@ export function AdminDashboardClient({
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden space-y-3">
+              {appointmentsList.map((appt) => (
+                <div key={appt.id} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs space-y-3 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-slate-900 truncate">
+                      {appt.client?.firstName} {appt.client?.lastName}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                        appt.status === "COMPLETED"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                          : appt.status === "SCHEDULED"
+                          ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                          : "bg-slate-100 text-slate-600 border border-slate-200/60"
+                      }`}
+                    >
+                      {APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus] || appt.status}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Caregiver</span>
+                      <span className="font-medium text-slate-800">{appt.employee?.name || "Unassigned"}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Type</span>
+                      <span className="font-medium text-slate-800">
+                        {APPOINTMENT_TYPE_LABELS[appt.type as AppointmentType] || appt.type}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <span>
+                      {new Date(appt.startTime).toLocaleDateString("en-US", { month: "short", day: "numeric" })} at{" "}
+                      {new Date(appt.startTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <span className="text-slate-400 truncate max-w-[130px]">{appt.location || "Client residence"}</span>
+                  </div>
+
+                  {appt.status === "SCHEDULED" && (
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleUpdateStatus(appt.id, "COMPLETED")}
+                        className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/70 rounded-md text-xs font-semibold cursor-pointer"
+                      >
+                        Complete
+                      </button>
+                      <button
+                        onClick={() => handleUpdateStatus(appt.id, "CANCELLED")}
+                        className="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-md text-xs cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -978,15 +1176,140 @@ export function AdminDashboardClient({
         {/* ================================================================= */}
         {activeTab === "audit" && (
           <div className="space-y-4">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                Audit Trail
-              </h2>
-              <p className="text-xs text-slate-500">Immutable HIPAA compliance log of staff access and clinical changes.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  Audit Trail
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Immutable HIPAA compliance log of staff access and clinical changes.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200/80 px-2.5 py-1 rounded-md">
+                  Showing {filteredAuditLogs.length} logs (max 100/fetch)
+                </span>
+                <button
+                  onClick={() => handleApplyAuditFilters()}
+                  disabled={isFetchingAuditLogs}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/80 hover:bg-slate-50 rounded-lg text-xs font-medium text-slate-700 shadow-2xs cursor-pointer transition-colors"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isFetchingAuditLogs ? "animate-spin" : ""}`} />
+                  <span>Refresh</span>
+                </button>
+              </div>
             </div>
 
-            <div className="bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
-              <table className="min-w-[600px] divide-y divide-slate-200 text-left text-xs">
+            {/* Filter Toolbar Card */}
+            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs space-y-3">
+              {/* Presets and Filter Controls */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs font-medium text-slate-500 mr-1">Date Range:</span>
+                  {[
+                    { label: "Today", days: 0 },
+                    { label: "7 Days", days: 7 },
+                    { label: "30 Days", days: 30 },
+                    { label: "All Time", days: "all" as const },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      onClick={() => setAuditPreset(preset.days)}
+                      className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Reset button */}
+                {(auditStartDate || auditEndDate || auditActionFilter !== "ALL" || auditSearchQuery) && (
+                  <button
+                    onClick={() => {
+                      setAuditStartDate("");
+                      setAuditEndDate("");
+                      setAuditActionFilter("ALL");
+                      setAuditSearchQuery("");
+                      handleApplyAuditFilters({ startDate: "", endDate: "", action: "ALL" });
+                    }}
+                    className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Clear Filters
+                  </button>
+                )}
+              </div>
+
+              {/* Input Controls Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+                <div>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-1">From Date</label>
+                  <input
+                    type="date"
+                    value={auditStartDate}
+                    onChange={(e) => setAuditStartDate(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-1">To Date</label>
+                  <input
+                    type="date"
+                    value={auditEndDate}
+                    onChange={(e) => setAuditEndDate(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-1">Action Type</label>
+                  <select
+                    value={auditActionFilter}
+                    onChange={(e) => setAuditActionFilter(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                  >
+                    <option value="ALL">All Actions</option>
+                    <option value="LOGIN">LOGIN</option>
+                    <option value="LOGOUT">LOGOUT</option>
+                    <option value="CREATE">CREATE</option>
+                    <option value="UPDATE">UPDATE</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="STATUS_CHANGE">STATUS_CHANGE</option>
+                    <option value="VIEW_PHI">VIEW_PHI</option>
+                    <option value="DOCUMENT_UPLOAD">DOCUMENT_UPLOAD</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-medium text-slate-600 mb-1">Search Loaded Logs</label>
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="User, role, ID..."
+                      value={auditSearchQuery}
+                      onChange={(e) => setAuditSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  onClick={() => handleApplyAuditFilters()}
+                  disabled={isFetchingAuditLogs}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                >
+                  <Filter className="w-3.5 h-3.5" />
+                  <span>{isFetchingAuditLogs ? "Applying..." : "Apply Date & Action Filters"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden sm:block bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
+              <table className="min-w-[600px] w-full divide-y divide-slate-200 text-left text-xs">
                 <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Timestamp</th>
@@ -997,21 +1320,69 @@ export function AdminDashboardClient({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                  {auditLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/60">
-                      <td className="px-4 py-2.5 text-slate-500 whitespace-nowrap">
-                        {new Date(log.createdAt).toLocaleString()}
+                  {filteredAuditLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-8 text-center text-slate-400 font-sans">
+                        No audit logs matched the specified date range and action filters.
                       </td>
-                      <td className="px-4 py-2.5 font-sans font-medium text-slate-900">
-                        {log.userName} ({log.userRole})
-                      </td>
-                      <td className="px-4 py-2.5 text-rose-600 font-bold">{log.action}</td>
-                      <td className="px-4 py-2.5 text-slate-600">{log.entityType}</td>
-                      <td className="px-4 py-2.5 text-slate-400">{log.entityId}</td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredAuditLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="px-4 py-2.5 text-slate-500 whitespace-nowrap">
+                          {new Date(log.createdAt).toLocaleString()}
+                        </td>
+                        <td className="px-4 py-2.5 font-sans font-medium text-slate-900">
+                          {log.userName} ({log.userRole})
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/60 uppercase">
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-slate-600 font-sans">{log.entityType}</td>
+                        <td className="px-4 py-2.5 text-slate-400 truncate max-w-xs">{log.entityId}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="sm:hidden space-y-2.5">
+              {filteredAuditLogs.length === 0 ? (
+                <div className="bg-white border border-slate-200/80 rounded-xl p-6 text-center text-xs text-slate-500">
+                  No audit logs matched the specified filters.
+                </div>
+              ) : (
+                filteredAuditLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="bg-white border border-slate-200/80 rounded-xl p-3.5 space-y-2 text-xs shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-slate-900 truncate">
+                        {log.userName} <span className="text-[10px] text-slate-500 font-normal">({log.userRole})</span>
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/60 uppercase shrink-0">
+                        {log.action}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-500 text-[11px]">
+                      <span>Entity: <strong className="text-slate-700 font-medium">{log.entityType}</strong></span>
+                      <span className="font-mono text-slate-400 text-[10px]">
+                        {new Date(log.createdAt).toLocaleDateString()} {new Date(log.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    {log.entityId && (
+                      <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-mono truncate">
+                        ID: {log.entityId}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { getServerSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/db";
 
 export async function loginAction(formData: {
   email: string;
@@ -16,6 +17,19 @@ export async function loginAction(formData: {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+
+    // Verify user account status upfront: block suspended / deactivated accounts
+    const existingUser = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+      select: { id: true, isActive: true },
+    });
+
+    if (existingUser && !existingUser.isActive) {
+      return {
+        success: false,
+        error: "This account has been suspended or deactivated. Please contact your clinical administrator.",
+      };
+    }
 
     // Call Better Auth with asResponse: true so we can extract Set-Cookie
     const res = await auth.api.signInEmail({
@@ -33,6 +47,18 @@ export async function loginAction(formData: {
     const data = await res.json();
     if (!data || !data.user) {
       return { success: false, error: "Unable to find user account." };
+    }
+
+    if ((data.user as { isActive?: boolean }).isActive === false) {
+      if (data.token) {
+        await prisma.session.deleteMany({
+          where: { token: data.token },
+        });
+      }
+      return {
+        success: false,
+        error: "This account has been suspended or deactivated. Please contact your clinical administrator.",
+      };
     }
 
     const cookieStore = await cookies();
