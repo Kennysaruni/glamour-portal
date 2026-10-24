@@ -9,6 +9,7 @@ import {
   Search,
   Filter,
   CheckCircle,
+  CheckCircle2,
   Clock,
   AlertTriangle,
   HeartPulse,
@@ -27,6 +28,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { getDocumentUrl } from "@/lib/document-utils";
+import { VitalsBadges } from "@/components/vitals/VitalsDisplay";
 import {
   createStaffMember,
   toggleStaffStatus,
@@ -227,11 +229,11 @@ export function AdminDashboardClient({
 
   const [appointmentForm, setAppointmentForm] = useState({
     clientId: initialClients[0]?.id || "",
-    employeeId: initialStaff[0]?.id || "",
+    employeeId: initialClients[0]?.assignedEmployeeId || "",
     type: "HOME_CARE_SHIFT" as AppointmentType,
     startTime: "",
     endTime: "",
-    location: "",
+    location: initialClients[0]?.address || "",
     summary: "",
   });
 
@@ -694,8 +696,11 @@ export function AdminDashboardClient({
                           </div>
                         )}
 
+                        {/* Structured Vitals Badges */}
+                        <VitalsBadges vitals={note} size="sm" />
+
                         {/* Narrative Content */}
-                        <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans bg-slate-50/70 p-3 rounded-lg border border-slate-200/60">
+                        <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans bg-slate-50/70 p-3 rounded-lg border border-slate-200/60 mt-2">
                           {note.content}
                         </div>
 
@@ -2255,20 +2260,61 @@ export function AdminDashboardClient({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">Assign Caregiver</label>
-                <select
-                  value={appointmentForm.employeeId}
-                  onChange={(e) =>
-                    setAppointmentForm({ ...appointmentForm, employeeId: e.target.value })
+                <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span>Assign Caregiver *</span>
+                  <span className="text-[10px] text-slate-500 font-normal">Active Client-Caregiver Mapping</span>
+                </label>
+                {(() => {
+                  const selClient = clientsList.find((c) => c.id === appointmentForm.clientId);
+                  const assignedCaregivers = staffList.filter(
+                    (s) => s.id === selClient?.assignedEmployeeId
+                  );
+
+                  if (!selClient) {
+                    return (
+                      <div className="p-2.5 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
+                        Please select a client first.
+                      </div>
+                    );
                   }
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                >
-                  {staffList.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.role})
-                    </option>
-                  ))}
-                </select>
+
+                  if (assignedCaregivers.length === 0) {
+                    return (
+                      <div className="p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-xs">
+                        <div className="flex items-center gap-1.5 font-semibold">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>Strict Safeguard: No Caregiver Assigned</span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-amber-700">
+                          {selClient.firstName} {selClient.lastName} does not currently have an assigned caregiver. Shifts can only be scheduled for caregivers actively mapped to this client.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div>
+                      <select
+                        value={appointmentForm.employeeId}
+                        onChange={(e) =>
+                          setAppointmentForm({ ...appointmentForm, employeeId: e.target.value })
+                        }
+                        required
+                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                      >
+                        {assignedCaregivers.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} ({s.role}) • Assigned Caregiver
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span>Restricted to caregivers actively assigned to this client</span>
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div>
@@ -2355,8 +2401,15 @@ export function AdminDashboardClient({
                 </button>
                 <button
                   type="submit"
-                  disabled={isPending}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                  disabled={
+                    isPending ||
+                    !staffList.some(
+                      (s) =>
+                        s.id ===
+                        clientsList.find((c) => c.id === appointmentForm.clientId)?.assignedEmployeeId
+                    )
+                  }
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isPending ? "Scheduling..." : "Schedule Shift"}
                 </button>

@@ -26,6 +26,9 @@ import {
 } from "lucide-react";
 import { submitVisitLog } from "@/lib/actions/caregiver-actions";
 import { getDocumentUrl } from "@/lib/document-utils";
+import { VitalsInputFields } from "@/components/vitals/VitalsInputFields";
+import { VitalsBadges } from "@/components/vitals/VitalsDisplay";
+import { validateVitals } from "@/lib/vitals-utils";
 import {
   ADL_TASKS,
   NOTE_CATEGORIES,
@@ -91,6 +94,16 @@ export function CaregiverDashboardClient({
   const [narrativeContent, setNarrativeContent] = useState<string>("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "completed" | "error">("idle");
+
+  // Structured Vitals State
+  const [temperature, setTemperature] = useState<string>("");
+  const [temperatureUnit, setTemperatureUnit] = useState<"F" | "C">("F");
+  const [bloodPressureSys, setBloodPressureSys] = useState<string>("");
+  const [bloodPressureDia, setBloodPressureDia] = useState<string>("");
+  const [heartRate, setHeartRate] = useState<string>("");
+  const [oxygenSaturation, setOxygenSaturation] = useState<string>("");
+  const [respiratoryRate, setRespiratoryRate] = useState<string>("");
+  const [vitalsErrors, setVitalsErrors] = useState<Record<string, string>>({});
   const [uploadedDoc, setUploadedDoc] = useState<{
     url: string;
     originalName: string;
@@ -185,8 +198,40 @@ export function CaregiverDashboardClient({
       return;
     }
 
-    if (!narrativeContent.trim() && !attachedFile && !uploadedDoc) {
-      setFormStatus({ error: "Please enter narrative visit notes or upload a PDF/PNG summary." });
+    // Parse and validate numeric vitals
+    const tempVal = temperature.trim() ? parseFloat(temperature) : null;
+    const sysVal = bloodPressureSys.trim() ? parseInt(bloodPressureSys, 10) : null;
+    const diaVal = bloodPressureDia.trim() ? parseInt(bloodPressureDia, 10) : null;
+    const hrVal = heartRate.trim() ? parseInt(heartRate, 10) : null;
+    const spo2Val = oxygenSaturation.trim() ? parseInt(oxygenSaturation, 10) : null;
+    const rrVal = respiratoryRate.trim() ? parseInt(respiratoryRate, 10) : null;
+
+    const validation = validateVitals({
+      temperature: tempVal,
+      temperatureUnit,
+      bloodPressureSys: sysVal,
+      bloodPressureDia: diaVal,
+      heartRate: hrVal,
+      oxygenSaturation: spo2Val,
+      respiratoryRate: rrVal,
+    });
+
+    if (!validation.isValid) {
+      setVitalsErrors(validation.errors);
+      const firstErr = Object.values(validation.errors)[0];
+      setFormStatus({ error: `Vitals Error: ${firstErr}` });
+      return;
+    }
+    setVitalsErrors({});
+
+    const hasAnyVital = [tempVal, sysVal, diaVal, hrVal, spo2Val, rrVal].some(
+      (v) => v !== null && !isNaN(v as number)
+    );
+
+    if (!narrativeContent.trim() && !hasAnyVital && !attachedFile && !uploadedDoc) {
+      setFormStatus({
+        error: "Please enter qualitative visit notes, record structured vitals, or upload a document.",
+      });
       return;
     }
 
@@ -236,6 +281,13 @@ export function CaregiverDashboardClient({
         attachmentUrl,
         attachmentName,
         attachmentType,
+        temperature: tempVal,
+        temperatureUnit,
+        bloodPressureSys: sysVal,
+        bloodPressureDia: diaVal,
+        heartRate: hrVal,
+        oxygenSaturation: spo2Val,
+        respiratoryRate: rrVal,
       });
 
       if (res.success) {
@@ -247,6 +299,13 @@ export function CaregiverDashboardClient({
         setUploadedDoc(null);
         setUploadState("idle");
         setUploadError(null);
+        setTemperature("");
+        setBloodPressureSys("");
+        setBloodPressureDia("");
+        setHeartRate("");
+        setOxygenSaturation("");
+        setRespiratoryRate("");
+        setVitalsErrors({});
         setTimeout(() => {
           window.location.reload();
         }, 1200);
@@ -942,14 +1001,34 @@ export function CaregiverDashboardClient({
                 )}
               </div>
 
-              {/* Visit Notes */}
+              {/* Structured Vital Signs Section */}
+              <VitalsInputFields
+                temperature={temperature}
+                setTemperature={setTemperature}
+                temperatureUnit={temperatureUnit}
+                setTemperatureUnit={setTemperatureUnit}
+                bloodPressureSys={bloodPressureSys}
+                setBloodPressureSys={setBloodPressureSys}
+                bloodPressureDia={bloodPressureDia}
+                setBloodPressureDia={setBloodPressureDia}
+                heartRate={heartRate}
+                setHeartRate={setHeartRate}
+                oxygenSaturation={oxygenSaturation}
+                setOxygenSaturation={setOxygenSaturation}
+                respiratoryRate={respiratoryRate}
+                setRespiratoryRate={setRespiratoryRate}
+                errors={vitalsErrors}
+              />
+
+              {/* General Visit & Care Notes */}
               <div>
-                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
-                  Visit Notes
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>General Visit & Care Notes</span>
+                  <span className="text-[10px] text-slate-500 font-normal lowercase">Qualitative clinical observations</span>
                 </label>
                 <textarea
                   rows={4}
-                  placeholder="Enter visit notes, vitals, or clinical observations..."
+                  placeholder="Document general observations, patient demeanor, appetite, mobility, or caregiver recommendations..."
                   value={narrativeContent}
                   onChange={(e) => setNarrativeContent(e.target.value)}
                   className="w-full text-base sm:text-xs font-normal border border-slate-300 rounded-xl p-3 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500 placeholder-slate-400 leading-relaxed font-sans"
@@ -1034,7 +1113,7 @@ export function CaregiverDashboardClient({
                     </div>
 
                     {note.adlTasksCompleted && note.adlTasksCompleted.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-2.5">
+                      <div className="flex flex-wrap gap-1 mb-2">
                         {note.adlTasksCompleted.map((task: string, i: number) => (
                           <span
                             key={i}
@@ -1046,7 +1125,10 @@ export function CaregiverDashboardClient({
                       </div>
                     )}
 
-                    <p className="text-xs text-slate-800 whitespace-pre-wrap leading-relaxed bg-slate-50/70 p-3 rounded-lg border border-slate-200/60 font-sans">
+                    {/* Structured Vitals Badge Row */}
+                    <VitalsBadges vitals={note} size="sm" />
+
+                    <p className="text-xs text-slate-800 whitespace-pre-wrap leading-relaxed bg-slate-50/70 p-3 rounded-lg border border-slate-200/60 font-sans mt-2">
                       {note.content}
                     </p>
 

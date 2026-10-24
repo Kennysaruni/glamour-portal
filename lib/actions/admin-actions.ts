@@ -365,6 +365,34 @@ export async function createAppointment(data: {
   const adminSession = await requireAdmin();
 
   try {
+    // Strict Shift Assignment Safeguard: Verify client is explicitly assigned to this caregiver in DB
+    const client = await prisma.client.findUnique({
+      where: { id: data.clientId },
+      include: {
+        assignedEmployee: {
+          select: { id: true, name: true, role: true },
+        },
+      },
+    });
+
+    if (!client) {
+      return { success: false as const, appointmentId: undefined, error: "Client not found." };
+    }
+
+    if (client.assignedEmployeeId !== data.employeeId) {
+      const caregiver = await prisma.user.findUnique({
+        where: { id: data.employeeId },
+        select: { name: true },
+      });
+      const caregiverName = caregiver?.name || "The selected caregiver";
+      const assignedName = client.assignedEmployee?.name || "None";
+      return {
+        success: false as const,
+        appointmentId: undefined,
+        error: `Strict Shift Assignment Violation: ${caregiverName} is not mapped to ${client.firstName} ${client.lastName} (Current assigned caregiver: ${assignedName}). Shifts can only be scheduled for caregivers actively assigned to this client.`,
+      };
+    }
+
     const appt = await prisma.appointment.create({
       data: {
         clientId: data.clientId,
@@ -511,6 +539,13 @@ export async function getGlobalActivityFeed(filters?: {
     attachmentUrl: n.attachmentUrl,
     attachmentName: n.attachmentName,
     attachmentType: n.attachmentType,
+    temperature: n.temperature,
+    temperatureUnit: (n.temperatureUnit as "F" | "C") || "F",
+    bloodPressureSys: n.bloodPressureSys,
+    bloodPressureDia: n.bloodPressureDia,
+    heartRate: n.heartRate,
+    oxygenSaturation: n.oxygenSaturation,
+    respiratoryRate: n.respiratoryRate,
     createdAt: n.createdAt.toISOString(),
     updatedAt: n.updatedAt.toISOString(),
   }));

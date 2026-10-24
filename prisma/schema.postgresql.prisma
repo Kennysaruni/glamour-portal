@@ -183,6 +183,15 @@ model ClientNote {
   attachmentName    String?      // Original filename e.g. "Visit_Summary_Oct22.pdf"
   attachmentType    String?      // "pdf" | "png" or MIME type
   
+  // Structured Vitals Fields
+  temperature       Float?       // Body temperature (e.g. 98.6)
+  temperatureUnit   String?      @default("F") // "F" or "C"
+  bloodPressureSys  Int?         // Systolic mmHg (e.g. 120)
+  bloodPressureDia  Int?         // Diastolic mmHg (e.g. 80)
+  heartRate         Int?         // Heart Rate (BPM e.g. 72)
+  oxygenSaturation  Int?         // Oxygen Saturation SpO2 % (e.g. 98)
+  respiratoryRate   Int?         // Breaths per min (e.g. 16)
+  
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 

@@ -27,8 +27,12 @@ import {
   Filter,
   RotateCcw,
   RefreshCw,
+  Activity,
 } from "lucide-react";
 import { getDocumentUrl } from "@/lib/document-utils";
+import { VitalsInputFields } from "@/components/vitals/VitalsInputFields";
+import { VitalsBadges, VitalsTable } from "@/components/vitals/VitalsDisplay";
+import { validateVitals, hasAnyVitals } from "@/lib/vitals-utils";
 import {
   CARE_TYPE_LABELS,
   NOTE_CATEGORIES,
@@ -62,8 +66,19 @@ export function ClientDetailView({
   currentUser,
 }: ClientDetailViewProps) {
   const [activeTab, setActiveTab] = useState<"history" | "appointments" | "careplan" | "upload">("history");
+  const [historySubTab, setHistorySubTab] = useState<"feed" | "vitals">("feed");
   const [notes, setNotes] = useState(initialNotes);
   const [appointments] = useState(initialAppointments);
+
+  // Structured Vitals State for Upload / Log Form
+  const [temperature, setTemperature] = useState("");
+  const [temperatureUnit, setTemperatureUnit] = useState<"F" | "C">("F");
+  const [bloodPressureSys, setBloodPressureSys] = useState("");
+  const [bloodPressureDia, setBloodPressureDia] = useState("");
+  const [heartRate, setHeartRate] = useState("");
+  const [oxygenSaturation, setOxygenSaturation] = useState("");
+  const [respiratoryRate, setRespiratoryRate] = useState("");
+  const [vitalsErrors, setVitalsErrors] = useState<Record<string, string>>({});
 
   // Filters for Client Visit Notes / Summaries
   const [noteStartDate, setNoteStartDate] = useState("");
@@ -199,8 +214,40 @@ export function ClientDetailView({
     e.preventDefault();
     setFormStatus(null);
 
-    if (!narrativeContent.trim() && !attachedFile && !uploadedDoc) {
-      setFormStatus({ error: "Please provide clinical notes or upload a PDF/PNG summary document." });
+    // Parse and validate numeric vitals
+    const tempVal = temperature.trim() ? parseFloat(temperature) : null;
+    const sysVal = bloodPressureSys.trim() ? parseInt(bloodPressureSys, 10) : null;
+    const diaVal = bloodPressureDia.trim() ? parseInt(bloodPressureDia, 10) : null;
+    const hrVal = heartRate.trim() ? parseInt(heartRate, 10) : null;
+    const spo2Val = oxygenSaturation.trim() ? parseInt(oxygenSaturation, 10) : null;
+    const rrVal = respiratoryRate.trim() ? parseInt(respiratoryRate, 10) : null;
+
+    const vitalsValidation = validateVitals({
+      temperature: tempVal,
+      temperatureUnit,
+      bloodPressureSys: sysVal,
+      bloodPressureDia: diaVal,
+      heartRate: hrVal,
+      oxygenSaturation: spo2Val,
+      respiratoryRate: rrVal,
+    });
+
+    if (!vitalsValidation.isValid) {
+      setVitalsErrors(vitalsValidation.errors);
+      const firstErr = Object.values(vitalsValidation.errors)[0];
+      setFormStatus({ error: `Vitals Error: ${firstErr}` });
+      return;
+    }
+    setVitalsErrors({});
+
+    const hasAnyVital = [tempVal, sysVal, diaVal, hrVal, spo2Val, rrVal].some(
+      (v) => v !== null && !isNaN(v as number)
+    );
+
+    if (!narrativeContent.trim() && !hasAnyVital && !attachedFile && !uploadedDoc) {
+      setFormStatus({
+        error: "Please provide clinical notes, record structured vitals, or upload a summary document.",
+      });
       return;
     }
 
@@ -245,10 +292,17 @@ export function ClientDetailView({
         clientId: client.id,
         category,
         adlTasksCompleted: selectedAdlTasks,
-        content: narrativeContent || (attachedFile ? `Uploaded clinical summary: ${attachedFile.name}` : ""),
+        content: narrativeContent || (attachmentName ? `Uploaded clinical summary: ${attachmentName}` : (attachedFile ? `Uploaded clinical summary: ${attachedFile.name}` : "")),
         attachmentUrl,
         attachmentName,
         attachmentType,
+        temperature: tempVal,
+        temperatureUnit,
+        bloodPressureSys: sysVal,
+        bloodPressureDia: diaVal,
+        heartRate: hrVal,
+        oxygenSaturation: spo2Val,
+        respiratoryRate: rrVal,
       });
 
       if (res.success) {
@@ -258,6 +312,13 @@ export function ClientDetailView({
         setAttachedFile(null);
         setUploadedDoc(null);
         setUploadState("idle");
+        setTemperature("");
+        setBloodPressureSys("");
+        setBloodPressureDia("");
+        setHeartRate("");
+        setOxygenSaturation("");
+        setRespiratoryRate("");
+        setVitalsErrors({});
 
         // Prepend optimistic note
         const newNoteItem = {
@@ -271,10 +332,17 @@ export function ClientDetailView({
           },
           category,
           adlTasksCompleted: selectedAdlTasks,
-          content: narrativeContent || (attachedFile ? `Uploaded clinical summary: ${attachedFile.name}` : ""),
+          content: narrativeContent || (attachmentName ? `Uploaded clinical summary: ${attachmentName}` : (attachedFile ? `Uploaded clinical summary: ${attachedFile.name}` : "")),
           attachmentUrl,
           attachmentName,
           attachmentType,
+          temperature: tempVal,
+          temperatureUnit,
+          bloodPressureSys: sysVal,
+          bloodPressureDia: diaVal,
+          heartRate: hrVal,
+          oxygenSaturation: spo2Val,
+          respiratoryRate: rrVal,
           createdAt: new Date().toISOString(),
         };
         setNotes((prev) => [newNoteItem, ...prev]);
@@ -582,7 +650,45 @@ export function ClientDetailView({
                   </button>
                 </div>
               </div>
-              {notes.length === 0 ? (
+
+              {/* Sub-view switcher: All Visit Notes Feed vs Vitals Flowsheet Table */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200/80 w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setHistorySubTab("feed")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      historySubTab === "feed"
+                        ? "bg-white text-slate-900 shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5 inline mr-1.5 text-slate-500" />
+                    Visit Notes Feed ({notes.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistorySubTab("vitals")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      historySubTab === "vitals"
+                        ? "bg-white text-rose-700 shadow-2xs font-bold"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <Activity className="w-3.5 h-3.5 inline mr-1.5 text-rose-600" />
+                    Vitals Flowsheet Table ({notes.filter((n) => hasAnyVitals(n)).length})
+                  </button>
+                </div>
+                {historySubTab === "feed" && (
+                  <span className="text-xs text-slate-500">
+                    Chronological card view of visit notes, ADLs, and attachments.
+                  </span>
+                )}
+              </div>
+
+              {historySubTab === "vitals" ? (
+                <VitalsTable notes={notes} />
+              ) : notes.length === 0 ? (
                 <div className="bg-white border border-slate-200/80 rounded-xl p-10 text-center">
                   <FileText className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                   <p className="text-sm font-semibold text-slate-700">No visit notes or summaries recorded yet</p>
@@ -644,8 +750,11 @@ export function ClientDetailView({
                       </div>
                     )}
 
+                    {/* Structured Vitals Badges */}
+                    <VitalsBadges vitals={note} size="sm" />
+
                     {/* Narrative Clinical Content */}
-                    <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/60">
+                    <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/60 mt-2">
                       {note.content}
                     </div>
 
@@ -999,14 +1108,34 @@ export function ClientDetailView({
                   )}
                 </div>
 
-                {/* Narrative Clinical Notes */}
+                {/* Structured Vital Signs Input */}
+                <VitalsInputFields
+                  temperature={temperature}
+                  setTemperature={setTemperature}
+                  temperatureUnit={temperatureUnit}
+                  setTemperatureUnit={setTemperatureUnit}
+                  bloodPressureSys={bloodPressureSys}
+                  setBloodPressureSys={setBloodPressureSys}
+                  bloodPressureDia={bloodPressureDia}
+                  setBloodPressureDia={setBloodPressureDia}
+                  heartRate={heartRate}
+                  setHeartRate={setHeartRate}
+                  oxygenSaturation={oxygenSaturation}
+                  setOxygenSaturation={setOxygenSaturation}
+                  respiratoryRate={respiratoryRate}
+                  setRespiratoryRate={setRespiratoryRate}
+                  errors={vitalsErrors}
+                />
+
+                {/* Qualitative Clinical Narrative & Observations */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                    Clinical Narrative & Observations
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span>Clinical Narrative & Observations</span>
+                    <span className="text-[10px] text-slate-500 font-normal lowercase">Qualitative clinical observations</span>
                   </label>
                   <textarea
                     rows={4}
-                    placeholder="Enter visit narrative, patient vital signs, or document summary notes..."
+                    placeholder="Enter visit narrative, patient clinical observations, or document summary notes..."
                     value={narrativeContent}
                     onChange={(e) => setNarrativeContent(e.target.value)}
                     className="w-full text-xs font-normal border border-slate-200 rounded-xl p-3.5 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 placeholder-slate-400 leading-relaxed font-sans"

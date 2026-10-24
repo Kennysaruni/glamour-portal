@@ -136,8 +136,15 @@ export interface ClientNoteData {
   attachmentUrl?: string | null;
   attachmentName?: string | null;
   attachmentType?: string | null;
+  temperature?: number | null;
+  temperatureUnit?: "F" | "C" | string | null;
+  bloodPressureSys?: number | null;
+  bloodPressureDia?: number | null;
+  heartRate?: number | null;
+  oxygenSaturation?: number | null;
+  respiratoryRate?: number | null;
   createdAt: Date | string;
-  updatedAt: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface AppointmentData {

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import { NoteCategory, AppointmentStatus, AppointmentType, CareType } from "@/lib/types";
+import { validateVitals, hasAnyVitals } from "@/lib/vitals-utils";
 
 // Helper to normalize ADL tasks
 function parseAdlTasks(raw: string | string[] | null | undefined): string[] {
@@ -131,6 +132,13 @@ export async function getCaregiverNotes() {
     attachmentUrl: n.attachmentUrl,
     attachmentName: n.attachmentName,
     attachmentType: n.attachmentType,
+    temperature: n.temperature,
+    temperatureUnit: (n.temperatureUnit as "F" | "C") || "F",
+    bloodPressureSys: n.bloodPressureSys,
+    bloodPressureDia: n.bloodPressureDia,
+    heartRate: n.heartRate,
+    oxygenSaturation: n.oxygenSaturation,
+    respiratoryRate: n.respiratoryRate,
     createdAt: n.createdAt.toISOString(),
   }));
 }
@@ -295,6 +303,13 @@ export async function getClientDetailsAndHistory(
       attachmentUrl: n.attachmentUrl,
       attachmentName: n.attachmentName,
       attachmentType: n.attachmentType,
+      temperature: n.temperature,
+      temperatureUnit: (n.temperatureUnit as "F" | "C") || "F",
+      bloodPressureSys: n.bloodPressureSys,
+      bloodPressureDia: n.bloodPressureDia,
+      heartRate: n.heartRate,
+      oxygenSaturation: n.oxygenSaturation,
+      respiratoryRate: n.respiratoryRate,
       createdAt: n.createdAt.toISOString(),
     })),
     appointments: appointments.map((a) => ({
@@ -326,6 +341,13 @@ export async function submitVisitLog(data: {
   attachmentUrl?: string | null;
   attachmentName?: string | null;
   attachmentType?: string | null;
+  temperature?: number | null;
+  temperatureUnit?: "F" | "C";
+  bloodPressureSys?: number | null;
+  bloodPressureDia?: number | null;
+  heartRate?: number | null;
+  oxygenSaturation?: number | null;
+  respiratoryRate?: number | null;
 }) {
   const session = await requireAuth();
   const userId = session.user.id;
@@ -346,11 +368,47 @@ export async function submitVisitLog(data: {
     };
   }
 
-  if (!data.content.trim()) {
-    return { success: false, error: "Please enter narrative visit or clinical notes." };
+  // Server-side structured vitals validation
+  const vitalsToCheck = {
+    temperature: data.temperature,
+    temperatureUnit: data.temperatureUnit,
+    bloodPressureSys: data.bloodPressureSys,
+    bloodPressureDia: data.bloodPressureDia,
+    heartRate: data.heartRate,
+    oxygenSaturation: data.oxygenSaturation,
+    respiratoryRate: data.respiratoryRate,
+  };
+  const vitalsValidation = validateVitals(vitalsToCheck);
+  if (!vitalsValidation.isValid) {
+    const firstErr = Object.values(vitalsValidation.errors)[0];
+    return { success: false, error: `Vitals Error: ${firstErr}` };
   }
 
-  // Create Client Note
+  const hasVitals = hasAnyVitals(vitalsToCheck);
+  const trimmedContent = data.content ? data.content.trim() : "";
+
+  if (!trimmedContent && !hasVitals && !data.attachmentUrl) {
+    return {
+      success: false,
+      error: "Please enter narrative visit notes, record structured vitals, or attach a document.",
+    };
+  }
+
+  // Format default qualitative content if only vitals were recorded
+  let finalContent = trimmedContent;
+  if (!finalContent && hasVitals) {
+    const parts: string[] = [];
+    if (data.temperature) parts.push(`Temp: ${data.temperature}°${data.temperatureUnit || "F"}`);
+    if (data.bloodPressureSys && data.bloodPressureDia) parts.push(`BP: ${data.bloodPressureSys}/${data.bloodPressureDia} mmHg`);
+    if (data.heartRate) parts.push(`HR: ${data.heartRate} BPM`);
+    if (data.oxygenSaturation) parts.push(`SpO2: ${data.oxygenSaturation}%`);
+    if (data.respiratoryRate) parts.push(`RR: ${data.respiratoryRate} bpm`);
+    finalContent = `Routine Vitals Check recorded (${parts.join(", ")}).`;
+  } else if (!finalContent && data.attachmentName) {
+    finalContent = `Attached clinical summary document: ${data.attachmentName}`;
+  }
+
+  // Create Client Note with Structured Vitals
   const note = await prisma.clientNote.create({
     data: {
       clientId: data.clientId,
@@ -358,10 +416,17 @@ export async function submitVisitLog(data: {
       appointmentId: data.appointmentId || null,
       category: data.category,
       adlTasksCompleted: JSON.stringify(data.adlTasksCompleted || []),
-      content: data.content.trim(),
+      content: finalContent,
       attachmentUrl: data.attachmentUrl || null,
       attachmentName: data.attachmentName || null,
       attachmentType: data.attachmentType || null,
+      temperature: data.temperature !== undefined ? data.temperature : null,
+      temperatureUnit: data.temperatureUnit || "F",
+      bloodPressureSys: data.bloodPressureSys !== undefined ? data.bloodPressureSys : null,
+      bloodPressureDia: data.bloodPressureDia !== undefined ? data.bloodPressureDia : null,
+      heartRate: data.heartRate !== undefined ? data.heartRate : null,
+      oxygenSaturation: data.oxygenSaturation !== undefined ? data.oxygenSaturation : null,
+      respiratoryRate: data.respiratoryRate !== undefined ? data.respiratoryRate : null,
     },
   });
 
