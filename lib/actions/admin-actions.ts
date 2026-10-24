@@ -314,7 +314,6 @@ export async function getAppointmentsList() {
   await requireAdmin();
 
   const appointments = await prisma.appointment.findMany({
-    orderBy: { startTime: "asc" },
     include: {
       client: {
         select: {
@@ -337,7 +336,18 @@ export async function getAppointmentsList() {
     },
   });
 
-  return appointments.map((a) => ({
+  // Scheduled shifts first (chronological upcoming), then Completed/other shifts (most recent first)
+  const scheduled = appointments
+    .filter((a) => a.status === "SCHEDULED")
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+  const other = appointments
+    .filter((a) => a.status !== "SCHEDULED")
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+
+  const sortedAppointments = [...scheduled, ...other];
+
+  return sortedAppointments.map((a) => ({
     id: a.id,
     clientId: a.clientId,
     client: a.client,

@@ -27,7 +27,7 @@ import {
   RotateCcw,
   RefreshCw,
 } from "lucide-react";
-import { getDocumentUrl } from "@/lib/document-utils";
+import { getDocumentUrl, calculateAge } from "@/lib/document-utils";
 import { VitalsBadges } from "@/components/vitals/VitalsDisplay";
 import {
   createStaffMember,
@@ -834,11 +834,19 @@ export function AdminDashboardClient({
                         )}
                       </div>
 
-                      {client.dateOfBirth && (
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          DOB: {client.dateOfBirth}
-                        </p>
-                      )}
+                      {client.dateOfBirth && (() => {
+                        const age = calculateAge(client.dateOfBirth);
+                        return (
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            DOB: <span className="font-medium text-slate-700">{client.dateOfBirth}</span>
+                            {age !== null && (
+                              <span className="ml-1.5 font-semibold text-slate-600">
+                                (Age {age})
+                              </span>
+                            )}
+                          </p>
+                        );
+                      })()}
                     </div>
 
                     <button

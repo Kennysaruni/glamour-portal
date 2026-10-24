@@ -70,7 +70,6 @@ export async function getCaregiverAppointments() {
       employeeId: userId,
       startTime: { gte: sevenDaysAgo },
     },
-    orderBy: { startTime: "asc" },
     include: {
       client: {
         select: {
@@ -87,7 +86,18 @@ export async function getCaregiverAppointments() {
     },
   });
 
-  return appointments.map((a) => ({
+  // Ensure SCHEDULED shifts are FIRST (ascending by upcoming time), then COMPLETED/past shifts (most recent first)
+  const scheduled = appointments
+    .filter((a) => a.status === "SCHEDULED")
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+  const completed = appointments
+    .filter((a) => a.status !== "SCHEDULED")
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+
+  const sortedAppointments = [...scheduled, ...completed];
+
+  return sortedAppointments.map((a) => ({
     id: a.id,
     clientId: a.clientId,
     client: a.client,
