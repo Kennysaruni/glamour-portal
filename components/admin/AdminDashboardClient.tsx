@@ -163,6 +163,18 @@ export function AdminDashboardClient({
   const [clientToEdit, setClientToEdit] = useState<any | null>(null);
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
 
+  // Search state for Client Directory & Staff Management
+  const [clientDirectorySearch, setClientDirectorySearch] = useState("");
+  const [staffDirectorySearch, setStaffDirectorySearch] = useState("");
+
+  // Suggestive search for provisioning new staff
+  const [staffClientSearchQuery, setStaffClientSearchQuery] = useState("");
+  const [isStaffClientDropdownOpen, setIsStaffClientDropdownOpen] = useState(false);
+
+  // Suggestive search for scheduling appointment
+  const [apptClientSearchQuery, setApptClientSearchQuery] = useState("");
+  const [isApptClientDropdownOpen, setIsApptClientDropdownOpen] = useState(false);
+
   // Form states
   const [staffForm, setStaffForm] = useState({
     name: "",
@@ -170,6 +182,34 @@ export function AdminDashboardClient({
     phone: "",
     role: "EMPLOYEE" as "ADMIN" | "EMPLOYEE",
     tempPassword: "",
+    assignedClientIds: [] as string[],
+  });
+
+  const filteredClientDirectory = clientsList.filter((client) => {
+    if (!clientDirectorySearch.trim()) return true;
+    const q = clientDirectorySearch.toLowerCase();
+    const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
+    const address = (client.address || "").toLowerCase();
+    const phone = (client.phone || "").toLowerCase();
+    const caregiver = (client.assignedEmployee?.name || "").toLowerCase();
+    const careType = (client.primaryCareType || "").toLowerCase();
+    return (
+      fullName.includes(q) ||
+      address.includes(q) ||
+      phone.includes(q) ||
+      caregiver.includes(q) ||
+      careType.includes(q)
+    );
+  });
+
+  const filteredStaffDirectory = staffList.filter((staff) => {
+    if (!staffDirectorySearch.trim()) return true;
+    const q = staffDirectorySearch.toLowerCase();
+    const name = (staff.name || "").toLowerCase();
+    const email = (staff.email || "").toLowerCase();
+    const phone = (staff.phone || "").toLowerCase();
+    const role = (staff.role || "").toLowerCase();
+    return name.includes(q) || email.includes(q) || phone.includes(q) || role.includes(q);
   });
 
   const [clientForm, setClientForm] = useState({
@@ -241,7 +281,9 @@ export function AdminDashboardClient({
           phone: "",
           role: "EMPLOYEE",
           tempPassword: "",
+          assignedClientIds: [],
         });
+        setStaffClientSearchQuery("");
         window.location.reload();
       } else {
         setFormError(res.error || "Failed to create staff member.");
@@ -705,7 +747,7 @@ export function AdminDashboardClient({
         {/* ================================================================= */}
         {activeTab === "clients" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Client Directory
@@ -714,20 +756,56 @@ export function AdminDashboardClient({
               </div>
               <button
                 onClick={() => setIsClientModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
               >
                 <Plus className="w-4 h-4" /> Add New Client
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {clientsList.map((client) => (
-                <div
-                  key={client.id}
-                  className={`bg-white rounded-xl border p-5 shadow-xs relative transition-all ${
-                    client.isActive ? "border-slate-200/80 hover:border-slate-300" : "border-slate-200/50 bg-slate-50/50 opacity-75"
-                  }`}
-                >
+            {/* Instant Search Bar */}
+            <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search clients by name, address, phone, or assigned caregiver..."
+                  value={clientDirectorySearch}
+                  onChange={(e) => setClientDirectorySearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50/70 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-rose-500 text-slate-800 placeholder-slate-400"
+                />
+                {clientDirectorySearch && (
+                  <button
+                    onClick={() => setClientDirectorySearch("")}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <span className="text-xs font-semibold text-slate-500 bg-slate-100 border border-slate-200/80 px-2.5 py-1.5 rounded-lg shrink-0 text-center sm:text-left">
+                Showing {filteredClientDirectory.length} of {clientsList.length} clients
+              </span>
+            </div>
+
+            {filteredClientDirectory.length === 0 ? (
+              <div className="bg-white border border-slate-200/80 rounded-xl p-10 text-center shadow-xs">
+                <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <h3 className="text-sm font-semibold text-slate-800">No clients found</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  {clientDirectorySearch
+                    ? `No patient matches "${clientDirectorySearch}". Try another search term.`
+                    : "No registered clients."}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredClientDirectory.map((client) => (
+                  <div
+                    key={client.id}
+                    className={`bg-white rounded-xl border p-5 shadow-xs relative transition-all ${
+                      client.isActive ? "border-slate-200/80 hover:border-slate-300" : "border-slate-200/50 bg-slate-50/50 opacity-75"
+                    }`}
+                  >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
@@ -826,6 +904,7 @@ export function AdminDashboardClient({
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
 
@@ -834,7 +913,7 @@ export function AdminDashboardClient({
         {/* ================================================================= */}
         {activeTab === "staff" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Caregivers & Staff
@@ -843,43 +922,146 @@ export function AdminDashboardClient({
               </div>
               <button
                 onClick={() => setIsStaffModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
               >
                 <UserPlus className="w-4 h-4" /> Provision New Staff
               </button>
             </div>
 
-            {/* Desktop Table */}
-            <div className="hidden sm:block bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
-              <table className="min-w-[620px] w-full divide-y divide-slate-200 text-left text-xs">
-                <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
-                  <tr>
-                    <th className="px-4 py-3">Staff Member</th>
-                    <th className="px-4 py-3">Role</th>
-                    <th className="px-4 py-3">Contact</th>
-                    <th className="px-4 py-3">Assigned Clients</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {staffList.map((staff) => (
-                    <tr key={staff.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-4 py-3 font-semibold text-slate-900">
+            {/* Instant Search Bar */}
+            <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search staff by name, work email, phone, or role..."
+                  value={staffDirectorySearch}
+                  onChange={(e) => setStaffDirectorySearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50/70 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-rose-500 text-slate-800 placeholder-slate-400"
+                />
+                {staffDirectorySearch && (
+                  <button
+                    onClick={() => setStaffDirectorySearch("")}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <span className="text-xs font-semibold text-slate-500 bg-slate-100 border border-slate-200/80 px-2.5 py-1.5 rounded-lg shrink-0 text-center sm:text-left">
+                Showing {filteredStaffDirectory.length} of {staffList.length} staff
+              </span>
+            </div>
+
+            {filteredStaffDirectory.length === 0 ? (
+              <div className="bg-white border border-slate-200/80 rounded-xl p-10 text-center shadow-xs">
+                <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <h3 className="text-sm font-semibold text-slate-800">No staff members found</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  {staffDirectorySearch
+                    ? `No staff matches "${staffDirectorySearch}". Try another name, email, or role.`
+                    : "No staff members registered."}
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden sm:block bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
+                  <table className="min-w-[620px] w-full divide-y divide-slate-200 text-left text-xs">
+                    <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
+                      <tr>
+                        <th className="px-4 py-3">Staff Member</th>
+                        <th className="px-4 py-3">Role</th>
+                        <th className="px-4 py-3">Contact</th>
+                        <th className="px-4 py-3">Assigned Clients</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredStaffDirectory.map((staff) => (
+                        <tr key={staff.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="px-4 py-3 font-semibold text-slate-900">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">
+                                {staff.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div className="text-slate-900 font-semibold">{staff.name}</div>
+                                <div className="text-[11px] text-slate-400 font-normal">
+                                  {staff.email}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="px-4 py-3">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
+                                staff.role === "ADMIN"
+                                  ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                                  : "bg-slate-100 text-slate-700 border border-slate-200/60"
+                              }`}
+                            >
+                              {staff.role}
+                            </span>
+                          </td>
+
+                          <td className="px-4 py-3 text-slate-600">
+                            {staff.phone || <span className="text-slate-400">N/A</span>}
+                          </td>
+
+                          <td className="px-4 py-3 font-medium text-slate-700">
+                            {staff.assignedClientsCount || 0} Patients
+                          </td>
+
+                          <td className="px-4 py-3">
+                            {staff.isActive ? (
+                              <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
+                                <CheckCircle className="w-3.5 h-3.5" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-slate-400 font-semibold text-xs">
+                                Suspended
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="px-4 py-3 text-right">
+                            {staff.id !== currentUser.id && (
+                              <button
+                                onClick={() => handleToggleStaff(staff.id, staff.isActive)}
+                                disabled={isPending}
+                                className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                                  staff.isActive
+                                    ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
+                                    : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
+                                }`}
+                              >
+                                {staff.isActive ? "Deactivate" : "Activate"}
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="sm:hidden space-y-3">
+                  {filteredStaffDirectory.map((staff) => (
+                    <div key={staff.id} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs space-y-3 text-xs">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">
                             {staff.name.charAt(0)}
                           </div>
                           <div>
                             <div className="text-slate-900 font-semibold">{staff.name}</div>
-                            <div className="text-[11px] text-slate-400 font-normal">
-                              {staff.email}
-                            </div>
+                            <div className="text-[11px] text-slate-400 font-normal">{staff.email}</div>
                           </div>
                         </div>
-                      </td>
-
-                      <td className="px-4 py-3">
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
                             staff.role === "ADMIN"
@@ -889,17 +1071,20 @@ export function AdminDashboardClient({
                         >
                           {staff.role}
                         </span>
-                      </td>
+                      </div>
 
-                      <td className="px-4 py-3 text-slate-600">
-                        {staff.phone || <span className="text-slate-400">N/A</span>}
-                      </td>
+                      <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-slate-100 text-slate-600">
+                        <div>
+                          <span className="text-slate-400 block text-[10px]">Phone</span>
+                          <span className="font-medium text-slate-800">{staff.phone || "N/A"}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block text-[10px]">Assigned Clients</span>
+                          <span className="font-medium text-slate-800">{staff.assignedClientsCount || 0} Patients</span>
+                        </div>
+                      </div>
 
-                      <td className="px-4 py-3 font-medium text-slate-700">
-                        {staff.assignedClientsCount || 0} Patients
-                      </td>
-
-                      <td className="px-4 py-3">
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                         {staff.isActive ? (
                           <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
                             <CheckCircle className="w-3.5 h-3.5" /> Active
@@ -909,14 +1094,12 @@ export function AdminDashboardClient({
                             Suspended
                           </span>
                         )}
-                      </td>
 
-                      <td className="px-4 py-3 text-right">
                         {staff.id !== currentUser.id && (
                           <button
                             onClick={() => handleToggleStaff(staff.id, staff.isActive)}
                             disabled={isPending}
-                            className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                            className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
                               staff.isActive
                                 ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
                                 : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
@@ -925,77 +1108,12 @@ export function AdminDashboardClient({
                             {staff.isActive ? "Deactivate" : "Activate"}
                           </button>
                         )}
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="sm:hidden space-y-3">
-              {staffList.map((staff) => (
-                <div key={staff.id} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs space-y-3 text-xs">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">
-                        {staff.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="text-slate-900 font-semibold">{staff.name}</div>
-                        <div className="text-[11px] text-slate-400 font-normal">{staff.email}</div>
-                      </div>
-                    </div>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
-                        staff.role === "ADMIN"
-                          ? "bg-rose-50 text-rose-700 border border-rose-200/60"
-                          : "bg-slate-100 text-slate-700 border border-slate-200/60"
-                      }`}
-                    >
-                      {staff.role}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-slate-100 text-slate-600">
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Phone</span>
-                      <span className="font-medium text-slate-800">{staff.phone || "N/A"}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Assigned Clients</span>
-                      <span className="font-medium text-slate-800">{staff.assignedClientsCount || 0} Patients</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                    {staff.isActive ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
-                        <CheckCircle className="w-3.5 h-3.5" /> Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-slate-400 font-semibold text-xs">
-                        Suspended
-                      </span>
-                    )}
-
-                    {staff.id !== currentUser.id && (
-                      <button
-                        onClick={() => handleToggleStaff(staff.id, staff.isActive)}
-                        disabled={isPending}
-                        className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
-                          staff.isActive
-                            ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
-                            : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
-                        }`}
-                      >
-                        {staff.isActive ? "Deactivate" : "Activate"}
-                      </button>
-                    )}
-                  </div>
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
         )}
 
@@ -1474,6 +1592,133 @@ export function AdminDashboardClient({
                 </select>
               </div>
 
+              {/* Suggestive Search for Assigning Initial Clients */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Assign Patients / Clients (Optional)
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {staffForm.assignedClientIds.length} selected
+                  </span>
+                </div>
+
+                {/* Selected Clients Chips */}
+                {staffForm.assignedClientIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {staffForm.assignedClientIds.map((cid) => {
+                      const client = clientsList.find((c) => c.id === cid);
+                      if (!client) return null;
+                      return (
+                        <span
+                          key={cid}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-slate-100 text-slate-800 border border-slate-200"
+                        >
+                          <span className="font-semibold">{client.firstName} {client.lastName}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setStaffForm({
+                                ...staffForm,
+                                assignedClientIds: staffForm.assignedClientIds.filter((id) => id !== cid),
+                              })
+                            }
+                            className="text-slate-400 hover:text-rose-600 rounded-full cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Search Input with Autocomplete Suggestions */}
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Type patient name or care type to suggest..."
+                      value={staffClientSearchQuery}
+                      onChange={(e) => {
+                        setStaffClientSearchQuery(e.target.value);
+                        setIsStaffClientDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsStaffClientDropdownOpen(true)}
+                      className="w-full border border-slate-200 rounded-lg pl-9 pr-8 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    />
+                    {staffClientSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setStaffClientSearchQuery("")}
+                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Suggestion Dropdown */}
+                  {isStaffClientDropdownOpen && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto divide-y divide-slate-100">
+                      {clientsList
+                        .filter((c) => {
+                          const matchesQuery =
+                            !staffClientSearchQuery.trim() ||
+                            `${c.firstName} ${c.lastName}`.toLowerCase().includes(staffClientSearchQuery.toLowerCase()) ||
+                            (c.address && c.address.toLowerCase().includes(staffClientSearchQuery.toLowerCase())) ||
+                            (c.primaryCareType && c.primaryCareType.toLowerCase().includes(staffClientSearchQuery.toLowerCase()));
+                          const notAlreadySelected = !staffForm.assignedClientIds.includes(c.id);
+                          return matchesQuery && notAlreadySelected;
+                        })
+                        .map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              setStaffForm({
+                                ...staffForm,
+                                assignedClientIds: [...staffForm.assignedClientIds, c.id],
+                              });
+                              setStaffClientSearchQuery("");
+                              setIsStaffClientDropdownOpen(false);
+                            }}
+                            className="w-full p-2.5 text-left hover:bg-slate-50 transition-colors flex items-center justify-between gap-2 cursor-pointer text-xs"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center shrink-0">
+                                {c.firstName[0]}{c.lastName[0]}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-semibold text-slate-900 truncate">
+                                  {c.firstName} {c.lastName}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate">
+                                  {c.address || "Fredericksburg, VA"}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                              {CARE_TYPE_LABELS[c.primaryCareType as CareType] || c.primaryCareType}
+                            </span>
+                          </button>
+                        ))}
+                      {clientsList.filter(
+                        (c) =>
+                          (!staffClientSearchQuery.trim() ||
+                            `${c.firstName} ${c.lastName}`.toLowerCase().includes(staffClientSearchQuery.toLowerCase())) &&
+                          !staffForm.assignedClientIds.includes(c.id)
+                      ).length === 0 && (
+                        <div className="p-3 text-center text-xs text-slate-400">
+                          {staffClientSearchQuery ? "No matching clients found." : "All clients already selected."}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Temporary Initial Password
@@ -1905,26 +2150,108 @@ export function AdminDashboardClient({
             <form onSubmit={handleCreateAppointment} className="space-y-3.5 text-xs">
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">Select Client</label>
-                <select
-                  value={appointmentForm.clientId}
-                  onChange={(e) => {
-                    const cid = e.target.value;
-                    const c = clientsList.find((x) => x.id === cid);
-                    setAppointmentForm({
-                      ...appointmentForm,
-                      clientId: cid,
-                      employeeId: c?.assignedEmployeeId || appointmentForm.employeeId,
-                      location: c?.address || "",
-                    });
-                  }}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                >
-                  {clientsList.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.firstName} {c.lastName} ({c.address || "Fredericksburg, VA"})
-                    </option>
-                  ))}
-                </select>
+                {/* Selected Client Display Card */}
+                {appointmentForm.clientId && (
+                  <div className="mb-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    {(() => {
+                      const sel = clientsList.find((x) => x.id === appointmentForm.clientId);
+                      return sel ? (
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+                            {sel.firstName[0]}{sel.lastName[0]}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="font-semibold text-slate-900 block truncate">
+                              {sel.firstName} {sel.lastName}
+                            </span>
+                            <span className="text-[10px] text-slate-500 block truncate">
+                              {sel.address || "Fredericksburg, VA"}
+                            </span>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+                    <span className="text-[10px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200/60 shrink-0">
+                      Selected
+                    </span>
+                  </div>
+                )}
+
+                {/* Suggestive Search Input */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search client name, care type, or address..."
+                    value={apptClientSearchQuery}
+                    onChange={(e) => {
+                      setApptClientSearchQuery(e.target.value);
+                      setIsApptClientDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsApptClientDropdownOpen(true)}
+                    className="w-full border border-slate-200 rounded-lg pl-9 pr-8 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  />
+                  {apptClientSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setApptClientSearchQuery("")}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  {isApptClientDropdownOpen && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto divide-y divide-slate-100">
+                      {clientsList
+                        .filter((c) => {
+                          if (!apptClientSearchQuery.trim()) return true;
+                          const q = apptClientSearchQuery.toLowerCase();
+                          return (
+                            `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) ||
+                            (c.address && c.address.toLowerCase().includes(q)) ||
+                            (c.primaryCareType && c.primaryCareType.toLowerCase().includes(q))
+                          );
+                        })
+                        .map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              setAppointmentForm({
+                                ...appointmentForm,
+                                clientId: c.id,
+                                employeeId: c.assignedEmployeeId || appointmentForm.employeeId,
+                                location: c.address || "",
+                              });
+                              setApptClientSearchQuery("");
+                              setIsApptClientDropdownOpen(false);
+                            }}
+                            className={`w-full p-2.5 text-left hover:bg-slate-50 transition-colors flex items-center justify-between gap-2 cursor-pointer text-xs ${
+                              appointmentForm.clientId === c.id ? "bg-rose-50/60 font-semibold" : ""
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center shrink-0">
+                                {c.firstName[0]}{c.lastName[0]}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-slate-900 truncate">
+                                  {c.firstName} {c.lastName}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate">
+                                  {c.address || "Fredericksburg, VA"}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                              {CARE_TYPE_LABELS[c.primaryCareType as CareType] || c.primaryCareType}
+                            </span>
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>

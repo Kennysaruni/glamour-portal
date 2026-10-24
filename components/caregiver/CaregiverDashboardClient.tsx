@@ -19,6 +19,7 @@ import {
   Sparkles,
   Upload,
   X,
+  Search,
   ExternalLink,
   Loader2,
   Image as ImageIcon,
@@ -58,6 +59,29 @@ export function CaregiverDashboardClient({
   const [activeTab, setActiveTab] = useState<"schedule" | "clients" | "log" | "history">("schedule");
 
   const { caregiver, clients, appointments, recentNotes } = initialData;
+
+  // Search & Autocomplete State
+  const [patientSearchQuery, setPatientSearchQuery] = useState("");
+  const [logPatientSearchQuery, setLogPatientSearchQuery] = useState("");
+  const [isLogPatientDropdownOpen, setIsLogPatientDropdownOpen] = useState(false);
+
+  // Filtered patients for Tab 2
+  const filteredPatients = clients.filter((client) => {
+    if (!patientSearchQuery.trim()) return true;
+    const q = patientSearchQuery.toLowerCase();
+    const fullName = `${client.firstName} ${client.lastName}`.toLowerCase();
+    const address = (client.address || "").toLowerCase();
+    const phone = (client.emergencyPhone || "").toLowerCase();
+    const contact = (client.emergencyContact || "").toLowerCase();
+    const careType = (CARE_TYPE_LABELS[client.primaryCareType as CareType] || client.primaryCareType || "").toLowerCase();
+    return (
+      fullName.includes(q) ||
+      address.includes(q) ||
+      phone.includes(q) ||
+      contact.includes(q) ||
+      careType.includes(q)
+    );
+  });
 
   // Visit Log Form State
   const [selectedClientId, setSelectedClientId] = useState<string>(clients[0]?.id || "");
@@ -445,107 +469,165 @@ export function CaregiverDashboardClient({
         {/* ================================================================= */}
         {activeTab === "clients" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   My Patients
                 </h2>
                 <p className="text-xs text-slate-500">Assigned patient list and clinical care plans.</p>
               </div>
+
+              {/* Patient Instant Search */}
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search patients by name, care type, address..."
+                  value={patientSearchQuery}
+                  onChange={(e) => setPatientSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-2xs"
+                />
+                {patientSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setPatientSearchQuery("")}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {clients.map((client) => (
-                <div
-                  key={client.id}
-                  className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs hover:border-slate-300 transition-all"
+            {/* Match Counter Bar */}
+            <div className="flex items-center justify-between text-xs text-slate-500 px-0.5">
+              <span>
+                Showing <strong className="text-slate-800 font-semibold">{filteredPatients.length}</strong> of {clients.length} patients
+              </span>
+              {patientSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setPatientSearchQuery("")}
+                  className="text-rose-600 hover:text-rose-700 font-semibold cursor-pointer"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center shrink-0">
-                        {client.firstName[0]}{client.lastName[0]}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-base font-bold text-slate-900">
-                            {client.firstName} {client.lastName}
-                          </h3>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200/60 uppercase tracking-wider">
-                            {CARE_TYPE_LABELS[client.primaryCareType as CareType] ||
-                              client.primaryCareType}
-                          </span>
-                        </div>
-                        {client.dateOfBirth && (
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            DOB: {client.dateOfBirth}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 self-start sm:self-auto">
-                      <a
-                        href={`/clients/${client.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        <ClipboardList className="w-3.5 h-3.5 text-slate-500" /> Full History
-                      </a>
-                      <button
-                        onClick={() => {
-                          setSelectedClientId(client.id);
-                          setActiveTab("log");
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-                      >
-                        <CheckSquare className="w-3.5 h-3.5" /> Start Visit Note
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
-                    <div className="bg-slate-50/70 border border-slate-200/60 rounded-lg p-2.5">
-                      <span className="text-slate-500 font-medium block">Residence:</span>
-                      <div className="flex items-center gap-1 text-slate-900 mt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address || "Fredericksburg, VA")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-slate-800 font-semibold hover:text-rose-600 hover:underline"
-                        >
-                          {client.address || "Fredericksburg, VA"}
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-50/70 border border-slate-200/60 rounded-lg p-2.5">
-                      <span className="text-slate-500 font-medium block">Emergency Contact:</span>
-                      <div className="flex items-center gap-1 text-slate-900 font-semibold mt-0.5">
-                        <Phone className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                        <a
-                          href={client.emergencyPhone ? `tel:${client.emergencyPhone}` : "#"}
-                          className="hover:underline text-rose-700"
-                        >
-                          {client.emergencyContact || "Emergency Contact"}{" "}
-                          {client.emergencyPhone && `(${client.emergencyPhone})`}
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-
-                  {client.carePlanSummary && (
-                    <div className="mt-3 pt-3 border-t border-slate-100">
-                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-                        Active Care Plan:
-                      </span>
-                      <p className="text-xs text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60 leading-relaxed">
-                        {client.carePlanSummary}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
+                  Clear filter
+                </button>
+              )}
             </div>
+
+            {filteredPatients.length === 0 ? (
+              <div className="bg-white border border-slate-200/80 rounded-xl p-8 text-center text-xs shadow-2xs">
+                <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="font-semibold text-slate-800">No patients found</p>
+                <p className="text-slate-500 mt-1">
+                  {patientSearchQuery
+                    ? `No patient matches "${patientSearchQuery}". Try adjusting your keywords.`
+                    : "No patients currently assigned to you."}
+                </p>
+                {patientSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setPatientSearchQuery("")}
+                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    Reset Filter
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {filteredPatients.map((client) => (
+                  <div
+                    key={client.id}
+                    className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-xs hover:border-slate-300 transition-all"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center shrink-0">
+                          {client.firstName[0]}{client.lastName[0]}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-base font-bold text-slate-900">
+                              {client.firstName} {client.lastName}
+                            </h3>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200/60 uppercase tracking-wider">
+                              {CARE_TYPE_LABELS[client.primaryCareType as CareType] ||
+                                client.primaryCareType}
+                            </span>
+                          </div>
+                          {client.dateOfBirth && (
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              DOB: {client.dateOfBirth}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-start sm:self-auto">
+                        <a
+                          href={`/clients/${client.id}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          <ClipboardList className="w-3.5 h-3.5 text-slate-500" /> Full History
+                        </a>
+                        <button
+                          onClick={() => {
+                            setSelectedClientId(client.id);
+                            setActiveTab("log");
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                        >
+                          <CheckSquare className="w-3.5 h-3.5" /> Start Visit Note
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
+                      <div className="bg-slate-50/70 border border-slate-200/60 rounded-lg p-2.5">
+                        <span className="text-slate-500 font-medium block">Residence:</span>
+                        <div className="flex items-center gap-1 text-slate-900 mt-0.5">
+                          <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address || "Fredericksburg, VA")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-800 font-semibold hover:text-rose-600 hover:underline"
+                          >
+                            {client.address || "Fredericksburg, VA"}
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50/70 border border-slate-200/60 rounded-lg p-2.5">
+                        <span className="text-slate-500 font-medium block">Emergency Contact:</span>
+                        <div className="flex items-center gap-1 text-slate-900 font-semibold mt-0.5">
+                          <Phone className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                          <a
+                            href={client.emergencyPhone ? `tel:${client.emergencyPhone}` : "#"}
+                            className="hover:underline text-rose-700"
+                          >
+                            {client.emergencyContact || "Emergency Contact"}{" "}
+                            {client.emergencyPhone && `(${client.emergencyPhone})`}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    {client.carePlanSummary && (
+                      <div className="mt-3 pt-3 border-t border-slate-100">
+                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                          Active Care Plan:
+                        </span>
+                        <p className="text-xs text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-200/60 leading-relaxed">
+                          {client.carePlanSummary}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -576,23 +658,129 @@ export function CaregiverDashboardClient({
             )}
 
             <form onSubmit={handleSubmitVisit} className="space-y-5">
-              {/* Select Client */}
+              {/* Select Client with Suggestive Search */}
               <div>
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
                   Patient *
                 </label>
-                <select
-                  value={selectedClientId}
-                  onChange={(e) => setSelectedClientId(e.target.value)}
-                  required
-                  className="w-full text-base sm:text-xs font-medium border border-slate-300 rounded-xl py-3 sm:py-2.5 px-3 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
-                >
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.firstName} {c.lastName} ({c.primaryCareType})
-                    </option>
-                  ))}
-                </select>
+
+                {/* Selected Patient Preview Card */}
+                {(() => {
+                  const currentClient = clients.find((c) => c.id === selectedClientId);
+                  return currentClient ? (
+                    <div className="mb-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 font-bold text-xs flex items-center justify-center shrink-0">
+                          {currentClient.firstName[0]}{currentClient.lastName[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                              {currentClient.firstName} {currentClient.lastName}
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200/80 text-slate-700 border border-slate-300/60 uppercase tracking-wider shrink-0">
+                              {CARE_TYPE_LABELS[currentClient.primaryCareType as CareType] || currentClient.primaryCareType}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                            {currentClient.address || "Fredericksburg, VA"}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200/60 shrink-0">
+                        Active Patient
+                      </span>
+                    </div>
+                  ) : null;
+                })()}
+
+                {/* Suggestive Search Combobox */}
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search patient by name or care type to switch..."
+                    value={logPatientSearchQuery}
+                    onChange={(e) => {
+                      setLogPatientSearchQuery(e.target.value);
+                      setIsLogPatientDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsLogPatientDropdownOpen(true)}
+                    className="w-full text-base sm:text-xs font-medium border border-slate-300 rounded-xl py-2.5 pl-9 pr-8 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all shadow-2xs"
+                  />
+                  {logPatientSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setLogPatientSearchQuery("")}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  {isLogPatientDropdownOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setIsLogPatientDropdownOpen(false)}
+                      />
+                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-56 overflow-y-auto divide-y divide-slate-100">
+                        {clients
+                          .filter((c) => {
+                            if (!logPatientSearchQuery.trim()) return true;
+                            const q = logPatientSearchQuery.toLowerCase();
+                            const name = `${c.firstName} ${c.lastName}`.toLowerCase();
+                            const care = (CARE_TYPE_LABELS[c.primaryCareType as CareType] || c.primaryCareType || "").toLowerCase();
+                            const addr = (c.address || "").toLowerCase();
+                            return name.includes(q) || care.includes(q) || addr.includes(q);
+                          })
+                          .map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedClientId(c.id);
+                                setLogPatientSearchQuery("");
+                                setIsLogPatientDropdownOpen(false);
+                              }}
+                              className={`w-full p-2.5 text-left hover:bg-slate-50 transition-colors flex items-center justify-between gap-2 cursor-pointer text-xs ${
+                                selectedClientId === c.id ? "bg-rose-50/60 font-semibold" : ""
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+                                  {c.firstName[0]}{c.lastName[0]}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="text-slate-900 truncate font-medium">
+                                    {c.firstName} {c.lastName}
+                                  </div>
+                                  <div className="text-[10px] text-slate-400 truncate">
+                                    {c.address || "Fredericksburg, VA"}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                                {CARE_TYPE_LABELS[c.primaryCareType as CareType] || c.primaryCareType}
+                              </span>
+                            </button>
+                          ))}
+                        {clients.filter((c) => {
+                          if (!logPatientSearchQuery.trim()) return true;
+                          const q = logPatientSearchQuery.toLowerCase();
+                          const name = `${c.firstName} ${c.lastName}`.toLowerCase();
+                          const care = (CARE_TYPE_LABELS[c.primaryCareType as CareType] || c.primaryCareType || "").toLowerCase();
+                          const addr = (c.address || "").toLowerCase();
+                          return name.includes(q) || care.includes(q) || addr.includes(q);
+                        }).length === 0 && (
+                          <div className="p-3 text-center text-xs text-slate-400">
+                            No matching patients found.
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Select Category */}

@@ -56,6 +56,7 @@ export async function createStaffMember(data: {
   phone?: string;
   role: "ADMIN" | "EMPLOYEE";
   tempPassword: string;
+  assignedClientIds?: string[];
 }) {
   const adminSession = await requireAdmin();
 
@@ -90,6 +91,14 @@ export async function createStaffMember(data: {
     where: { userId: newUser.id },
     data: { accountId: newUser.id },
   });
+
+  // Assign initial clients if selected
+  if (data.assignedClientIds && data.assignedClientIds.length > 0) {
+    await prisma.client.updateMany({
+      where: { id: { in: data.assignedClientIds } },
+      data: { assignedEmployeeId: newUser.id },
+    });
+  }
 
   // Create audit log
   await prisma.auditLog.create({
