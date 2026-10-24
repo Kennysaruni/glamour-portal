@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/session";
 import { revalidatePath } from "next/cache";
-import { NoteCategory, AppointmentStatus, AppointmentType, CareType } from "@/lib/types";
+import { NoteCategory, AppointmentStatus, AppointmentType, CareType, RawClientNoteWithVitals } from "@/lib/types";
 import { validateVitals, hasAnyVitals } from "@/lib/vitals-utils";
 
 // Helper to normalize ADL tasks
@@ -122,7 +122,7 @@ export async function getCaregiverNotes() {
     },
   });
 
-  return recentNotes.map((n) => ({
+  return (recentNotes as unknown as RawClientNoteWithVitals[]).map((n) => ({
     id: n.id,
     clientId: n.clientId,
     client: n.client,
@@ -132,14 +132,14 @@ export async function getCaregiverNotes() {
     attachmentUrl: n.attachmentUrl,
     attachmentName: n.attachmentName,
     attachmentType: n.attachmentType,
-    temperature: n.temperature,
+    temperature: n.temperature ?? null,
     temperatureUnit: (n.temperatureUnit as "F" | "C") || "F",
-    bloodPressureSys: n.bloodPressureSys,
-    bloodPressureDia: n.bloodPressureDia,
-    heartRate: n.heartRate,
-    oxygenSaturation: n.oxygenSaturation,
-    respiratoryRate: n.respiratoryRate,
-    createdAt: n.createdAt.toISOString(),
+    bloodPressureSys: n.bloodPressureSys ?? null,
+    bloodPressureDia: n.bloodPressureDia ?? null,
+    heartRate: n.heartRate ?? null,
+    oxygenSaturation: n.oxygenSaturation ?? null,
+    respiratoryRate: n.respiratoryRate ?? null,
+    createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : String(n.createdAt),
   }));
 }
 
@@ -284,7 +284,7 @@ export async function getClientDetailsAndHistory(
       createdAt: client.createdAt.toISOString(),
       updatedAt: client.updatedAt.toISOString(),
     },
-    notes: notes.map((n) => ({
+    notes: (notes as unknown as RawClientNoteWithVitals[]).map((n) => ({
       id: n.id,
       clientId: n.clientId,
       employeeId: n.employeeId,
@@ -294,7 +294,7 @@ export async function getClientDetailsAndHistory(
         ? {
             id: n.appointment.id,
             type: n.appointment.type as AppointmentType,
-            startTime: n.appointment.startTime.toISOString(),
+            startTime: n.appointment.startTime instanceof Date ? n.appointment.startTime.toISOString() : String(n.appointment.startTime),
           }
         : null,
       category: n.category as NoteCategory,
@@ -303,14 +303,14 @@ export async function getClientDetailsAndHistory(
       attachmentUrl: n.attachmentUrl,
       attachmentName: n.attachmentName,
       attachmentType: n.attachmentType,
-      temperature: n.temperature,
+      temperature: n.temperature ?? null,
       temperatureUnit: (n.temperatureUnit as "F" | "C") || "F",
-      bloodPressureSys: n.bloodPressureSys,
-      bloodPressureDia: n.bloodPressureDia,
-      heartRate: n.heartRate,
-      oxygenSaturation: n.oxygenSaturation,
-      respiratoryRate: n.respiratoryRate,
-      createdAt: n.createdAt.toISOString(),
+      bloodPressureSys: n.bloodPressureSys ?? null,
+      bloodPressureDia: n.bloodPressureDia ?? null,
+      heartRate: n.heartRate ?? null,
+      oxygenSaturation: n.oxygenSaturation ?? null,
+      respiratoryRate: n.respiratoryRate ?? null,
+      createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : String(n.createdAt),
     })),
     appointments: appointments.map((a) => ({
       id: a.id,
@@ -409,7 +409,7 @@ export async function submitVisitLog(data: {
   }
 
   // Create Client Note with Structured Vitals
-  const note = await prisma.clientNote.create({
+  const note = await (prisma.clientNote as any).create({
     data: {
       clientId: data.clientId,
       employeeId: userId,

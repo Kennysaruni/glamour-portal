@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
-import { NoteCategory, CareType, AppointmentStatus, AppointmentType } from "@/lib/types";
+import { NoteCategory, CareType, AppointmentStatus, AppointmentType, RawClientNoteWithVitals } from "@/lib/types";
 
 
 function parseAdlTasks(raw: string | string[] | null | undefined): string[] {
@@ -519,7 +519,7 @@ export async function getGlobalActivityFeed(filters?: {
     },
   });
 
-  return notes.map((n) => ({
+  return (notes as unknown as RawClientNoteWithVitals[]).map((n) => ({
     id: n.id,
     clientId: n.clientId,
     client: n.client,
@@ -530,7 +530,7 @@ export async function getGlobalActivityFeed(filters?: {
       ? {
         id: n.appointment.id,
         type: n.appointment.type,
-        startTime: n.appointment.startTime.toISOString(),
+        startTime: n.appointment.startTime instanceof Date ? n.appointment.startTime.toISOString() : String(n.appointment.startTime),
       }
       : null,
     category: n.category as NoteCategory,
@@ -539,15 +539,15 @@ export async function getGlobalActivityFeed(filters?: {
     attachmentUrl: n.attachmentUrl,
     attachmentName: n.attachmentName,
     attachmentType: n.attachmentType,
-    temperature: n.temperature,
+    temperature: n.temperature ?? null,
     temperatureUnit: (n.temperatureUnit as "F" | "C") || "F",
-    bloodPressureSys: n.bloodPressureSys,
-    bloodPressureDia: n.bloodPressureDia,
-    heartRate: n.heartRate,
-    oxygenSaturation: n.oxygenSaturation,
-    respiratoryRate: n.respiratoryRate,
-    createdAt: n.createdAt.toISOString(),
-    updatedAt: n.updatedAt.toISOString(),
+    bloodPressureSys: n.bloodPressureSys ?? null,
+    bloodPressureDia: n.bloodPressureDia ?? null,
+    heartRate: n.heartRate ?? null,
+    oxygenSaturation: n.oxygenSaturation ?? null,
+    respiratoryRate: n.respiratoryRate ?? null,
+    createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : String(n.createdAt),
+    updatedAt: n.updatedAt instanceof Date ? n.updatedAt.toISOString() : (n.updatedAt ? String(n.updatedAt) : new Date().toISOString()),
   }));
 }
 

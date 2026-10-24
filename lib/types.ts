@@ -117,6 +117,9 @@ export interface ClientNoteData {
     firstName: string;
     lastName: string;
     primaryCareType: string;
+    emergencyContact?: string | null;
+    emergencyPhone?: string | null;
+    address?: string | null;
   };
   employeeId: string;
   employee?: {
@@ -138,6 +141,31 @@ export interface ClientNoteData {
   attachmentType?: string | null;
   temperature?: number | null;
   temperatureUnit?: "F" | "C" | string | null;
+  bloodPressureSys?: number | null;
+  bloodPressureDia?: number | null;
+  heartRate?: number | null;
+  oxygenSaturation?: number | null;
+  respiratoryRate?: number | null;
+  createdAt: Date | string;
+  updatedAt?: Date | string;
+}
+
+export interface RawClientNoteWithVitals {
+  id: string;
+  clientId: string;
+  client?: any;
+  employeeId: string;
+  employee?: any;
+  appointmentId?: string | null;
+  appointment?: any;
+  category: string;
+  adlTasksCompleted?: string | string[] | null;
+  content: string;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
+  attachmentType?: string | null;
+  temperature?: number | null;
+  temperatureUnit?: string | null;
   bloodPressureSys?: number | null;
   bloodPressureDia?: number | null;
   heartRate?: number | null;
