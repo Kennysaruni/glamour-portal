@@ -683,17 +683,17 @@ export function CaregiverDashboardClient({
                   </div>
                 ) : uploadState === "completed" && uploadedDoc ? (
                   <div className="border-2 border-emerald-200 bg-emerald-50/40 rounded-xl p-3.5 shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                           {uploadedDoc.fileType.toUpperCase()}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-slate-900 truncate max-w-[180px] sm:max-w-xs">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs font-bold text-slate-900 truncate">
                               {uploadedDoc.originalName}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">
                               <CheckCircle2 className="w-3 h-3 text-emerald-700" /> Complete
                             </span>
                           </div>
@@ -705,12 +705,12 @@ export function CaregiverDashboardClient({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 justify-end w-full sm:w-auto shrink-0">
                         <a
                           href={getDocumentUrl(uploadedDoc.url)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold shadow-2xs"
+                          className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold shadow-2xs flex-1 sm:flex-initial"
                         >
                           <ExternalLink className="w-3 h-3 text-slate-500" />
                           <span>Preview</span>
@@ -722,7 +722,7 @@ export function CaregiverDashboardClient({
                             setUploadedDoc(null);
                             setUploadState("idle");
                           }}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer shrink-0"
                           title="Remove attached file"
                         >
                           <X className="w-4 h-4" />
@@ -864,24 +864,34 @@ export function CaregiverDashboardClient({
 
                     {/* Attachment Card */}
                     {note.attachmentUrl && (
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-xs">
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-lg bg-slate-50 border border-slate-200/70">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           {note.attachmentType === "pdf" ? (
-                            <FileText className="w-4 h-4 text-rose-600 shrink-0" />
+                            <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                              <FileText className="w-4 h-4" />
+                            </div>
                           ) : (
-                            <ImageIcon className="w-4 h-4 text-slate-600 shrink-0" />
+                            <div className="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0">
+                              <ImageIcon className="w-4 h-4" />
+                            </div>
                           )}
-                          <span className="font-semibold text-slate-800 truncate max-w-[180px] sm:max-w-xs">
-                            {note.attachmentName || "Attached Summary"}
-                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-semibold text-slate-900 text-xs truncate">
+                              {note.attachmentName || "Attached Summary Document"}
+                            </div>
+                            <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+                              {note.attachmentType === "pdf" ? "PDF Document" : "Clinical Image"}
+                            </div>
+                          </div>
                         </div>
                         <a
                           href={getDocumentUrl(note.attachmentUrl)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold shadow-2xs transition-colors shrink-0 w-full sm:w-auto"
                         >
-                          <ExternalLink className="w-3 h-3" /> View Document
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                          <span>View Document</span>
                         </a>
                       </div>
                     )}

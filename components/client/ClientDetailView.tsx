@@ -657,13 +657,13 @@ export function ClientDetailView({
                         </div>
 
                         {note.attachmentType === "pdf" ? (
-                          <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl">
-                            <div className="flex items-center gap-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl gap-3">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
                               <div className="w-10 h-10 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                                 PDF
                               </div>
-                              <div>
-                                <div className="text-xs font-semibold text-slate-900 truncate max-w-xs sm:max-w-md">
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-semibold text-slate-900 truncate">
                                   {note.attachmentName || "Clinical_Summary.pdf"}
                                 </div>
                                 <div className="text-[11px] text-slate-500">PDF Document Summary</div>
@@ -673,15 +673,15 @@ export function ClientDetailView({
                               href={getDocumentUrl(note.attachmentUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors"
+                              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors shrink-0 w-full sm:w-auto"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
-                              <span>View PDF</span>
+                              <span>View / Download PDF</span>
                             </a>
                           </div>
                         ) : (
                           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl gap-3">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
                               <button
                                 onClick={() => setPreviewImageUrl(getDocumentUrl(note.attachmentUrl))}
                                 className="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-100 shrink-0 cursor-pointer relative group"
@@ -692,17 +692,17 @@ export function ClientDetailView({
                                   className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
                                 />
                               </button>
-                              <div>
-                                <div className="text-xs font-semibold text-slate-900 truncate max-w-xs sm:max-w-md">
+                              <div className="min-w-0 flex-1">
+                                <div className="text-xs font-semibold text-slate-900 truncate">
                                   {note.attachmentName || "Summary_Image.png"}
                                 </div>
                                 <div className="text-[11px] text-slate-500">PNG Clinical Image</div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
                               <button
                                 onClick={() => setPreviewImageUrl(getDocumentUrl(note.attachmentUrl))}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-medium shadow-2xs transition-colors cursor-pointer"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-medium shadow-2xs transition-colors cursor-pointer flex-1 sm:flex-initial"
                               >
                                 <ImageIcon className="w-3.5 h-3.5" />
                                 <span>Preview</span>
@@ -711,7 +711,7 @@ export function ClientDetailView({
                                 href={getDocumentUrl(note.attachmentUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors flex-1 sm:flex-initial"
                               >
                                 <ExternalLink className="w-3.5 h-3.5" />
                                 <span>Open Full</span>
@@ -928,17 +928,17 @@ export function ClientDetailView({
                     </div>
                   ) : uploadState === "completed" && uploadedDoc ? (
                     <div className="border-2 border-emerald-200 bg-emerald-50/40 rounded-xl p-3.5 shadow-2xs">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                             {uploadedDoc.fileType.toUpperCase()}
                           </div>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-semibold text-slate-900 truncate max-w-[180px] sm:max-w-xs">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-xs font-semibold text-slate-900 truncate">
                                 {uploadedDoc.originalName}
                               </span>
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-700" /> Complete
                               </span>
                             </div>
@@ -950,12 +950,12 @@ export function ClientDetailView({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 justify-end w-full sm:w-auto shrink-0">
                           <a
                             href={getDocumentUrl(uploadedDoc.url)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-medium shadow-2xs"
+                            className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-medium shadow-2xs flex-1 sm:flex-initial"
                           >
                             <ExternalLink className="w-3 h-3 text-slate-400" />
                             <span>Preview</span>
@@ -967,7 +967,7 @@ export function ClientDetailView({
                               setUploadedDoc(null);
                               setUploadState("idle");
                             }}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer shrink-0"
                             title="Remove attached file"
                           >
                             <X className="w-4 h-4" />

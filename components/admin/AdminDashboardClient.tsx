@@ -659,27 +659,34 @@ export function AdminDashboardClient({
 
                         {/* Attached Summary (PDF or PNG) */}
                         {note.attachmentUrl && (
-                          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-xs">
+                          <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-lg bg-slate-50 border border-slate-200/70">
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
                               {note.attachmentType === "pdf" ? (
-                                <FileText className="w-4 h-4 text-rose-600 shrink-0" />
+                                <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                                  <FileText className="w-4 h-4" />
+                                </div>
                               ) : (
-                                <ImageIcon className="w-4 h-4 text-slate-600 shrink-0" />
+                                <div className="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0">
+                                  <ImageIcon className="w-4 h-4" />
+                                </div>
                               )}
-                              <span className="font-semibold text-slate-800 truncate max-w-xs">
-                                {note.attachmentName || "Attached Summary Document"}
-                              </span>
-                              <span className="uppercase text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                                {note.attachmentType || "FILE"}
-                              </span>
+                              <div className="min-w-0 flex-1">
+                                <div className="font-semibold text-slate-900 text-xs truncate">
+                                  {note.attachmentName || "Attached Summary Document"}
+                                </div>
+                                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">
+                                  {note.attachmentType === "pdf" ? "PDF Document" : "Clinical Image"}
+                                </div>
+                              </div>
                             </div>
                             <a
                               href={getDocumentUrl(note.attachmentUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 underline"
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold shadow-2xs transition-colors shrink-0 w-full sm:w-auto"
                             >
-                              <ExternalLink className="w-3 h-3" /> View / Download
+                              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                              <span>View / Download</span>
                             </a>
                           </div>
                         )}
