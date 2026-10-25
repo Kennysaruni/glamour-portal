@@ -75,6 +75,41 @@ export async function createStaffMember(data: {
     return { success: false, error: "A staff member with this email already exists." };
   }
 
+  // Backend Validation: If client assignment is submitted, ensure client is genuinely unassigned
+  const clientIdsToCheck = [
+    ...(data.assignedClientIds || []),
+    ...((data as any).clientId ? [(data as any).clientId] : []),
+  ].filter(Boolean);
+
+  if (clientIdsToCheck.length > 0) {
+    const clients = await prisma.client.findMany({
+      where: { id: { in: clientIdsToCheck } },
+      include: {
+        assignedEmployee: {
+          select: {
+            id: true,
+            role: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    for (const client of clients) {
+      // Reject if already assigned to a caregiver (role EMPLOYEE)
+      if (
+        client.assignedEmployeeId &&
+        client.assignedEmployee &&
+        String(client.assignedEmployee.role).toUpperCase() === "EMPLOYEE"
+      ) {
+        return {
+          success: false,
+          error: "Selected client is already assigned to a caregiver",
+        };
+      }
+    }
+  }
+
   const hashedPassword = await bcrypt.hash(data.tempPassword, 10);
 
   const newUser = await prisma.user.create({
@@ -102,9 +137,9 @@ export async function createStaffMember(data: {
   });
 
   // Assign initial clients if selected
-  if (data.assignedClientIds && data.assignedClientIds.length > 0) {
+  if (clientIdsToCheck.length > 0) {
     await prisma.client.updateMany({
-      where: { id: { in: data.assignedClientIds } },
+      where: { id: { in: clientIdsToCheck } },
       data: { assignedEmployeeId: newUser.id },
     });
   }
@@ -276,6 +311,7 @@ export async function getClientsList() {
           name: true,
           email: true,
           phone: true,
+          role: true,
         },
       },
       _count: {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useRef, useEffect, useMemo } from "react";
 import {
   Users,
   UserPlus,
@@ -26,6 +26,7 @@ import {
   Image as ImageIcon,
   RotateCcw,
   RefreshCw,
+  ChevronDown,
 } from "lucide-react";
 import { getDocumentUrl, calculateAge } from "@/lib/document-utils";
 import { VitalsBadges } from "@/components/vitals/VitalsDisplay";
@@ -199,6 +200,75 @@ export function AdminDashboardClient({
   } | null>(null);
   const [editStaffSearchQuery, setEditStaffSearchQuery] = useState("");
   const [isEditStaffDropdownOpen, setIsEditStaffDropdownOpen] = useState(false);
+
+  const staffClientDropdownRef = useRef<HTMLDivElement>(null);
+  const editStaffDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Filter for unassigned clients (clients with no assigned employee, or assigned to an ADMIN agency pool)
+  const unassignedClients = useMemo(() => {
+    return clientsList.filter((client) => {
+      if (!client.assignedEmployeeId) return true;
+      const assignedStaff = staffList.find((s) => s.id === client.assignedEmployeeId);
+      if (assignedStaff) {
+        return String(assignedStaff.role).toUpperCase() !== "EMPLOYEE";
+      }
+      const role = String((client.assignedEmployee as any)?.role || "").toUpperCase();
+      return role !== "EMPLOYEE";
+    });
+  }, [clientsList, staffList]);
+
+  // Click-outside and Escape key dismissal for staff client assignment dropdowns
+  useEffect(() => {
+    if (!isStaffClientDropdownOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        staffClientDropdownRef.current &&
+        !staffClientDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsStaffClientDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsStaffClientDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isStaffClientDropdownOpen]);
+
+  useEffect(() => {
+    if (!isEditStaffDropdownOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        editStaffDropdownRef.current &&
+        !editStaffDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsEditStaffDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsEditStaffDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isEditStaffDropdownOpen]);
 
   const filteredClientDirectory = clientsList.filter((client) => {
     if (!clientDirectorySearch.trim()) return true;
@@ -1778,35 +1848,111 @@ export function AdminDashboardClient({
                 )}
 
                 {/* Search Input with Autocomplete Suggestions */}
-                <div className="relative">
-                  <div className="relative">
+                <div ref={staffClientDropdownRef} className="relative">
+                  <div className="relative flex items-center">
                     <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400 pointer-events-none" />
                     <input
                       type="text"
-                      placeholder="Type patient name or care type to suggest..."
+                      disabled={unassignedClients.length === 0}
+                      placeholder={
+                        unassignedClients.length === 0
+                          ? "All clients are currently assigned (Optional)"
+                          : "Type patient name or care type to suggest..."
+                      }
                       value={staffClientSearchQuery}
                       onChange={(e) => {
                         setStaffClientSearchQuery(e.target.value);
-                        setIsStaffClientDropdownOpen(true);
+                        if (!isStaffClientDropdownOpen) setIsStaffClientDropdownOpen(true);
                       }}
-                      onFocus={() => setIsStaffClientDropdownOpen(true)}
-                      className="w-full border border-slate-200 rounded-lg pl-9 pr-8 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                      onClick={() => {
+                        if (unassignedClients.length > 0) {
+                          setIsStaffClientDropdownOpen((prev) => !prev);
+                        }
+                      }}
+                      className={`w-full border rounded-lg pl-9 pr-16 py-2.5 text-xs transition-all ${
+                        unassignedClients.length === 0
+                          ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed placeholder:text-slate-400"
+                          : "bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                      }`}
                     />
-                    {staffClientSearchQuery && (
+                    <div className="absolute right-2 top-2 flex items-center gap-1">
+                      {staffForm.assignedClientIds.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setStaffForm({ ...staffForm, assignedClientIds: [] });
+                            setStaffClientSearchQuery("");
+                            setIsStaffClientDropdownOpen(false);
+                          }}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded cursor-pointer"
+                          title="Clear assignment (Leave unassigned)"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      ) : staffClientSearchQuery ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setStaffClientSearchQuery("");
+                          }}
+                          className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
+                          title="Clear search"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      ) : null}
                       <button
                         type="button"
-                        onClick={() => setStaffClientSearchQuery("")}
-                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        disabled={unassignedClients.length === 0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (unassignedClients.length > 0) {
+                            setIsStaffClientDropdownOpen((prev) => !prev);
+                          }
+                        }}
+                        className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Toggle unassigned clients list"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 transition-transform ${
+                            isStaffClientDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
                       </button>
-                    )}
+                    </div>
                   </div>
 
+                  {unassignedClients.length === 0 ? (
+                    <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200/80 rounded-md px-2.5 py-1.5 mt-1.5">
+                      All clients are currently assigned (Optional)
+                    </p>
+                  ) : null}
+
                   {/* Suggestion Dropdown */}
-                  {isStaffClientDropdownOpen && (
+                  {isStaffClientDropdownOpen && unassignedClients.length > 0 && (
                     <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto divide-y divide-slate-100">
-                      {clientsList
+                      {/* Clear / Leave Unassigned option */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStaffForm({ ...staffForm, assignedClientIds: [] });
+                          setStaffClientSearchQuery("");
+                          setIsStaffClientDropdownOpen(false);
+                        }}
+                        className="w-full p-2.5 text-left hover:bg-slate-50 transition-colors flex items-center justify-between gap-2 cursor-pointer text-xs text-slate-600 font-medium"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
+                            <X className="w-3.5 h-3.5" />
+                          </div>
+                          <span>None / Leave Unassigned</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Clear selection</span>
+                      </button>
+
+                      {unassignedClients
                         .filter((c) => {
                           const matchesQuery =
                             !staffClientSearchQuery.trim() ||
@@ -1831,15 +1977,15 @@ export function AdminDashboardClient({
                             className="w-full p-2.5 text-left hover:bg-slate-50 transition-colors flex items-center justify-between gap-2 cursor-pointer text-xs"
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center shrink-0">
+                              <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center justify-center shrink-0">
                                 {c.firstName[0]}{c.lastName[0]}
                               </div>
                               <div className="min-w-0">
                                 <div className="font-semibold text-slate-900 truncate">
                                   {c.firstName} {c.lastName}
                                 </div>
-                                <div className="text-[10px] text-slate-400 truncate">
-                                  {c.address || "Fredericksburg, VA"}
+                                <div className="text-[10px] text-emerald-600 font-medium truncate">
+                                  Unassigned Patient • {c.address || "Fredericksburg, VA"}
                                 </div>
                               </div>
                             </div>
@@ -1848,14 +1994,14 @@ export function AdminDashboardClient({
                             </span>
                           </button>
                         ))}
-                      {clientsList.filter(
+                      {unassignedClients.filter(
                         (c) =>
                           (!staffClientSearchQuery.trim() ||
                             `${c.firstName} ${c.lastName}`.toLowerCase().includes(staffClientSearchQuery.toLowerCase())) &&
                           !staffForm.assignedClientIds.includes(c.id)
                       ).length === 0 && (
                         <div className="p-3 text-center text-xs text-slate-400">
-                          {staffClientSearchQuery ? "No matching clients found." : "All clients already selected."}
+                          {staffClientSearchQuery ? "No matching unassigned clients found." : "All available unassigned clients selected."}
                         </div>
                       )}
                     </div>
@@ -2017,7 +2163,7 @@ export function AdminDashboardClient({
                 )}
 
                 {/* Search Input with Autocomplete Suggestions */}
-                <div className="relative">
+                <div ref={editStaffDropdownRef} className="relative">
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400 pointer-events-none" />
                     <input

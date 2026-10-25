@@ -98,13 +98,14 @@ export interface ClientData {
   primaryCareType: CareType | string;
   carePlanSummary?: string | null;
   isActive: boolean;
-  assignedEmployeeId: string;
+  assignedEmployeeId?: string | null;
   assignedEmployee?: {
     id: string;
     name: string;
     email: string;
     phone?: string | null;
-  };
+    role?: Role | string;
+  } | null;
   createdAt: Date | string;
   updatedAt: Date | string;
 }

@@ -87,8 +87,8 @@ model Client {
   carePlanSummary     String?
   isActive            Boolean  @default(true)
   
-  assignedEmployeeId  String
-  assignedEmployee    User     @relation("AssignedCaregiver", fields: [assignedEmployeeId], references: [id])
+  assignedEmployeeId  String?
+  assignedEmployee    User?    @relation("AssignedCaregiver", fields: [assignedEmployeeId], references: [id])
 
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
