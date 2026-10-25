@@ -464,3 +464,108 @@ export async function submitVisitLog(data: {
 
   return { success: true, noteId: note.id };
 }
+
+/**
+ * Updates a submitted visit log / note within the mandatory 2-hour grace period.
+ * Enforces: Date.now() - new Date(visitLog.createdAt).getTime() <= 2 * 60 * 60 * 1000
+ */
+export async function updateVisitLog(
+  noteId: string,
+  data: {
+    content?: string;
+    category?: NoteCategory;
+    adlTasksCompleted?: string[];
+    temperature?: number;
+    temperatureUnit?: "F" | "C";
+    bloodPressureSys?: number;
+    bloodPressureDia?: number;
+    heartRate?: number;
+    oxygenSaturation?: number;
+    respiratoryRate?: number;
+  }
+) {
+  const session = await requireAuth();
+  const userId = session.user.id;
+  const isAdmin = String(session.user.role).toUpperCase() === "ADMIN";
+
+  const existingNote = await prisma.clientNote.findUnique({
+    where: { id: noteId },
+  });
+
+  if (!existingNote) {
+    return { success: false, error: "Visit log record not found." };
+  }
+
+  // Non-admins can only edit their own notes
+  if (!isAdmin && existingNote.employeeId !== userId) {
+    return { success: false, error: "Unauthorized: You can only edit your own visit logs." };
+  }
+
+  // Strict 2-Hour Time Window Validation (Caregiver Grace Period)
+  const elapsedMs = Date.now() - new Date(existingNote.createdAt).getTime();
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+
+  if (!isAdmin && elapsedMs > TWO_HOURS_MS) {
+    return {
+      success: false,
+      error: "403 Forbidden: This record has been locked and can no longer be edited.",
+    };
+  }
+
+  // Validate structured vitals if any were submitted
+  const vitalsResult = validateVitals(data);
+  if (!vitalsResult.isValid) {
+    const errorStrings = Object.values(vitalsResult.errors);
+    return { success: false, error: errorStrings.join(" ") };
+  }
+
+  const updateData: Record<string, unknown> = {};
+  if (data.content !== undefined) updateData.content = data.content.trim();
+  if (data.category !== undefined) updateData.category = data.category;
+  if (data.adlTasksCompleted !== undefined)
+    updateData.adlTasksCompleted = JSON.stringify(data.adlTasksCompleted);
+  if (data.temperature !== undefined) updateData.temperature = data.temperature;
+  if (data.temperatureUnit !== undefined) updateData.temperatureUnit = data.temperatureUnit;
+  if (data.bloodPressureSys !== undefined) updateData.bloodPressureSys = data.bloodPressureSys;
+  if (data.bloodPressureDia !== undefined) updateData.bloodPressureDia = data.bloodPressureDia;
+  if (data.heartRate !== undefined) updateData.heartRate = data.heartRate;
+  if (data.oxygenSaturation !== undefined) updateData.oxygenSaturation = data.oxygenSaturation;
+  if (data.respiratoryRate !== undefined) updateData.respiratoryRate = data.respiratoryRate;
+
+  // Compute diff of changed fields
+  const diff: Record<string, { from: unknown; to: unknown }> = {};
+  for (const [key, val] of Object.entries(updateData)) {
+    const oldVal = (existingNote as unknown as Record<string, unknown>)[key];
+    if (oldVal !== val) {
+      diff[key] = { from: oldVal ?? null, to: val ?? null };
+    }
+  }
+
+  try {
+    const updated = await prisma.clientNote.update({
+      where: { id: noteId },
+      data: updateData,
+    });
+
+    // Record audit event
+    await (prisma.auditLog as any).create({
+      data: {
+        userId,
+        action: "UPDATE_VISIT_LOG",
+        entityType: "ClientNote",
+        entityId: noteId,
+        details: JSON.stringify(diff),
+      },
+    });
+
+    revalidatePath("/app");
+    revalidatePath("/admin");
+    revalidatePath(`/clients/${existingNote.clientId}`);
+
+    return { success: true, note: updated };
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : "Failed to update visit log.";
+    return { success: false, error: errorMsg };
+  }
+}
+

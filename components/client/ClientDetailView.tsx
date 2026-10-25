@@ -28,6 +28,7 @@ import {
   RotateCcw,
   RefreshCw,
   Activity,
+  Lock,
 } from "lucide-react";
 import { getDocumentUrl, calculateAge } from "@/lib/document-utils";
 import { VitalsInputFields } from "@/components/vitals/VitalsInputFields";
@@ -729,18 +730,34 @@ export function ClientDetailView({
                           Recorded by <span className="font-semibold text-slate-900">{note.employee?.name || "Caregiver"}</span>
                         </span>
                       </div>
-                      <span className="text-xs text-slate-400 font-mono">
-                        {new Date(note.createdAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}{" "}
-                        at{" "}
-                        {new Date(note.createdAt).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 font-mono">
+                          {new Date(note.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}{" "}
+                          at{" "}
+                          {new Date(note.createdAt).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        {(() => {
+                          const elapsedMs = Date.now() - new Date(note.createdAt).getTime();
+                          const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+                          const isLocked = elapsedMs > TWO_HOURS_MS;
+                          return isLocked ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                              <Lock className="w-2.5 h-2.5 text-slate-400" /> Locked
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <Clock className="w-2.5 h-2.5 text-emerald-600" /> Grace Period
+                            </span>
+                          );
+                        })()}
+                      </div>
                     </div>
 
                     {/* ADL Tasks Completed */}

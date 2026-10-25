@@ -211,3 +211,24 @@ export interface UserData {
   createdAt: Date | string;
   assignedClientsCount?: number;
 }
+
+export interface AuditLogData {
+  id: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  details?: string | null;
+  createdAt: Date | string;
+}
+
+export interface UpdateStaffInput {
+  name?: string;
+  email?: string;
+  phone?: string;
+  role?: Role;
+  assignedClientIds?: string[];
+}
+

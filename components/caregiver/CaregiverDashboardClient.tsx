@@ -22,9 +22,11 @@ import {
   Search,
   ExternalLink,
   Loader2,
+  Lock,
+  Edit,
   Image as ImageIcon,
 } from "lucide-react";
-import { submitVisitLog } from "@/lib/actions/caregiver-actions";
+import { submitVisitLog, updateVisitLog } from "@/lib/actions/caregiver-actions";
 import { getDocumentUrl, calculateAge } from "@/lib/document-utils";
 import { VitalsInputFields } from "@/components/vitals/VitalsInputFields";
 import { VitalsBadges } from "@/components/vitals/VitalsDisplay";
@@ -119,6 +121,108 @@ export function CaregiverDashboardClient({
   } | null>(null);
 
   const [isPending, startTransition] = useTransition();
+
+  // Edit Visit Log Modal State (2-Hour Grace Period)
+  const [isEditNoteModalOpen, setIsEditNoteModalOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<any>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editCategory, setEditCategory] = useState<NoteCategory>("DAILY_CARE_LOG");
+  const [editAdlTasks, setEditAdlTasks] = useState<string[]>([]);
+  const [editNarrative, setEditNarrative] = useState<string>("");
+  const [editTemperature, setEditTemperature] = useState<string>("");
+  const [editTemperatureUnit, setEditTemperatureUnit] = useState<"F" | "C">("F");
+  const [editBloodPressureSys, setEditBloodPressureSys] = useState<string>("");
+  const [editBloodPressureDia, setEditBloodPressureDia] = useState<string>("");
+  const [editHeartRate, setEditHeartRate] = useState<string>("");
+  const [editOxygenSaturation, setEditOxygenSaturation] = useState<string>("");
+  const [editRespiratoryRate, setEditRespiratoryRate] = useState<string>("");
+  const [editVitalsErrors, setEditVitalsErrors] = useState<Record<string, string>>({});
+
+  const openEditNoteModal = (note: any) => {
+    setEditingNote(note);
+    setEditCategory((note.category as NoteCategory) || "DAILY_CARE_LOG");
+    setEditAdlTasks(Array.isArray(note.adlTasksCompleted) ? note.adlTasksCompleted : []);
+    setEditNarrative(note.content || "");
+    setEditTemperature(
+      note.temperature !== null && note.temperature !== undefined ? String(note.temperature) : ""
+    );
+    setEditTemperatureUnit(note.temperatureUnit === "C" ? "C" : "F");
+    setEditBloodPressureSys(
+      note.bloodPressureSys !== null && note.bloodPressureSys !== undefined
+        ? String(note.bloodPressureSys)
+        : ""
+    );
+    setEditBloodPressureDia(
+      note.bloodPressureDia !== null && note.bloodPressureDia !== undefined
+        ? String(note.bloodPressureDia)
+        : ""
+    );
+    setEditHeartRate(
+      note.heartRate !== null && note.heartRate !== undefined ? String(note.heartRate) : ""
+    );
+    setEditOxygenSaturation(
+      note.oxygenSaturation !== null && note.oxygenSaturation !== undefined
+        ? String(note.oxygenSaturation)
+        : ""
+    );
+    setEditRespiratoryRate(
+      note.respiratoryRate !== null && note.respiratoryRate !== undefined
+        ? String(note.respiratoryRate)
+        : ""
+    );
+    setEditVitalsErrors({});
+    setEditError(null);
+    setIsEditNoteModalOpen(true);
+  };
+
+  const handleSaveEditNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingNote) return;
+
+    const vitalsResult = validateVitals({
+      temperature: editTemperature ? parseFloat(editTemperature) : undefined,
+      temperatureUnit: editTemperatureUnit,
+      bloodPressureSys: editBloodPressureSys ? parseInt(editBloodPressureSys, 10) : undefined,
+      bloodPressureDia: editBloodPressureDia ? parseInt(editBloodPressureDia, 10) : undefined,
+      heartRate: editHeartRate ? parseInt(editHeartRate, 10) : undefined,
+      oxygenSaturation: editOxygenSaturation ? parseInt(editOxygenSaturation, 10) : undefined,
+      respiratoryRate: editRespiratoryRate ? parseInt(editRespiratoryRate, 10) : undefined,
+    });
+
+    if (!vitalsResult.isValid) {
+      setEditVitalsErrors(vitalsResult.errors);
+      setEditError(Object.values(vitalsResult.errors).join(" "));
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const res = await updateVisitLog(editingNote.id, {
+          category: editCategory,
+          adlTasksCompleted: editAdlTasks,
+          content: editNarrative,
+          temperature: editTemperature ? parseFloat(editTemperature) : undefined,
+          temperatureUnit: editTemperatureUnit,
+          bloodPressureSys: editBloodPressureSys ? parseInt(editBloodPressureSys, 10) : undefined,
+          bloodPressureDia: editBloodPressureDia ? parseInt(editBloodPressureDia, 10) : undefined,
+          heartRate: editHeartRate ? parseInt(editHeartRate, 10) : undefined,
+          oxygenSaturation: editOxygenSaturation ? parseInt(editOxygenSaturation, 10) : undefined,
+          respiratoryRate: editRespiratoryRate ? parseInt(editRespiratoryRate, 10) : undefined,
+        });
+
+        if (!res.success) {
+          setEditError(res.error || "Failed to update visit log.");
+          return;
+        }
+
+        setIsEditNoteModalOpen(false);
+        setEditingNote(null);
+        window.location.reload();
+      } catch (err: any) {
+        setEditError(err.message || "An unexpected error occurred while saving.");
+      }
+    });
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1238,17 +1342,61 @@ export function CaregiverDashboardClient({
                           {note.client?.firstName} {note.client?.lastName}
                         </span>
                       </div>
-                      <span className="text-[11px] text-slate-400">
-                        {new Date(note.createdAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}{" "}
-                        at{" "}
-                        {new Date(note.createdAt).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <span className="text-[11px] text-slate-400">
+                          {new Date(note.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}{" "}
+                          at{" "}
+                          {new Date(note.createdAt).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        {(() => {
+                          const elapsedMs = Date.now() - new Date(note.createdAt).getTime();
+                          const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+                          const isLocked = elapsedMs > TWO_HOURS_MS;
+                          const minutesRemaining = Math.max(
+                            0,
+                            Math.floor((TWO_HOURS_MS - elapsedMs) / (60 * 1000))
+                          );
+
+                          if (isLocked) {
+                            return (
+                              <div className="flex items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                                  <Lock className="w-3 h-3 text-slate-400" /> Locked / Finalized
+                                </span>
+                                <button
+                                  type="button"
+                                  disabled
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-200/60 cursor-not-allowed opacity-60"
+                                  title="Edit window closed (2-hour limit reached)"
+                                >
+                                  <Lock className="w-2.5 h-2.5 text-slate-400" /> Edit Disabled
+                                </button>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="flex items-center gap-1.5">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <Clock className="w-3 h-3 text-emerald-600" /> {minutesRemaining}m edit window
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => openEditNoteModal(note)}
+                                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-white border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 shadow-2xs transition-colors cursor-pointer"
+                              >
+                                <Edit className="w-3 h-3" /> Edit Note
+                              </button>
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
 
                     {note.adlTasksCompleted && note.adlTasksCompleted.length > 0 && (
@@ -1311,6 +1459,159 @@ export function CaregiverDashboardClient({
           </div>
         )}
       </main>
+
+      {/* Edit Visit Log Modal (2-Hour Grace Period Active) */}
+      {isEditNoteModalOpen && editingNote && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setIsEditNoteModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                <Edit className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">Edit Submitted Visit Log</h3>
+                <p className="text-xs text-slate-500">
+                  Patient: {editingNote.client?.firstName} {editingNote.client?.lastName} • 2-Hour Grace Period
+                </p>
+              </div>
+            </div>
+
+            {editError && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-medium text-rose-800">
+                {editError}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEditNote} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                  Category
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {Object.entries(NOTE_CATEGORIES).map(([key, val]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setEditCategory(val as NoteCategory)}
+                      className={`py-2 px-2.5 rounded-lg text-xs font-medium border text-center transition-all cursor-pointer ${
+                        editCategory === val
+                          ? "bg-rose-600 text-white border-rose-600 shadow-xs"
+                          : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                      }`}
+                    >
+                      {NOTE_CATEGORY_LABELS[val as NoteCategory] || val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ADL Tasks */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                  Completed ADL Tasks
+                </label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {ADL_TASKS.map((task) => {
+                    const isChecked = editAdlTasks.includes(task);
+                    return (
+                      <button
+                        key={task}
+                        type="button"
+                        onClick={() =>
+                          setEditAdlTasks(
+                            isChecked
+                              ? editAdlTasks.filter((t) => t !== task)
+                              : [...editAdlTasks, task]
+                          )
+                        }
+                        className={`flex items-center justify-between p-2 rounded-lg border text-xs font-medium cursor-pointer transition-colors ${
+                          isChecked
+                            ? "bg-rose-50 border-rose-300 text-rose-900"
+                            : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="truncate">{task}</span>
+                        <div
+                          className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
+                            isChecked ? "bg-rose-600 border-rose-600 text-white" : "border-slate-300"
+                          }`}
+                        >
+                          {isChecked && <CheckSquare className="w-2.5 h-2.5" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Structured Vitals Input Fields */}
+              <div className="pt-2 border-t border-slate-100">
+                <VitalsInputFields
+                  temperature={editTemperature}
+                  setTemperature={setEditTemperature}
+                  temperatureUnit={editTemperatureUnit}
+                  setTemperatureUnit={setEditTemperatureUnit}
+                  bloodPressureSys={editBloodPressureSys}
+                  setBloodPressureSys={setEditBloodPressureSys}
+                  bloodPressureDia={editBloodPressureDia}
+                  setBloodPressureDia={setEditBloodPressureDia}
+                  heartRate={editHeartRate}
+                  setHeartRate={setEditHeartRate}
+                  oxygenSaturation={editOxygenSaturation}
+                  setOxygenSaturation={setEditOxygenSaturation}
+                  respiratoryRate={editRespiratoryRate}
+                  setRespiratoryRate={setEditRespiratoryRate}
+                  errors={editVitalsErrors}
+                />
+              </div>
+
+              {/* Qualitative Narrative */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  General Visit &amp; Care Notes
+                </label>
+                <textarea
+                  rows={4}
+                  value={editNarrative}
+                  onChange={(e) => setEditNarrative(e.target.value)}
+                  placeholder="Clinical observations, patient demeanor, meals consumed, etc..."
+                  className="w-full border border-slate-200 rounded-lg p-3 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Changes are recorded in clinical audit log.</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditNoteModalOpen(false)}
+                    className="px-3.5 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {isPending ? "Saving..." : "Save Updates"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

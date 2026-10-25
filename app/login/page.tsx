@@ -1,15 +1,26 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useEffect } from "react";
+import Link from "next/link";
 import { GlamourLogo } from "@/components/GlamourLogo";
 import { loginAction } from "@/lib/actions/auth-actions";
-import { Lock, Mail, AlertCircle, ArrowRight, ShieldCheck, HeartHandshake } from "lucide-react";
+import { Lock, Mail, AlertCircle, ArrowRight, ShieldCheck, HeartHandshake, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [resetSuccess, setResetSuccess] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("reset") === "success") {
+        setResetSuccess(true);
+      }
+    }
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +59,18 @@ export default function LoginPage() {
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md w-full">
         <div className="bg-white py-6 px-4 shadow-xs border border-slate-200/80 rounded-2xl sm:py-8 sm:px-10">
+          {resetSuccess && (
+            <div className="mb-5 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">Password Reset Successful</p>
+                <p className="text-[11px] text-emerald-700 mt-0.5">
+                  Your password has been successfully updated. Please sign in with your new credentials.
+                </p>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="mb-5 rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -82,12 +105,20 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
-              >
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label
+                  htmlFor="password"
+                  className="block text-xs font-semibold text-slate-700 uppercase tracking-wider"
+                >
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative rounded-lg shadow-2xs">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Lock className="h-4 w-4" />

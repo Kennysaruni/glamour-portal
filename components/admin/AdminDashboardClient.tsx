@@ -31,6 +31,7 @@ import { getDocumentUrl, calculateAge } from "@/lib/document-utils";
 import { VitalsBadges } from "@/components/vitals/VitalsDisplay";
 import {
   createStaffMember,
+  updateStaffMember,
   toggleStaffStatus,
   createClient,
   updateClient,
@@ -186,6 +187,18 @@ export function AdminDashboardClient({
     tempPassword: "",
     assignedClientIds: [] as string[],
   });
+
+  const [isEditStaffModalOpen, setIsEditStaffModalOpen] = useState(false);
+  const [staffToEdit, setStaffToEdit] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: "ADMIN" | "EMPLOYEE";
+    assignedClientIds: string[];
+  } | null>(null);
+  const [editStaffSearchQuery, setEditStaffSearchQuery] = useState("");
+  const [isEditStaffDropdownOpen, setIsEditStaffDropdownOpen] = useState(false);
 
   const filteredClientDirectory = clientsList.filter((client) => {
     if (!clientDirectorySearch.trim()) return true;
@@ -372,6 +385,46 @@ export function AdminDashboardClient({
         window.location.reload();
       } else {
         setFormError((res as { error?: string }).error || "Failed to update client.");
+      }
+    });
+  };
+
+  // Action: Open Edit Staff
+  const openEditStaff = (staff: any) => {
+    setStaffToEdit({
+      id: staff.id,
+      name: staff.name,
+      email: staff.email,
+      phone: staff.phone || "",
+      role: staff.role || "EMPLOYEE",
+      assignedClientIds:
+        staff.assignedClientIds || staff.assignedClients?.map((c: any) => c.id) || [],
+    });
+    setEditStaffSearchQuery("");
+    setIsEditStaffDropdownOpen(false);
+    setIsEditStaffModalOpen(true);
+    setFormError(null);
+  };
+
+  // Action: Save Edit Staff
+  const handleSaveEditStaff = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!staffToEdit) return;
+
+    startTransition(async () => {
+      const res = await updateStaffMember(staffToEdit.id, {
+        name: staffToEdit.name,
+        email: staffToEdit.email,
+        phone: staffToEdit.phone,
+        role: staffToEdit.role,
+        assignedClientIds: staffToEdit.assignedClientIds,
+      });
+
+      if (res.success) {
+        setIsEditStaffModalOpen(false);
+        window.location.reload();
+      } else {
+        setFormError(res.error || "Failed to update staff member.");
       }
     });
   };
@@ -1041,19 +1094,28 @@ export function AdminDashboardClient({
                           </td>
 
                           <td className="px-4 py-3 text-right">
-                            {staff.id !== currentUser.id && (
+                            <div className="flex items-center justify-end gap-1.5">
                               <button
-                                onClick={() => handleToggleStaff(staff.id, staff.isActive)}
-                                disabled={isPending}
-                                className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
-                                  staff.isActive
-                                    ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
-                                    : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
-                                }`}
+                                onClick={() => openEditStaff(staff)}
+                                className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                                title="Edit Staff Member"
                               >
-                                {staff.isActive ? "Deactivate" : "Activate"}
+                                <Edit className="w-3.5 h-3.5" />
                               </button>
-                            )}
+                              {staff.id !== currentUser.id && (
+                                <button
+                                  onClick={() => handleToggleStaff(staff.id, staff.isActive)}
+                                  disabled={isPending}
+                                  className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                                    staff.isActive
+                                      ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
+                                      : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
+                                  }`}
+                                >
+                                  {staff.isActive ? "Deactivate" : "Activate"}
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1108,19 +1170,27 @@ export function AdminDashboardClient({
                           </span>
                         )}
 
-                        {staff.id !== currentUser.id && (
+                        <div className="flex items-center gap-1.5">
                           <button
-                            onClick={() => handleToggleStaff(staff.id, staff.isActive)}
-                            disabled={isPending}
-                            className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
-                              staff.isActive
-                                ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
-                                : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
-                            }`}
+                            onClick={() => openEditStaff(staff)}
+                            className="text-xs px-2.5 py-1 rounded-lg font-medium bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-1 transition-colors cursor-pointer"
                           >
-                            {staff.isActive ? "Deactivate" : "Activate"}
+                            <Edit className="w-3 h-3 text-slate-500" /> Edit
                           </button>
-                        )}
+                          {staff.id !== currentUser.id && (
+                            <button
+                              onClick={() => handleToggleStaff(staff.id, staff.isActive)}
+                              disabled={isPending}
+                              className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                                staff.isActive
+                                  ? "text-rose-700 hover:bg-rose-50 border border-rose-200/70"
+                                  : "text-emerald-700 hover:bg-emerald-50 border border-emerald-200/70"
+                              }`}
+                            >
+                              {staff.isActive ? "Deactivate" : "Activate"}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1447,7 +1517,7 @@ export function AdminDashboardClient({
 
             {/* Desktop Table */}
             <div className="hidden sm:block bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
-              <table className="min-w-[600px] w-full divide-y divide-slate-200 text-left text-xs">
+              <table className="min-w-[680px] w-full divide-y divide-slate-200 text-left text-xs">
                 <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Timestamp</th>
@@ -1455,12 +1525,13 @@ export function AdminDashboardClient({
                     <th className="px-4 py-3">Action</th>
                     <th className="px-4 py-3">Entity Type</th>
                     <th className="px-4 py-3">Entity ID</th>
+                    <th className="px-4 py-3">Changes / Diff</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                   {filteredAuditLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-slate-400 font-sans">
+                      <td colSpan={6} className="px-4 py-8 text-center text-slate-400 font-sans">
                         No audit logs matched the specified date range and action filters.
                       </td>
                     </tr>
@@ -1480,6 +1551,35 @@ export function AdminDashboardClient({
                         </td>
                         <td className="px-4 py-2.5 text-slate-600 font-sans">{log.entityType}</td>
                         <td className="px-4 py-2.5 text-slate-400 truncate max-w-xs">{log.entityId}</td>
+                        <td className="px-4 py-2.5 font-sans">
+                          {log.details ? (() => {
+                            try {
+                              const parsed = JSON.parse(log.details);
+                              const keys = Object.keys(parsed);
+                              if (keys.length === 0) return <span className="text-slate-400 italic text-[10px]">No modified fields</span>;
+                              return (
+                                <div className="flex flex-wrap gap-1 max-w-xs">
+                                  {keys.map((k) => (
+                                    <span
+                                      key={k}
+                                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono border border-slate-200"
+                                      title={`${k}: ${JSON.stringify(parsed[k]?.from)} → ${JSON.stringify(parsed[k]?.to)}`}
+                                    >
+                                      <span className="font-semibold">{k}:</span>
+                                      <span className="text-slate-400 truncate max-w-[60px]">{String(parsed[k]?.from ?? "none")}</span>
+                                      <span>→</span>
+                                      <span className="text-emerald-700 font-medium truncate max-w-[60px]">{String(parsed[k]?.to ?? "none")}</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              );
+                            } catch {
+                              return <span className="text-slate-500 font-mono text-[10px] truncate max-w-xs block">{log.details}</span>;
+                            }
+                          })() : (
+                            <span className="text-slate-400 italic text-[10px]">Initial creation</span>
+                          )}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -1516,6 +1616,37 @@ export function AdminDashboardClient({
                     {log.entityId && (
                       <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-mono truncate">
                         ID: {log.entityId}
+                      </div>
+                    )}
+                    {log.details && (
+                      <div className="pt-2 border-t border-slate-100">
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+                          Changes / Diff
+                        </span>
+                        {(() => {
+                          try {
+                            const parsed = JSON.parse(log.details);
+                            const keys = Object.keys(parsed);
+                            if (keys.length === 0) return null;
+                            return (
+                              <div className="flex flex-wrap gap-1">
+                                {keys.map((k) => (
+                                  <span
+                                    key={k}
+                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono border border-slate-200"
+                                  >
+                                    <span className="font-semibold">{k}:</span>
+                                    <span className="text-slate-400 truncate max-w-[60px]">{String(parsed[k]?.from ?? "none")}</span>
+                                    <span>→</span>
+                                    <span className="text-emerald-700 font-medium truncate max-w-[60px]">{String(parsed[k]?.to ?? "none")}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            );
+                          } catch {
+                            return <div className="text-[10px] text-slate-500 font-mono">{log.details}</div>;
+                          }
+                        })()}
                       </div>
                     )}
                   </div>
@@ -1760,6 +1891,228 @@ export function AdminDashboardClient({
                   className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
                 >
                   {isPending ? "Creating..." : "Create Account"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* MODAL 1B: EDIT STAFF MEMBER                                         */}
+      {/* =================================================================== */}
+      {isEditStaffModalOpen && staffToEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setIsEditStaffModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                <Edit className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">Edit Staff Member</h3>
+                <p className="text-xs text-slate-500">Update caregiver details, roles, and assigned clients</p>
+              </div>
+            </div>
+
+            {formError && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-medium text-rose-800">
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEditStaff} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={staffToEdit.name}
+                  onChange={(e) => setStaffToEdit({ ...staffToEdit, name: e.target.value })}
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Work Email</label>
+                <input
+                  type="email"
+                  required
+                  value={staffToEdit.email}
+                  onChange={(e) => setStaffToEdit({ ...staffToEdit, email: e.target.value })}
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Phone Number</label>
+                <input
+                  type="tel"
+                  placeholder="(540) 555-0100"
+                  value={staffToEdit.phone}
+                  onChange={(e) => setStaffToEdit({ ...staffToEdit, phone: e.target.value })}
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Role</label>
+                <select
+                  value={staffToEdit.role}
+                  onChange={(e) =>
+                    setStaffToEdit({ ...staffToEdit, role: e.target.value as "ADMIN" | "EMPLOYEE" })
+                  }
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                >
+                  <option value="EMPLOYEE">Caregiver (Employee - Restricted Row Isolation)</option>
+                  <option value="ADMIN">RN Administrator (Full Agency Access)</option>
+                </select>
+              </div>
+
+              {/* Assign Clients */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Assigned Patients / Clients
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {staffToEdit.assignedClientIds.length} selected
+                  </span>
+                </div>
+
+                {/* Selected Clients Chips */}
+                {staffToEdit.assignedClientIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {staffToEdit.assignedClientIds.map((cid) => {
+                      const client = clientsList.find((c) => c.id === cid);
+                      if (!client) return null;
+                      return (
+                        <span
+                          key={cid}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-slate-100 text-slate-800 border border-slate-200"
+                        >
+                          <span className="font-semibold">{client.firstName} {client.lastName}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setStaffToEdit({
+                                ...staffToEdit,
+                                assignedClientIds: staffToEdit.assignedClientIds.filter((id) => id !== cid),
+                              })
+                            }
+                            className="text-slate-400 hover:text-rose-600 rounded-full cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Search Input with Autocomplete Suggestions */}
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Type patient name or care type to suggest..."
+                      value={editStaffSearchQuery}
+                      onChange={(e) => {
+                        setEditStaffSearchQuery(e.target.value);
+                        setIsEditStaffDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsEditStaffDropdownOpen(true)}
+                      className="w-full border border-slate-200 rounded-lg pl-9 pr-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    />
+                  </div>
+
+                  {isEditStaffDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg z-50 divide-y divide-slate-100">
+                      <div className="p-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                          Suggested Patients
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsEditStaffDropdownOpen(false)}
+                          className="text-[10px] text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                        >
+                          Close
+                        </button>
+                      </div>
+                      {clientsList
+                        .filter(
+                          (c) =>
+                            (!editStaffSearchQuery.trim() ||
+                              `${c.firstName} ${c.lastName}`.toLowerCase().includes(editStaffSearchQuery.toLowerCase())) &&
+                            !staffToEdit.assignedClientIds.includes(c.id)
+                        )
+                        .map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              setStaffToEdit({
+                                ...staffToEdit,
+                                assignedClientIds: [...staffToEdit.assignedClientIds, c.id],
+                              });
+                              setEditStaffSearchQuery("");
+                              setIsEditStaffDropdownOpen(false);
+                            }}
+                            className="w-full text-left p-2.5 hover:bg-rose-50/70 transition-colors flex items-center justify-between group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600" />
+                              <div>
+                                <div className="font-semibold text-slate-800 group-hover:text-rose-900">
+                                  {c.firstName} {c.lastName}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate">
+                                  {c.address || "Fredericksburg, VA"}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                              {CARE_TYPE_LABELS[c.primaryCareType as CareType] || c.primaryCareType}
+                            </span>
+                          </button>
+                        ))}
+                      {clientsList.filter(
+                        (c) =>
+                          (!editStaffSearchQuery.trim() ||
+                            `${c.firstName} ${c.lastName}`.toLowerCase().includes(editStaffSearchQuery.toLowerCase())) &&
+                          !staffToEdit.assignedClientIds.includes(c.id)
+                      ).length === 0 && (
+                        <div className="p-3 text-center text-xs text-slate-400">
+                          {editStaffSearchQuery ? "No matching clients found." : "All clients already selected."}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsEditStaffModalOpen(false)}
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                >
+                  {isPending ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

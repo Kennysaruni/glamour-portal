@@ -26,6 +26,13 @@ export async function getStaffList() {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
     include: {
+      assignedClients: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
       _count: {
         select: {
           assignedClients: true,
@@ -45,6 +52,8 @@ export async function getStaffList() {
     isActive: u.isActive,
     createdAt: u.createdAt.toISOString(),
     assignedClientsCount: u._count.assignedClients,
+    assignedClients: u.assignedClients,
+    assignedClientIds: u.assignedClients.map((c) => c.id),
     appointmentsCount: u._count.appointments,
     notesCount: u._count.clientNotes,
   }));
@@ -145,6 +154,110 @@ export async function toggleStaffStatus(userId: string, isActive: boolean) {
 
   revalidatePath("/admin");
   return { success: true, isActive: updated.isActive };
+}
+
+export async function updateStaffMember(
+  userId: string,
+  data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    role?: "ADMIN" | "EMPLOYEE";
+    assignedClientIds?: string[];
+  }
+) {
+  const adminSession = await requireAdmin();
+
+  const previous = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      assignedClients: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+    },
+  });
+
+  if (!previous) {
+    return { success: false, error: "Staff member not found." };
+  }
+
+  // Prevent email collision
+  if (data.email && data.email.trim().toLowerCase() !== previous.email) {
+    const existing = await prisma.user.findUnique({
+      where: { email: data.email.trim().toLowerCase() },
+    });
+    if (existing && existing.id !== userId) {
+      return { success: false, error: "Another staff member already uses this email address." };
+    }
+  }
+
+  const updateData: Record<string, unknown> = {};
+  if (data.name !== undefined) updateData.name = data.name.trim();
+  if (data.email !== undefined) updateData.email = data.email.trim().toLowerCase();
+  if (data.phone !== undefined) updateData.phone = data.phone?.trim() || null;
+  if (data.role !== undefined) updateData.role = data.role;
+
+  // Compute diff
+  const diff: Record<string, { from: unknown; to: unknown }> = {};
+  for (const [key, val] of Object.entries(updateData)) {
+    const oldVal = (previous as unknown as Record<string, unknown>)[key];
+    if (oldVal !== val) {
+      diff[key] = { from: oldVal ?? null, to: val ?? null };
+    }
+  }
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    // Update assigned client links
+    if (data.assignedClientIds !== undefined) {
+      const prevIds = previous.assignedClients.map((c) => c.id).sort();
+      const newIds = [...data.assignedClientIds].sort();
+      const idsChanged = JSON.stringify(prevIds) !== JSON.stringify(newIds);
+
+      if (idsChanged) {
+        diff["assignedClientIds"] = { from: prevIds, to: newIds };
+
+        // Reassign unselected clients that were previously mapped to this user to the admin
+        const removedClientIds = prevIds.filter((id) => !newIds.includes(id));
+        if (removedClientIds.length > 0) {
+          await prisma.client.updateMany({
+            where: { id: { in: removedClientIds } },
+            data: { assignedEmployeeId: adminSession.user.id },
+          });
+        }
+
+        // Assign selected clients to this user
+        if (newIds.length > 0) {
+          await prisma.client.updateMany({
+            where: { id: { in: newIds } },
+            data: { assignedEmployeeId: userId },
+          });
+        }
+      }
+    }
+
+    // Record audit event with diff of changed fields
+    await (prisma.auditLog as any).create({
+      data: {
+        userId: adminSession.user.id,
+        action: "UPDATE_CAREGIVER",
+        entityType: "User",
+        entityId: userId,
+        details: JSON.stringify(diff),
+      },
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/app");
+    return { success: true, user: updatedUser };
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : "Failed to update staff member.";
+    return { success: false, error: errorMsg };
+  }
 }
 
 // ============================================================================
@@ -283,17 +396,35 @@ export async function updateClient(
   if (data.isActive !== undefined) updatePayload.isActive = data.isActive;
 
   try {
+    const previous = await prisma.client.findUnique({
+      where: { id: clientId },
+    });
+
     const updated = await prisma.client.update({
       where: { id: clientId },
       data: updatePayload,
     });
 
-    await prisma.auditLog.create({
+    // Compute diff of changed fields
+    const diff: Record<string, { from: unknown; to: unknown }> = {};
+    for (const [key, val] of Object.entries(updatePayload)) {
+      const oldVal = (previous as unknown as Record<string, unknown>)?.[key];
+      if (oldVal instanceof Date && val instanceof Date) {
+        if (oldVal.getTime() !== val.getTime()) {
+          diff[key] = { from: oldVal.toISOString(), to: val.toISOString() };
+        }
+      } else if (oldVal !== val) {
+        diff[key] = { from: oldVal ?? null, to: val ?? null };
+      }
+    }
+
+    await (prisma.auditLog as any).create({
       data: {
         userId: adminSession.user.id,
-        action: "CLIENT_UPDATE",
+        action: "UPDATE_CLIENT",
         entityType: "Client",
         entityId: clientId,
+        details: JSON.stringify(diff),
       },
     });
 
@@ -441,17 +572,26 @@ export async function updateAppointmentStatus(
   const adminSession = await requireAdmin();
 
   try {
+    const previous = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
     const updated = await prisma.appointment.update({
       where: { id: appointmentId },
       data: { status },
     });
 
-    await prisma.auditLog.create({
+    const diff = {
+      status: { from: previous?.status || null, to: status },
+    };
+
+    await (prisma.auditLog as any).create({
       data: {
         userId: adminSession.user.id,
-        action: `APPOINTMENT_STATUS_${status}`,
+        action: "UPDATE_APPOINTMENT",
         entityType: "Appointment",
         entityId: appointmentId,
+        details: JSON.stringify(diff),
       },
     });
 
@@ -617,6 +757,7 @@ export async function getAuditLogs(options?: {
     action: l.action,
     entityType: l.entityType,
     entityId: l.entityId,
+    details: (l as any).details || null,
     createdAt: l.createdAt.toISOString(),
   }));
 }

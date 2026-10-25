@@ -1,10 +1,11 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getServerSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { checkLoginRateLimit, getClientIpFromHeaders } from "@/lib/rate-limit";
 
 export async function loginAction(formData: {
   email: string;
@@ -14,6 +15,18 @@ export async function loginAction(formData: {
     const { email, password } = formData;
     if (!email || !password) {
       return { success: false, error: "Email and password are required." };
+    }
+
+    // IP-based rate limiting (10 attempts per 15 minutes)
+    const headersList = await headers();
+    const clientIp = getClientIpFromHeaders(headersList);
+    const rateCheck = checkLoginRateLimit(clientIp);
+    if (!rateCheck.success) {
+      const waitMins = Math.ceil(rateCheck.resetInSeconds / 60);
+      return {
+        success: false,
+        error: `Too many login attempts from this location. Please wait ${waitMins} minute${waitMins === 1 ? "" : "s"} before trying again.`,
+      };
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -112,8 +125,14 @@ export async function loginAction(formData: {
 
 export async function logoutAction() {
   try {
+    const session = await getServerSession();
+    if (session?.session?.id) {
+      await prisma.session.delete({ where: { id: session.session.id } }).catch(() => {});
+    }
+
     const cookieStore = await cookies();
     cookieStore.delete("better-auth.session_token");
+    cookieStore.delete("__Secure-better-auth.session_token");
   } catch (error) {
     console.error("Logout error:", error);
   }

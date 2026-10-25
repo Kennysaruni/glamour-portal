@@ -171,9 +171,23 @@ model AuditLog {
   entityType  String
   entityId    String
   ipAddress   String?
+  details     String?
   createdAt   DateTime @default(now())
 
   @@index([userId])
   @@index([entityType, entityId])
   @@index([createdAt])
 }
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
