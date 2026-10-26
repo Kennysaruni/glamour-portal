@@ -99,7 +99,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@glamourhomecare.org"
-                  className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function LoginPage() {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline transition-colors"
+                  className="text-xs font-semibold text-pink-600 hover:text-pink-700 hover:underline transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full min-h-[44px] flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg shadow-xs text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-500/30 transition-all disabled:opacity-60 cursor-pointer"
+                className="w-full min-h-[44px] flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg shadow-xs text-xs font-semibold text-white bg-pink-600 hover:bg-pink-700 active:bg-pink-800 focus:outline-none focus:ring-2 focus:ring-pink-500/30 transition-all disabled:opacity-60 cursor-pointer"
               >
                 {isPending ? (
                   <span>Signing In...</span>
@@ -167,7 +167,7 @@ export default function LoginPage() {
                 className="flex items-center justify-between p-3 sm:py-2.5 sm:px-3 text-xs rounded-lg border border-slate-200/80 bg-slate-50/80 hover:bg-slate-100 active:bg-slate-200 text-slate-800 transition-colors text-left cursor-pointer min-h-[48px]"
               >
                 <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-5 h-5 sm:w-4 sm:h-4 text-rose-600 shrink-0" />
+                  <ShieldCheck className="w-5 h-5 sm:w-4 sm:h-4 text-pink-600 shrink-0" />
                   <div>
                     <span className="font-semibold block text-slate-900">Shavonnah (RN Owner)</span>
                     <span className="text-[11px] sm:text-[10px] text-slate-500 font-mono">
@@ -175,7 +175,7 @@ export default function LoginPage() {
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] bg-rose-50 text-rose-700 border border-rose-200/70 px-2 py-0.5 rounded-md font-semibold uppercase shrink-0">
+                <span className="text-[10px] bg-pink-50 text-pink-700 border border-pink-200/70 px-2 py-0.5 rounded-md font-semibold uppercase shrink-0">
                   ADMIN
                 </span>
               </button>

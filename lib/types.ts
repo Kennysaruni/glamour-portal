@@ -188,6 +188,12 @@ export const STREAMLINED_NOTE_CATEGORY_LABELS: Record<string, string> = {
   DISCHARGE_SUMMARY: "Discharge Summary",
 };
 
+export const APPROVED_FEED_CATEGORIES = [
+  { value: "DAILY_CARE_LOG" as const, label: "Daily Care Log" },
+  { value: "DISCHARGE_SUMMARY" as const, label: "Discharge Summary" },
+  { value: "INCIDENT_REPORT" as const, label: "Incident Report" },
+];
+
 export interface IncidentReportData {
   id: string;
   clientId: string;

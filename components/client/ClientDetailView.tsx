@@ -631,11 +631,9 @@ export function ClientDetailView({
                       className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-pink-500"
                     >
                       <option value="ALL">All Categories</option>
-                      {Object.entries(NOTE_CATEGORIES).map(([key, val]) => (
-                        <option key={key} value={val}>
-                          {NOTE_CATEGORY_LABELS[val as NoteCategory] || val}
-                        </option>
-                      ))}
+                      <option value="DAILY_CARE_LOG">Daily Care Log</option>
+                      <option value="DISCHARGE_SUMMARY">Discharge Summary</option>
+                      <option value="INCIDENT_REPORT">Incident Report</option>
                     </select>
                   </div>
                 </div>
@@ -901,15 +899,19 @@ export function ClientDetailView({
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                     Record Category *
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {Object.entries(NOTE_CATEGORIES).map(([key, val]) => {
-                      const isSelected = category === val;
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { id: "DAILY_CARE_LOG" as const, label: "Daily Care Log" },
+                      { id: "DISCHARGE_SUMMARY" as const, label: "Discharge Summary" },
+                      { id: "INCIDENT_REPORT" as const, label: "Incident Report" },
+                    ].map((opt) => {
+                      const isSelected = category === opt.id;
                       return (
                         <button
-                          key={key}
+                          key={opt.id}
                           type="button"
                           onClick={() => {
-                            const newCat = val as NoteCategory;
+                            const newCat = opt.id as NoteCategory;
                             setCategory(newCat);
                             if (newCat !== "DISCHARGE_SUMMARY") {
                               setAttachedFile(null);
@@ -924,7 +926,7 @@ export function ClientDetailView({
                               : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                           }`}
                         >
-                          {NOTE_CATEGORY_LABELS[val as NoteCategory]}
+                          {opt.label}
                         </button>
                       );
                     })}

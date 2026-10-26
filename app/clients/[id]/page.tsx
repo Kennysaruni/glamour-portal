@@ -50,7 +50,7 @@ export default async function ClientDetailPage({
           <div className="mt-6">
             <Link
               href={session.user.role === "ADMIN" ? "/admin" : "/app"}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white text-xs font-semibold shadow-xs transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Return to {session.user.role === "ADMIN" ? "Admin Portal" : "Caregiver Portal"}</span>

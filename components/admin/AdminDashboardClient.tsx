@@ -535,7 +535,7 @@ export function AdminDashboardClient({
               onClick={() => setActiveTab("activity")}
               className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "activity"
-                  ? "border-rose-600 text-rose-700"
+                  ? "border-pink-600 text-pink-700"
                   : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
@@ -549,7 +549,7 @@ export function AdminDashboardClient({
               onClick={() => setActiveTab("clients")}
               className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "clients"
-                  ? "border-rose-600 text-rose-700"
+                  ? "border-pink-600 text-pink-700"
                   : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
@@ -563,7 +563,7 @@ export function AdminDashboardClient({
               onClick={() => setActiveTab("staff")}
               className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "staff"
-                  ? "border-rose-600 text-rose-700"
+                  ? "border-pink-600 text-pink-700"
                   : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
@@ -579,7 +579,7 @@ export function AdminDashboardClient({
               onClick={() => setActiveTab("audit")}
               className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
                 activeTab === "audit"
-                  ? "border-rose-600 text-rose-700"
+                  ? "border-pink-600 text-pink-700"
                   : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
               }`}
             >
@@ -608,21 +608,19 @@ export function AdminDashboardClient({
                   <select
                     value={selectedCategoryFilter}
                     onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-rose-500"
+                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-pink-500"
                   >
                     <option value="ALL">All Categories</option>
-                    {Object.entries(NOTE_CATEGORIES).map(([key, val]) => (
-                      <option key={key} value={val}>
-                        {NOTE_CATEGORY_LABELS[val as NoteCategory]}
-                      </option>
-                    ))}
+                    <option value="DAILY_CARE_LOG">Daily Care Log</option>
+                    <option value="DISCHARGE_SUMMARY">Discharge Summary</option>
+                    <option value="INCIDENT_REPORT">Incident Report</option>
                   </select>
 
                   {/* Filter: Caregiver */}
                   <select
                     value={selectedCaregiverFilter}
                     onChange={(e) => setSelectedCaregiverFilter(e.target.value)}
-                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-rose-500"
+                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-pink-500"
                   >
                     <option value="ALL">All Caregivers</option>
                     {staffList.map((s) => (
@@ -636,7 +634,7 @@ export function AdminDashboardClient({
                   <select
                     value={selectedClientFilter}
                     onChange={(e) => setSelectedClientFilter(e.target.value)}
-                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-rose-500"
+                    className="text-xs bg-white border border-slate-200 rounded-lg py-2 px-3 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-pink-500"
                   >
                     <option value="ALL">All Clients</option>
                     {clientsList.map((c) => (
@@ -657,7 +655,7 @@ export function AdminDashboardClient({
                     placeholder="Search clinical narratives..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full text-xs pl-9 pr-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500 text-slate-900 placeholder-slate-400"
+                    className="w-full text-xs pl-9 pr-3 py-2 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:ring-2 focus:ring-pink-500 text-slate-900 placeholder-slate-400"
                   />
                 </div>
               </div>
@@ -686,8 +684,10 @@ export function AdminDashboardClient({
                           <div className="flex items-center gap-2">
                             <span
                               className={`px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider ${
-                                isDischarge
-                                  ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                                note.category === "INCIDENT_REPORT"
+                                  ? "bg-amber-50 text-amber-800 border border-amber-300"
+                                  : isDischarge
+                                  ? "bg-pink-50 text-pink-700 border border-pink-200/60"
                                   : "bg-slate-100 text-slate-700 border border-slate-200/60"
                               }`}
                             >
@@ -751,7 +751,7 @@ export function AdminDashboardClient({
                           <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-lg bg-slate-50 border border-slate-200/70">
                             <div className="flex items-center gap-2.5 min-w-0 flex-1">
                               {note.attachmentType === "pdf" ? (
-                                <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                                <div className="w-8 h-8 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center shrink-0">
                                   <FileText className="w-4 h-4" />
                                 </div>
                               ) : (
@@ -803,7 +803,7 @@ export function AdminDashboardClient({
               </div>
               <button
                 onClick={() => setIsClientModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
               >
                 <Plus className="w-4 h-4" /> Add New Client
               </button>
@@ -818,7 +818,7 @@ export function AdminDashboardClient({
                   placeholder="Search clients by name, address, phone, or assigned caregiver..."
                   value={clientDirectorySearch}
                   onChange={(e) => setClientDirectorySearch(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50/70 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-rose-500 text-slate-800 placeholder-slate-400"
+                  className="w-full pl-9 pr-8 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50/70 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-pink-500 text-slate-800 placeholder-slate-400"
                 />
                 {clientDirectorySearch && (
                   <button
@@ -862,7 +862,7 @@ export function AdminDashboardClient({
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
                             client.primaryCareType === "PERSONAL_CARE"
-                              ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                              ? "bg-pink-50 text-pink-700 border border-pink-200/60"
                               : "bg-slate-100 text-slate-700 border border-slate-200/60"
                           }`}
                         >
@@ -977,7 +977,7 @@ export function AdminDashboardClient({
               </div>
               <button
                 onClick={() => setIsStaffModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
               >
                 <UserPlus className="w-4 h-4" /> Provision New Staff
               </button>
@@ -992,7 +992,7 @@ export function AdminDashboardClient({
                   placeholder="Search staff by name, work email, phone, or role..."
                   value={staffDirectorySearch}
                   onChange={(e) => setStaffDirectorySearch(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50/70 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-rose-500 text-slate-800 placeholder-slate-400"
+                  className="w-full pl-9 pr-8 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50/70 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-pink-500 text-slate-800 placeholder-slate-400"
                 />
                 {staffDirectorySearch && (
                   <button
@@ -1054,7 +1054,7 @@ export function AdminDashboardClient({
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
                                 staff.role === "ADMIN"
-                                  ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                                  ? "bg-pink-50 text-pink-700 border border-pink-200/60"
                                   : "bg-slate-100 text-slate-700 border border-slate-200/60"
                               }`}
                             >
@@ -1129,7 +1129,7 @@ export function AdminDashboardClient({
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${
                             staff.role === "ADMIN"
-                              ? "bg-rose-50 text-rose-700 border border-rose-200/60"
+                              ? "bg-pink-50 text-pink-700 border border-pink-200/60"
                               : "bg-slate-100 text-slate-700 border border-slate-200/60"
                           }`}
                         >
@@ -1252,7 +1252,7 @@ export function AdminDashboardClient({
                       setAuditSearchQuery("");
                       handleApplyAuditFilters({ startDate: "", endDate: "", action: "ALL" });
                     }}
-                    className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs text-pink-600 hover:text-pink-700 font-medium cursor-pointer"
                   >
                     <RotateCcw className="w-3 h-3" /> Clear Filters
                   </button>
@@ -1267,7 +1267,7 @@ export function AdminDashboardClient({
                     type="date"
                     value={auditStartDate}
                     onChange={(e) => setAuditStartDate(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-pink-500"
                   />
                 </div>
 
@@ -1277,7 +1277,7 @@ export function AdminDashboardClient({
                     type="date"
                     value={auditEndDate}
                     onChange={(e) => setAuditEndDate(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-pink-500"
                   />
                 </div>
 
@@ -1286,7 +1286,7 @@ export function AdminDashboardClient({
                   <select
                     value={auditActionFilter}
                     onChange={(e) => setAuditActionFilter(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                    className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-pink-500"
                   >
                     <option value="ALL">All Actions</option>
                     <option value="LOGIN">LOGIN</option>
@@ -1309,7 +1309,7 @@ export function AdminDashboardClient({
                       placeholder="User, role, ID..."
                       value={auditSearchQuery}
                       onChange={(e) => setAuditSearchQuery(e.target.value)}
-                      className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                      className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-pink-500"
                     />
                   </div>
                 </div>
@@ -1319,7 +1319,7 @@ export function AdminDashboardClient({
                 <button
                   onClick={() => handleApplyAuditFilters()}
                   disabled={isFetchingAuditLogs}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
                 >
                   <Filter className="w-3.5 h-3.5" />
                   <span>{isFetchingAuditLogs ? "Applying..." : "Apply Date & Action Filters"}</span>
@@ -1357,7 +1357,7 @@ export function AdminDashboardClient({
                           {log.userName} ({log.userRole})
                         </td>
                         <td className="px-4 py-2.5">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/60 uppercase">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-pink-50 text-pink-700 border border-pink-200/60 uppercase">
                             {log.action}
                           </span>
                         </td>
@@ -1415,7 +1415,7 @@ export function AdminDashboardClient({
                       <span className="font-semibold text-slate-900 truncate">
                         {log.userName} <span className="text-[10px] text-slate-500 font-normal">({log.userRole})</span>
                       </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/60 uppercase shrink-0">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-pink-50 text-pink-700 border border-pink-200/60 uppercase shrink-0">
                         {log.action}
                       </span>
                     </div>
@@ -1507,7 +1507,7 @@ export function AdminDashboardClient({
                   placeholder="e.g. Martha Jenkins"
                   value={staffForm.name}
                   onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -1519,7 +1519,7 @@ export function AdminDashboardClient({
                   placeholder="name@glamourhomecare.org"
                   value={staffForm.email}
                   onChange={(e) => setStaffForm({ ...staffForm, email: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -1530,7 +1530,7 @@ export function AdminDashboardClient({
                   placeholder="(540) 555-0100"
                   value={staffForm.phone}
                   onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -1541,7 +1541,7 @@ export function AdminDashboardClient({
                   onChange={(e) =>
                     setStaffForm({ ...staffForm, role: e.target.value as "ADMIN" | "EMPLOYEE" })
                   }
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 >
                   <option value="EMPLOYEE">Caregiver (Employee - Restricted Row Isolation)</option>
                   <option value="ADMIN">RN Administrator (Full Agency Access)</option>
@@ -1614,7 +1614,7 @@ export function AdminDashboardClient({
                       className={`w-full border rounded-lg pl-9 pr-16 py-2.5 text-xs transition-all ${
                         unassignedClients.length === 0
                           ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed placeholder:text-slate-400"
-                          : "bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                          : "bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"
                       }`}
                     />
                     <div className="absolute right-2 top-2 flex items-center gap-1">
@@ -1761,7 +1761,7 @@ export function AdminDashboardClient({
                   placeholder="Minimum 8 characters"
                   value={staffForm.tempPassword}
                   onChange={(e) => setStaffForm({ ...staffForm, tempPassword: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -1776,7 +1776,7 @@ export function AdminDashboardClient({
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? "Creating..." : "Create Account"}
                 </button>
@@ -1823,7 +1823,7 @@ export function AdminDashboardClient({
                   required
                   value={staffToEdit.name}
                   onChange={(e) => setStaffToEdit({ ...staffToEdit, name: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -1834,7 +1834,7 @@ export function AdminDashboardClient({
                   required
                   value={staffToEdit.email}
                   onChange={(e) => setStaffToEdit({ ...staffToEdit, email: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -1845,7 +1845,7 @@ export function AdminDashboardClient({
                   placeholder="(540) 555-0100"
                   value={staffToEdit.phone}
                   onChange={(e) => setStaffToEdit({ ...staffToEdit, phone: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -1856,7 +1856,7 @@ export function AdminDashboardClient({
                   onChange={(e) =>
                     setStaffToEdit({ ...staffToEdit, role: e.target.value as "ADMIN" | "EMPLOYEE" })
                   }
-                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 >
                   <option value="EMPLOYEE">Caregiver (Employee - Restricted Row Isolation)</option>
                   <option value="ADMIN">RN Administrator (Full Agency Access)</option>
@@ -1894,7 +1894,7 @@ export function AdminDashboardClient({
                                 assignedClientIds: staffToEdit.assignedClientIds.filter((id) => id !== cid),
                               })
                             }
-                            className="text-slate-400 hover:text-rose-600 rounded-full cursor-pointer"
+                            className="text-slate-400 hover:text-pink-600 rounded-full cursor-pointer"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -1917,7 +1917,7 @@ export function AdminDashboardClient({
                         setIsEditStaffDropdownOpen(true);
                       }}
                       onFocus={() => setIsEditStaffDropdownOpen(true)}
-                      className="w-full border border-slate-200 rounded-lg pl-9 pr-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                      className="w-full border border-slate-200 rounded-lg pl-9 pr-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                     />
                   </div>
 
@@ -1954,12 +1954,12 @@ export function AdminDashboardClient({
                               setEditStaffSearchQuery("");
                               setIsEditStaffDropdownOpen(false);
                             }}
-                            className="w-full text-left p-2.5 hover:bg-rose-50/70 transition-colors flex items-center justify-between group cursor-pointer"
+                            className="w-full text-left p-2.5 hover:bg-pink-50/70 transition-colors flex items-center justify-between group cursor-pointer"
                           >
                             <div className="flex items-center gap-2">
-                              <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600" />
+                              <Plus className="w-3.5 h-3.5 text-slate-400 group-hover:text-pink-600" />
                               <div>
-                                <div className="font-semibold text-slate-800 group-hover:text-rose-900">
+                                <div className="font-semibold text-slate-800 group-hover:text-pink-900">
                                   {c.firstName} {c.lastName}
                                 </div>
                                 <div className="text-[10px] text-slate-400 truncate">
@@ -1998,7 +1998,7 @@ export function AdminDashboardClient({
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? "Saving..." : "Save Changes"}
                 </button>
@@ -2047,7 +2047,7 @@ export function AdminDashboardClient({
                     placeholder="e.g. Eleanor"
                     value={clientForm.firstName}
                     onChange={(e) => setClientForm({ ...clientForm, firstName: e.target.value })}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
                 <div>
@@ -2058,7 +2058,7 @@ export function AdminDashboardClient({
                     placeholder="e.g. Vance"
                     value={clientForm.lastName}
                     onChange={(e) => setClientForm({ ...clientForm, lastName: e.target.value })}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
               </div>
@@ -2070,7 +2070,7 @@ export function AdminDashboardClient({
                     type="date"
                     value={clientForm.dateOfBirth}
                     onChange={(e) => setClientForm({ ...clientForm, dateOfBirth: e.target.value })}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
                 <div>
@@ -2080,7 +2080,7 @@ export function AdminDashboardClient({
                     placeholder="(540) 555-0123"
                     value={clientForm.phone}
                     onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
               </div>
@@ -2094,7 +2094,7 @@ export function AdminDashboardClient({
                   placeholder="Street, City, VA Zip"
                   value={clientForm.address}
                   onChange={(e) => setClientForm({ ...clientForm, address: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -2110,7 +2110,7 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientForm({ ...clientForm, emergencyContact: e.target.value })
                     }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
                 <div>
@@ -2124,7 +2124,7 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientForm({ ...clientForm, emergencyPhone: e.target.value })
                     }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
               </div>
@@ -2142,7 +2142,7 @@ export function AdminDashboardClient({
                         primaryCareType: e.target.value as CareType,
                       })
                     }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   >
                     {Object.entries(CARE_TYPES).map(([k, v]) => (
                       <option key={k} value={v}>
@@ -2161,7 +2161,7 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientForm({ ...clientForm, assignedEmployeeId: e.target.value })
                     }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   >
                     {staffList.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -2183,7 +2183,7 @@ export function AdminDashboardClient({
                   onChange={(e) =>
                     setClientForm({ ...clientForm, carePlanSummary: e.target.value })
                   }
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -2198,7 +2198,7 @@ export function AdminDashboardClient({
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? "Saving..." : "Add Client"}
                 </button>
@@ -2250,7 +2250,7 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientToEdit({ ...clientToEdit, firstName: e.target.value })
                     }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
                 <div>
@@ -2262,7 +2262,7 @@ export function AdminDashboardClient({
                     onChange={(e) =>
                       setClientToEdit({ ...clientToEdit, lastName: e.target.value })
                     }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
               </div>
@@ -2273,7 +2273,7 @@ export function AdminDashboardClient({
                   type="text"
                   value={clientToEdit.address || ""}
                   onChange={(e) => setClientToEdit({ ...clientToEdit, address: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -2288,7 +2288,7 @@ export function AdminDashboardClient({
                         primaryCareType: e.target.value as CareType,
                       })
                     }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   >
                     {Object.entries(CARE_TYPES).map(([k, v]) => (
                       <option key={k} value={v}>
@@ -2310,7 +2310,7 @@ export function AdminDashboardClient({
                         assignedEmployeeId: e.target.value,
                       })
                     }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   >
                     {staffList.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -2332,7 +2332,7 @@ export function AdminDashboardClient({
                       carePlanSummary: e.target.value,
                     })
                   }
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
 
@@ -2344,7 +2344,7 @@ export function AdminDashboardClient({
                   onChange={(e) =>
                     setClientToEdit({ ...clientToEdit, isActive: e.target.checked })
                   }
-                  className="rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4"
+                  className="rounded border-slate-300 text-pink-600 focus:ring-pink-500 w-4 h-4 cursor-pointer"
                 />
                 <label htmlFor="clientIsActive" className="text-xs font-medium text-slate-700">
                   Client is currently active and receiving care
@@ -2362,7 +2362,7 @@ export function AdminDashboardClient({
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? "Updating..." : "Save Changes"}
                 </button>

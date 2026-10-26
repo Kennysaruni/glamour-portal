@@ -626,6 +626,26 @@ export async function submitIncidentReport(data: {
     },
   });
 
+  // Also record as a ClientNote with category INCIDENT_REPORT so it is included in the activity and notes feeds
+  let noteContent = `[INCIDENT REPORT]\n${data.description.trim()}`;
+  if (data.notificationsMade?.trim()) {
+    noteContent += `\n\nNotifications Made: ${data.notificationsMade.trim()}`;
+  }
+  if (data.actionsTaken?.trim()) {
+    noteContent += `\n\nActions Taken: ${data.actionsTaken.trim()}`;
+  }
+
+  await (prisma.clientNote as any).create({
+    data: {
+      clientId: data.clientId,
+      employeeId: userId,
+      category: "INCIDENT_REPORT",
+      adlTasksCompleted: "[]",
+      content: noteContent,
+      createdAt: incidentDate,
+    },
+  });
+
   await prisma.auditLog.create({
     data: {
       userId,

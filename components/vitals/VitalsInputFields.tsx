@@ -114,7 +114,7 @@ export function VitalsInputFields({
               placeholder={temperatureUnit === "F" ? "98.6" : "37.0"}
               value={temperature}
               onChange={(e) => setTemperature(e.target.value)}
-              className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+              className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             />
             <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 shrink-0">
               <button
@@ -122,7 +122,7 @@ export function VitalsInputFields({
                 onClick={() => setTemperatureUnit("F")}
                 className={`px-2 py-1 text-[11px] font-bold rounded cursor-pointer transition-colors ${
                   temperatureUnit === "F"
-                    ? "bg-white text-rose-600 shadow-2xs"
+                    ? "bg-white text-pink-600 shadow-2xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -133,7 +133,7 @@ export function VitalsInputFields({
                 onClick={() => setTemperatureUnit("C")}
                 className={`px-2 py-1 text-[11px] font-bold rounded cursor-pointer transition-colors ${
                   temperatureUnit === "C"
-                    ? "bg-white text-rose-600 shadow-2xs"
+                    ? "bg-white text-pink-600 shadow-2xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -174,7 +174,7 @@ export function VitalsInputFields({
                 placeholder="Systolic (120)"
                 value={bloodPressureSys}
                 onChange={(e) => setBloodPressureSys(e.target.value)}
-                className="w-full text-xs border border-slate-300 rounded-lg py-2 px-2 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                className="w-full text-xs border border-slate-300 rounded-lg py-2 px-2 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
               />
             </div>
             <span className="text-slate-400 font-bold text-sm">/</span>
@@ -186,7 +186,7 @@ export function VitalsInputFields({
                 placeholder="Diastolic (80)"
                 value={bloodPressureDia}
                 onChange={(e) => setBloodPressureDia(e.target.value)}
-                className="w-full text-xs border border-slate-300 rounded-lg py-2 px-2 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                className="w-full text-xs border border-slate-300 rounded-lg py-2 px-2 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
               />
             </div>
             <span className="text-[10px] text-slate-400 font-medium shrink-0">mmHg</span>
@@ -223,7 +223,7 @@ export function VitalsInputFields({
               placeholder="e.g. 72"
               value={heartRate}
               onChange={(e) => setHeartRate(e.target.value)}
-              className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+              className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             />
             <span className="text-[10px] text-slate-400 font-medium shrink-0">BPM</span>
           </div>
@@ -258,7 +258,7 @@ export function VitalsInputFields({
               placeholder="e.g. 98"
               value={oxygenSaturation}
               onChange={(e) => setOxygenSaturation(e.target.value)}
-              className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+              className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             />
             <span className="text-[10px] text-slate-400 font-medium shrink-0">% SpO2</span>
           </div>
@@ -294,7 +294,7 @@ export function VitalsInputFields({
               placeholder="e.g. 16"
               value={respiratoryRate}
               onChange={(e) => setRespiratoryRate(e.target.value)}
-              className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+              className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             />
             <span className="text-[10px] text-slate-400 font-medium shrink-0">breaths/min</span>
           </div>

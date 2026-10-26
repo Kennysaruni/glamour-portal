@@ -536,7 +536,7 @@ export function CaregiverDashboardClient({
                   placeholder="Search patients by name, care type, address..."
                   value={patientSearchQuery}
                   onChange={(e) => setPatientSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-2xs"
+                  className="w-full pl-9 pr-8 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-2xs"
                 />
                 {patientSearchQuery && (
                   <button
@@ -1341,19 +1341,23 @@ export function CaregiverDashboardClient({
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                   Category
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {Object.entries(NOTE_CATEGORIES).map(([key, val]) => (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: "DAILY_CARE_LOG" as const, label: "Daily Care Log" },
+                    { id: "DISCHARGE_SUMMARY" as const, label: "Discharge Summary" },
+                    { id: "INCIDENT_REPORT" as const, label: "Incident Report" },
+                  ].map((opt) => (
                     <button
-                      key={key}
+                      key={opt.id}
                       type="button"
-                      onClick={() => setEditCategory(val as NoteCategory)}
+                      onClick={() => setEditCategory(opt.id as NoteCategory)}
                       className={`py-2 px-2.5 rounded-lg text-xs font-medium border text-center transition-all cursor-pointer ${
-                        editCategory === val
+                        editCategory === opt.id
                           ? "bg-pink-600 text-white border-pink-600 shadow-xs"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                       }`}
                     >
-                      {NOTE_CATEGORY_LABELS[val as NoteCategory] || val}
+                      {opt.label}
                     </button>
                   ))}
                 </div>

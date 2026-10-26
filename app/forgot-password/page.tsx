@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@glamourhomecare.org"
-                  className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+                  className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
             </div>
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full min-h-[44px] flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg shadow-xs text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-500/30 transition-all disabled:opacity-60 cursor-pointer"
+                className="w-full min-h-[44px] flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg shadow-xs text-xs font-semibold text-white bg-pink-600 hover:bg-pink-700 active:bg-pink-800 focus:outline-none focus:ring-2 focus:ring-pink-500/30 transition-all disabled:opacity-60 cursor-pointer"
               >
                 {isPending ? (
                   <span>Sending Security Code...</span>
@@ -122,7 +122,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-6 pt-5 border-t border-slate-100 text-center">
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-rose-600 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-pink-600 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Sign In</span>

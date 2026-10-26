@@ -115,7 +115,7 @@ function ResetPasswordForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@glamourhomecare.org"
-              className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+              className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
             />
           </div>
         </div>
@@ -145,7 +145,7 @@ function ResetPasswordForm() {
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
               placeholder="123456"
-              className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-sm font-mono tracking-widest text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white font-bold text-center sm:text-left"
+              className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-sm font-mono tracking-widest text-slate-900 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white font-bold text-center sm:text-left"
             />
           </div>
         </div>
@@ -170,7 +170,7 @@ function ResetPasswordForm() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+              className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
             />
           </div>
         </div>
@@ -195,7 +195,7 @@ function ResetPasswordForm() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
+              className="block w-full pl-10 pr-3.5 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
             />
           </div>
         </div>
@@ -204,7 +204,7 @@ function ResetPasswordForm() {
           <button
             type="submit"
             disabled={isPending || success !== null}
-            className="w-full min-h-[44px] flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg shadow-xs text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-500/30 transition-all disabled:opacity-60 cursor-pointer"
+            className="w-full min-h-[44px] flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg shadow-xs text-xs font-semibold text-white bg-pink-600 hover:bg-pink-700 active:bg-pink-800 focus:outline-none focus:ring-2 focus:ring-pink-500/30 transition-all disabled:opacity-60 cursor-pointer"
           >
             {isPending ? (
               <span>Verifying &amp; Updating...</span>
@@ -221,7 +221,7 @@ function ResetPasswordForm() {
       <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-600">
         <Link
           href="/forgot-password"
-          className="hover:text-rose-600 transition-colors inline-flex items-center gap-1"
+          className="hover:text-pink-600 transition-colors inline-flex items-center gap-1"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Resend Code</span>
