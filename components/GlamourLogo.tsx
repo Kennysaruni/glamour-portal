@@ -30,7 +30,7 @@ export function GlamourLogo({
       {showText && (
         <div className="flex flex-col text-left">
           <div className="flex items-center gap-1">
-            <span className="font-bold tracking-tight text-slate-900 text-base sm:text-lg leading-tight">
+            <span className="font-bold tracking-tight text-black text-base sm:text-lg leading-tight">
               GLAMOUR HOMECARE
             </span>
           </div>

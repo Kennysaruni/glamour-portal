@@ -2,7 +2,6 @@ import { requireAdmin } from "@/lib/session";
 import {
   getStaffList,
   getClientsList,
-  getAppointmentsList,
   getGlobalActivityFeed,
   getAuditLogs,
 } from "@/lib/actions/admin-actions";
@@ -26,10 +25,9 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  const [staff, clients, appointments, notes, auditLogs] = await Promise.all([
+  const [staff, clients, notes, auditLogs] = await Promise.all([
     getStaffList(),
     getClientsList(),
-    getAppointmentsList(),
     getGlobalActivityFeed(),
     getAuditLogs(),
   ]);
@@ -40,7 +38,6 @@ export default async function AdminPage() {
       <AdminDashboardClient
         initialStaff={staff}
         initialClients={clients}
-        initialAppointments={appointments}
         initialNotes={notes}
         initialAuditLogs={auditLogs}
         currentUser={session.user}

@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   AlertCircle,
+  Droplet,
 } from "lucide-react";
 import {
   VitalsData,
@@ -17,6 +18,7 @@ import {
   getHeartRateStatus,
   getOxygenSaturationStatus,
   getRespiratoryRateStatus,
+  getBloodGlucoseStatus,
   hasAnyVitals,
 } from "@/lib/vitals-utils";
 
@@ -36,6 +38,7 @@ export function VitalsBadges({ vitals, size = "sm" }: VitalsBadgesProps) {
   const hrStatus = getHeartRateStatus(vitals.heartRate);
   const spo2Status = getOxygenSaturationStatus(vitals.oxygenSaturation);
   const rrStatus = getRespiratoryRateStatus(vitals.respiratoryRate);
+  const bgStatus = getBloodGlucoseStatus(vitals.bloodGlucose);
 
   const isSmall = size === "sm";
 
@@ -123,6 +126,22 @@ export function VitalsBadges({ vitals, size = "sm" }: VitalsBadgesProps) {
           )}
         </span>
       )}
+
+      {/* Blood Glucose */}
+      {vitals.bloodGlucose !== undefined && vitals.bloodGlucose !== null && (
+        <span
+          className={`inline-flex items-center gap-1 rounded-md border font-medium ${
+            isSmall ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs"
+          } ${bgStatus?.badgeClass || "bg-slate-50 text-slate-700 border-slate-200"}`}
+          title={`Blood Glucose: ${vitals.bloodGlucose} mg/dL (${bgStatus?.label || "Recorded"})`}
+        >
+          <Droplet className="w-3 h-3 shrink-0 text-pink-600" />
+          <span>Glucose {vitals.bloodGlucose} mg/dL</span>
+          {bgStatus && bgStatus.status !== "normal" && (
+            <span className="font-bold underline ml-0.5">({bgStatus.label})</span>
+          )}
+        </span>
+      )}
     </div>
   );
 }
@@ -187,6 +206,7 @@ export function VitalsTable({ notes }: VitalsTableProps) {
               <th className="py-2.5 px-3 whitespace-nowrap">Heart Rate</th>
               <th className="py-2.5 px-3 whitespace-nowrap">SpO2 Oxygen</th>
               <th className="py-2.5 px-3 whitespace-nowrap">Respiration</th>
+              <th className="py-2.5 px-3 whitespace-nowrap">Blood Glucose</th>
               <th className="py-2.5 px-3 whitespace-nowrap">Clinical Notes</th>
             </tr>
           </thead>
@@ -197,6 +217,7 @@ export function VitalsTable({ notes }: VitalsTableProps) {
               const hrStatus = getHeartRateStatus(n.heartRate);
               const spo2Status = getOxygenSaturationStatus(n.oxygenSaturation);
               const rrStatus = getRespiratoryRateStatus(n.respiratoryRate);
+              const bgStatus = getBloodGlucoseStatus(n.bloodGlucose);
 
               return (
                 <tr key={n.id} className="hover:bg-slate-50/80 transition-colors">
@@ -311,6 +332,25 @@ export function VitalsTable({ notes }: VitalsTableProps) {
                             className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${rrStatus.badgeClass}`}
                           >
                             {rrStatus.label}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-slate-300">--</span>
+                    )}
+                  </td>
+
+                  {/* Blood Glucose */}
+                  <td className="py-3 px-3 whitespace-nowrap">
+                    {n.bloodGlucose !== undefined && n.bloodGlucose !== null ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-slate-900">{n.bloodGlucose}</span>
+                        <span className="text-[10px] text-slate-400">mg/dL</span>
+                        {bgStatus && (
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${bgStatus.badgeClass}`}
+                          >
+                            {bgStatus.label}
                           </span>
                         )}
                       </div>

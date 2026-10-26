@@ -9,7 +9,6 @@ import {
   Phone,
   AlertTriangle,
   FileText,
-  CheckSquare,
   Upload,
   ArrowLeft,
   User,
@@ -38,13 +37,8 @@ import {
   CARE_TYPE_LABELS,
   NOTE_CATEGORIES,
   NOTE_CATEGORY_LABELS,
-  APPOINTMENT_TYPE_LABELS,
-  APPOINTMENT_STATUS_LABELS,
-  ADL_TASKS,
   CareType,
   NoteCategory,
-  AppointmentType,
-  AppointmentStatus,
 } from "@/lib/types";
 import { submitVisitLog } from "@/lib/actions/caregiver-actions";
 
@@ -66,10 +60,9 @@ export function ClientDetailView({
   appointments: initialAppointments,
   currentUser,
 }: ClientDetailViewProps) {
-  const [activeTab, setActiveTab] = useState<"history" | "appointments" | "careplan" | "upload">("history");
+  const [activeTab, setActiveTab] = useState<"history" | "careplan" | "upload">("history");
   const [historySubTab, setHistorySubTab] = useState<"feed" | "vitals">("feed");
   const [notes, setNotes] = useState(initialNotes);
-  const [appointments] = useState(initialAppointments);
 
   // Structured Vitals State for Upload / Log Form
   const [temperature, setTemperature] = useState("");
@@ -79,12 +72,14 @@ export function ClientDetailView({
   const [heartRate, setHeartRate] = useState("");
   const [oxygenSaturation, setOxygenSaturation] = useState("");
   const [respiratoryRate, setRespiratoryRate] = useState("");
+  const [bloodGlucose, setBloodGlucose] = useState("");
   const [vitalsErrors, setVitalsErrors] = useState<Record<string, string>>({});
 
   // Filters for Client Visit Notes / Summaries
   const [noteStartDate, setNoteStartDate] = useState("");
   const [noteEndDate, setNoteEndDate] = useState("");
   const [noteCategoryFilter, setNoteCategoryFilter] = useState("ALL");
+  const [activePreset, setActivePreset] = useState<number | "all">("all");
   const [isFetchingNotes, setIsFetchingNotes] = useState(false);
 
   const handleFetchFilteredNotes = async (override?: {
@@ -119,6 +114,7 @@ export function ClientDetailView({
   };
 
   const setNotePreset = (days: number | "all") => {
+    setActivePreset(days);
     if (days === "all") {
       setNoteStartDate("");
       setNoteEndDate("");
@@ -137,7 +133,6 @@ export function ClientDetailView({
 
   // New Note / Summary Form State
   const [category, setCategory] = useState<NoteCategory>("DAILY_CARE_LOG");
-  const [selectedAdlTasks, setSelectedAdlTasks] = useState<string[]>([]);
   const [narrativeContent, setNarrativeContent] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<"idle" | "uploading" | "completed" | "error">("idle");
@@ -154,12 +149,6 @@ export function ClientDetailView({
 
   // Image preview modal
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
-
-  const toggleAdlTask = (task: string) => {
-    setSelectedAdlTasks((prev) =>
-      prev.includes(task) ? prev.filter((t) => t !== task) : [...prev, task]
-    );
-  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -222,6 +211,7 @@ export function ClientDetailView({
     const hrVal = heartRate.trim() ? parseInt(heartRate, 10) : null;
     const spo2Val = oxygenSaturation.trim() ? parseInt(oxygenSaturation, 10) : null;
     const rrVal = respiratoryRate.trim() ? parseInt(respiratoryRate, 10) : null;
+    const bgVal = bloodGlucose.trim() ? parseInt(bloodGlucose, 10) : null;
 
     const vitalsValidation = validateVitals({
       temperature: tempVal,
@@ -231,6 +221,7 @@ export function ClientDetailView({
       heartRate: hrVal,
       oxygenSaturation: spo2Val,
       respiratoryRate: rrVal,
+      bloodGlucose: bgVal,
     });
 
     if (!vitalsValidation.isValid) {
@@ -241,7 +232,7 @@ export function ClientDetailView({
     }
     setVitalsErrors({});
 
-    const hasAnyVital = [tempVal, sysVal, diaVal, hrVal, spo2Val, rrVal].some(
+    const hasAnyVital = [tempVal, sysVal, diaVal, hrVal, spo2Val, rrVal, bgVal].some(
       (v) => v !== null && !isNaN(v as number)
     );
 
@@ -292,7 +283,6 @@ export function ClientDetailView({
       const res = await submitVisitLog({
         clientId: client.id,
         category,
-        adlTasksCompleted: selectedAdlTasks,
         content: narrativeContent || (attachmentName ? `Uploaded clinical summary: ${attachmentName}` : (attachedFile ? `Uploaded clinical summary: ${attachedFile.name}` : "")),
         attachmentUrl,
         attachmentName,
@@ -304,12 +294,12 @@ export function ClientDetailView({
         heartRate: hrVal,
         oxygenSaturation: spo2Val,
         respiratoryRate: rrVal,
+        bloodGlucose: bgVal,
       });
 
       if (res.success) {
         setFormStatus({ success: true });
         setNarrativeContent("");
-        setSelectedAdlTasks([]);
         setAttachedFile(null);
         setUploadedDoc(null);
         setUploadState("idle");
@@ -319,6 +309,7 @@ export function ClientDetailView({
         setHeartRate("");
         setOxygenSaturation("");
         setRespiratoryRate("");
+        setBloodGlucose("");
         setVitalsErrors({});
 
         // Prepend optimistic note
@@ -332,7 +323,6 @@ export function ClientDetailView({
             email: currentUser.email,
           },
           category,
-          adlTasksCompleted: selectedAdlTasks,
           content: narrativeContent || (attachmentName ? `Uploaded clinical summary: ${attachmentName}` : (attachedFile ? `Uploaded clinical summary: ${attachedFile.name}` : "")),
           attachmentUrl,
           attachmentName,
@@ -344,6 +334,7 @@ export function ClientDetailView({
           heartRate: hrVal,
           oxygenSaturation: spo2Val,
           respiratoryRate: rrVal,
+          bloodGlucose: bgVal,
           createdAt: new Date().toISOString(),
         };
         setNotes((prev) => [newNoteItem, ...prev]);
@@ -503,7 +494,7 @@ export function ClientDetailView({
             onClick={() => setActiveTab("history")}
             className={`py-3 px-4 font-semibold text-xs border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === "history"
-                ? "border-rose-600 text-rose-600"
+                ? "border-pink-600 text-pink-600"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             }`}
           >
@@ -511,23 +502,13 @@ export function ClientDetailView({
             <span>Visit History & Summaries ({notes.length})</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab("appointments")}
-            className={`py-3 px-4 font-semibold text-xs border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-              activeTab === "appointments"
-                ? "border-rose-600 text-rose-600"
-                : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Scheduled Shifts ({appointments.length})</span>
-          </button>
+
 
           <button
             onClick={() => setActiveTab("careplan")}
             className={`py-3 px-4 font-semibold text-xs border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === "careplan"
-                ? "border-rose-600 text-rose-600"
+                ? "border-pink-600 text-pink-600"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             }`}
           >
@@ -539,7 +520,7 @@ export function ClientDetailView({
             onClick={() => setActiveTab("upload")}
             className={`py-3 px-4 font-semibold text-xs border-b-2 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
               activeTab === "upload"
-                ? "border-rose-600 text-rose-600"
+                ? "border-pink-600 text-pink-600"
                 : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
             }`}
           >
@@ -588,15 +569,22 @@ export function ClientDetailView({
                       { label: "7 Days", days: 7 },
                       { label: "30 Days", days: 30 },
                       { label: "All Time", days: "all" as const },
-                    ].map((preset) => (
-                      <button
-                        key={preset.label}
-                        onClick={() => setNotePreset(preset.days)}
-                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
+                    ].map((preset) => {
+                      const isSelected = activePreset === preset.days;
+                      return (
+                        <button
+                          key={preset.label}
+                          onClick={() => setNotePreset(preset.days)}
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-pink-50 text-pink-700 border border-pink-300 font-semibold"
+                              : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {(noteStartDate || noteEndDate || noteCategoryFilter !== "ALL") && (
@@ -607,7 +595,7 @@ export function ClientDetailView({
                         setNoteCategoryFilter("ALL");
                         handleFetchFilteredNotes({ startDate: "", endDate: "", category: "ALL" });
                       }}
-                      className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
+                      className="inline-flex items-center gap-1 text-xs text-pink-600 hover:text-pink-700 font-medium cursor-pointer"
                     >
                       <RotateCcw className="w-3 h-3" /> Clear Filters
                     </button>
@@ -621,7 +609,7 @@ export function ClientDetailView({
                       type="date"
                       value={noteStartDate}
                       onChange={(e) => setNoteStartDate(e.target.value)}
-                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-pink-500"
                     />
                   </div>
 
@@ -631,7 +619,7 @@ export function ClientDetailView({
                       type="date"
                       value={noteEndDate}
                       onChange={(e) => setNoteEndDate(e.target.value)}
-                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-pink-500"
                     />
                   </div>
 
@@ -640,7 +628,7 @@ export function ClientDetailView({
                     <select
                       value={noteCategoryFilter}
                       onChange={(e) => setNoteCategoryFilter(e.target.value)}
-                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-rose-500"
+                      className="w-full px-2.5 py-1.5 text-xs bg-slate-50/80 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-pink-500"
                     >
                       <option value="ALL">All Categories</option>
                       {Object.entries(NOTE_CATEGORIES).map(([key, val]) => (
@@ -656,7 +644,7 @@ export function ClientDetailView({
                   <button
                     onClick={() => handleFetchFilteredNotes()}
                     disabled={isFetchingNotes}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer transition-colors"
                   >
                     <Filter className="w-3.5 h-3.5" />
                     <span>{isFetchingNotes ? "Loading..." : "Filter Notes"}</span>
@@ -684,11 +672,11 @@ export function ClientDetailView({
                     onClick={() => setHistorySubTab("vitals")}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       historySubTab === "vitals"
-                        ? "bg-white text-rose-700 shadow-2xs font-bold"
+                        ? "bg-white text-pink-700 shadow-2xs font-bold"
                         : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    <Activity className="w-3.5 h-3.5 inline mr-1.5 text-rose-600" />
+                    <Activity className="w-3.5 h-3.5 inline mr-1.5 text-pink-600" />
                     Vitals Flowsheet Table ({notes.filter((n) => hasAnyVitals(n)).length})
                   </button>
                 </div>
@@ -710,7 +698,7 @@ export function ClientDetailView({
                   </p>
                   <button
                     onClick={() => setActiveTab("upload")}
-                    className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                    className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Add First Record
                   </button>
@@ -745,39 +733,20 @@ export function ClientDetailView({
                         </span>
                         {(() => {
                           const elapsedMs = Date.now() - new Date(note.createdAt).getTime();
-                          const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
-                          const isLocked = elapsedMs > TWO_HOURS_MS;
+                          const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+                          const isLocked = elapsedMs > TWENTY_FOUR_HOURS_MS;
                           return isLocked ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
                               <Lock className="w-2.5 h-2.5 text-slate-400" /> Locked
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              <Clock className="w-2.5 h-2.5 text-emerald-600" /> Grace Period
+                              <Clock className="w-2.5 h-2.5 text-emerald-600" /> 24h Edit Window
                             </span>
                           );
                         })()}
                       </div>
                     </div>
-
-                    {/* ADL Tasks Completed */}
-                    {note.adlTasksCompleted && note.adlTasksCompleted.length > 0 && (
-                      <div className="mb-3">
-                        <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                          <CheckSquare className="w-3.5 h-3.5 text-slate-400" /> Completed ADLs:
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {note.adlTasksCompleted.map((task: string, i: number) => (
-                            <span
-                              key={i}
-                              className="text-xs bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md border border-slate-200/70 font-medium"
-                            >
-                              {task}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
                     {/* Structured Vitals Badges */}
                     <VitalsBadges vitals={note} size="sm" />
@@ -791,13 +760,13 @@ export function ClientDetailView({
                     {note.attachmentUrl && (
                       <div className="mt-4 pt-3 border-t border-slate-100">
                         <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                          <FileText className="w-3.5 h-3.5 text-rose-600" /> Attached Clinical Summary
+                          <FileText className="w-3.5 h-3.5 text-pink-600" /> Attached Clinical Summary
                         </div>
 
                         {note.attachmentType === "pdf" ? (
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl gap-3">
                             <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <div className="w-10 h-10 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                              <div className="w-10 h-10 rounded-lg bg-pink-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                                 PDF
                               </div>
                               <div className="min-w-0 flex-1">
@@ -811,7 +780,7 @@ export function ClientDetailView({
                               href={getDocumentUrl(note.attachmentUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors shrink-0 w-full sm:w-auto"
+                              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white text-xs font-semibold shadow-xs transition-colors shrink-0 w-full sm:w-auto"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                               <span>View / Download PDF</span>
@@ -849,7 +818,7 @@ export function ClientDetailView({
                                 href={getDocumentUrl(note.attachmentUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors flex-1 sm:flex-initial"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white text-xs font-semibold shadow-xs transition-colors flex-1 sm:flex-initial"
                               >
                                 <ExternalLink className="w-3.5 h-3.5" />
                                 <span>Open Full</span>
@@ -865,70 +834,7 @@ export function ClientDetailView({
             </div>
           )}
 
-          {/* TAB 2: SCHEDULED SHIFTS & APPOINTMENTS */}
-          {activeTab === "appointments" && (
-            <div className="space-y-4">
-              {appointments.length === 0 ? (
-                <div className="bg-white border border-slate-200/80 rounded-xl p-10 text-center">
-                  <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-slate-700">No shifts scheduled for this patient</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {appointments.map((appt) => {
-                    const isCompleted = appt.status === "COMPLETED";
-                    return (
-                      <div
-                        key={appt.id}
-                        className={`bg-white border rounded-xl p-4 shadow-xs transition-all ${
-                          isCompleted ? "border-slate-200 opacity-80" : "border-slate-300 ring-1 ring-slate-200"
-                        }`}
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2.5">
-                          <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/80">
-                              {APPOINTMENT_TYPE_LABELS[appt.type as AppointmentType] || appt.type}
-                            </span>
-                            <span
-                              className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${
-                                isCompleted
-                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200/70"
-                                  : "bg-amber-50 text-amber-700 border border-amber-200/70"
-                              }`}
-                            >
-                              {APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus] || appt.status}
-                            </span>
-                          </div>
-                          <span className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-slate-400" />
-                            {new Date(appt.startTime).toLocaleString("en-US", {
-                              weekday: "short",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
 
-                        <div className="text-xs text-slate-700 space-y-1">
-                          {appt.summary && <p className="font-semibold text-slate-900">{appt.summary}</p>}
-                          {appt.location && (
-                            <p className="text-slate-500 flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-slate-400" /> {appt.location}
-                            </p>
-                          )}
-                          <p className="text-slate-500">
-                            Caregiver: <span className="font-medium text-slate-800">{appt.employee?.name || "Assigned Caregiver"}</span>
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* TAB 3: CARE PLAN & PROTOCOLS */}
           {activeTab === "careplan" && (
@@ -1014,7 +920,7 @@ export function ClientDetailView({
                           }}
                           className={`py-2.5 px-3 rounded-lg text-xs font-medium text-center border transition-all cursor-pointer ${
                             isSelected
-                              ? "bg-rose-600 text-white border-rose-600 shadow-xs"
+                              ? "bg-pink-600 text-white border-pink-600 shadow-xs"
                               : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                           }`}
                         >
@@ -1025,38 +931,7 @@ export function ClientDetailView({
                   </div>
                 </div>
 
-                {/* ADL Tasks Completed */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                    ADL Tasks (If Applicable)
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {ADL_TASKS.map((task) => {
-                      const isChecked = selectedAdlTasks.includes(task);
-                      return (
-                        <button
-                          key={task}
-                          type="button"
-                          onClick={() => toggleAdlTask(task)}
-                          className={`flex items-center justify-between p-2.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
-                            isChecked
-                              ? "bg-rose-50 border-rose-300 text-rose-900 shadow-xs"
-                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                          }`}
-                        >
-                          <span>{task}</span>
-                          <div
-                            className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                              isChecked ? "bg-rose-600 border-rose-600 text-white" : "border-slate-300 bg-slate-50"
-                            }`}
-                          >
-                            {isChecked && <CheckSquare className="w-3 h-3" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+
 
                 {/* File Upload Box (PDF or PNG) - ONLY ON DISCHARGE_SUMMARY */}
                 {category === "DISCHARGE_SUMMARY" && (
@@ -1067,11 +942,11 @@ export function ClientDetailView({
 
                     {uploadState === "uploading" ? (
                       <div className="border border-slate-200 bg-slate-50 rounded-xl p-4 text-center">
-                        <Loader2 className="w-6 h-6 text-rose-600 animate-spin mx-auto mb-2" />
+                        <Loader2 className="w-6 h-6 text-pink-600 animate-spin mx-auto mb-2" />
                         <div className="text-xs font-semibold text-slate-900">Uploading Document to Secure Storage...</div>
                         <div className="text-[11px] text-slate-500 mt-1">Encrypting and uploading {attachedFile?.name}</div>
                         <div className="w-full bg-slate-200 h-1.5 rounded-full mt-3 overflow-hidden">
-                          <div className="bg-rose-600 h-full w-2/3 animate-pulse rounded-full" />
+                          <div className="bg-pink-600 h-full w-2/3 animate-pulse rounded-full" />
                         </div>
                       </div>
                     ) : uploadState === "completed" && uploadedDoc ? (
@@ -1115,7 +990,7 @@ export function ClientDetailView({
                                 setUploadedDoc(null);
                                 setUploadState("idle");
                               }}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-white transition-colors cursor-pointer shrink-0"
+                              className="p-1.5 text-slate-400 hover:text-pink-600 rounded-md hover:bg-white transition-colors cursor-pointer shrink-0"
                               title="Remove attached file"
                             >
                               <X className="w-4 h-4" />
@@ -1139,7 +1014,7 @@ export function ClientDetailView({
                           Supported formats: <span className="font-semibold text-slate-700">PDF (.pdf)</span> or <span className="font-semibold text-slate-700">PNG (.png)</span> • Max 15MB
                         </div>
                         {uploadError && (
-                          <div className="mt-2 text-xs text-rose-600 font-medium bg-rose-50 p-2 rounded-lg border border-rose-200">
+                          <div className="mt-2 text-xs text-pink-600 font-medium bg-pink-50 p-2 rounded-lg border border-pink-200">
                             {uploadError}
                           </div>
                         )}
@@ -1164,6 +1039,8 @@ export function ClientDetailView({
                   setOxygenSaturation={setOxygenSaturation}
                   respiratoryRate={respiratoryRate}
                   setRespiratoryRate={setRespiratoryRate}
+                  bloodGlucose={bloodGlucose}
+                  setBloodGlucose={setBloodGlucose}
                   errors={vitalsErrors}
                 />
 
@@ -1178,7 +1055,7 @@ export function ClientDetailView({
                     placeholder="Enter visit narrative, patient clinical observations, or document summary notes..."
                     value={narrativeContent}
                     onChange={(e) => setNarrativeContent(e.target.value)}
-                    className="w-full text-xs font-normal border border-slate-200 rounded-xl p-3.5 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 placeholder-slate-400 leading-relaxed font-sans"
+                    className="w-full text-xs font-normal border border-slate-200 rounded-xl p-3.5 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 placeholder-slate-400 leading-relaxed font-sans"
                   />
                 </div>
 
@@ -1187,7 +1064,7 @@ export function ClientDetailView({
                   <button
                     type="submit"
                     disabled={isPending || isUploading}
-                    className="w-full py-3.5 px-4 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white rounded-xl font-semibold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+                    className="w-full py-3.5 px-4 bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white rounded-xl font-semibold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                   >
                     {isUploading ? (
                       <span>Uploading Document...</span>

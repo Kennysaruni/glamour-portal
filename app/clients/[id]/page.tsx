@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Patient History & Clinical Records | Glamour Homecare",
-  description: "Comprehensive patient clinical profile, visit log history, and scheduled appointments.",
+  description: "Comprehensive patient clinical profile, care plans, and visit log history.",
 };
 
 export default async function ClientDetailPage({

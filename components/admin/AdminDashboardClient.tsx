@@ -5,7 +5,6 @@ import {
   Users,
   UserPlus,
   FileText,
-  Calendar,
   Search,
   Filter,
   CheckCircle,
@@ -36,29 +35,21 @@ import {
   toggleStaffStatus,
   createClient,
   updateClient,
-  createAppointment,
-  updateAppointmentStatus,
 } from "@/lib/actions/admin-actions";
 import {
   CARE_TYPES,
   CARE_TYPE_LABELS,
   NOTE_CATEGORIES,
   NOTE_CATEGORY_LABELS,
-  APPOINTMENT_TYPES,
-  APPOINTMENT_TYPE_LABELS,
-  APPOINTMENT_STATUSES,
-  APPOINTMENT_STATUS_LABELS,
   CareType,
   NoteCategory,
-  AppointmentType,
-  AppointmentStatus,
   ADL_TASKS,
 } from "@/lib/types";
 
 interface AdminDashboardClientProps {
   initialStaff: any[];
   initialClients: any[];
-  initialAppointments: any[];
+  initialAppointments?: any[];
   initialNotes: any[];
   initialAuditLogs: any[];
   currentUser: {
@@ -78,12 +69,11 @@ export function AdminDashboardClient({
   currentUser,
 }: AdminDashboardClientProps) {
   const [activeTab, setActiveTab] = useState<
-    "activity" | "clients" | "staff" | "appointments" | "audit"
+    "activity" | "clients" | "staff" | "audit"
   >("activity");
 
   const [staffList, setStaffList] = useState(initialStaff);
   const [clientsList, setClientsList] = useState(initialClients);
-  const [appointmentsList, setAppointmentsList] = useState(initialAppointments);
   const [notesList, setNotesList] = useState(initialNotes);
   const [auditLogs, setAuditLogs] = useState(initialAuditLogs);
 
@@ -165,7 +155,6 @@ export function AdminDashboardClient({
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isEditClientModalOpen, setIsEditClientModalOpen] = useState(false);
   const [clientToEdit, setClientToEdit] = useState<any | null>(null);
-  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
 
   // Search state for Client Directory & Staff Management
   const [clientDirectorySearch, setClientDirectorySearch] = useState("");
@@ -175,9 +164,7 @@ export function AdminDashboardClient({
   const [staffClientSearchQuery, setStaffClientSearchQuery] = useState("");
   const [isStaffClientDropdownOpen, setIsStaffClientDropdownOpen] = useState(false);
 
-  // Suggestive search for scheduling appointment
-  const [apptClientSearchQuery, setApptClientSearchQuery] = useState("");
-  const [isApptClientDropdownOpen, setIsApptClientDropdownOpen] = useState(false);
+
 
   // Form states
   const [staffForm, setStaffForm] = useState({
@@ -310,15 +297,7 @@ export function AdminDashboardClient({
     assignedEmployeeId: initialStaff[0]?.id || "",
   });
 
-  const [appointmentForm, setAppointmentForm] = useState({
-    clientId: initialClients[0]?.id || "",
-    employeeId: initialClients[0]?.assignedEmployeeId || "",
-    type: "HOME_CARE_SHIFT" as AppointmentType,
-    startTime: "",
-    endTime: "",
-    location: initialClients[0]?.address || "",
-    summary: "",
-  });
+
 
   const [formError, setFormError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -499,47 +478,7 @@ export function AdminDashboardClient({
     });
   };
 
-  // Action: Schedule Shift / Appointment
-  const handleCreateAppointment = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
 
-    if (!appointmentForm.clientId || !appointmentForm.employeeId || !appointmentForm.startTime) {
-      setFormError("Client, caregiver, and shift start time are required.");
-      return;
-    }
-
-    startTransition(async () => {
-      const res = await createAppointment(appointmentForm);
-      if (res.success) {
-        setIsAppointmentModalOpen(false);
-        setAppointmentForm({
-          clientId: clientsList[0]?.id || "",
-          employeeId: staffList[0]?.id || "",
-          type: "HOME_CARE_SHIFT",
-          startTime: "",
-          endTime: "",
-          location: "",
-          summary: "",
-        });
-        window.location.reload();
-      } else {
-        setFormError((res as { error?: string }).error || "Failed to schedule appointment.");
-      }
-    });
-  };
-
-  // Action: Update Appointment Status
-  const handleUpdateStatus = (apptId: string, status: AppointmentStatus) => {
-    startTransition(async () => {
-      const res = await updateAppointmentStatus(apptId, status);
-      if (res.success) {
-        setAppointmentsList((prev) =>
-          prev.map((a) => (a.id === apptId ? { ...a, status } : a))
-        );
-      }
-    });
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-16">
@@ -558,7 +497,7 @@ export function AdminDashboardClient({
           </div>
 
           {/* Quick Metrics Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6">
             <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs">
               <div className="text-slate-500 text-xs font-medium">Active Clients</div>
               <div className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-1">
@@ -587,14 +526,6 @@ export function AdminDashboardClient({
               <div className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">
                 {notesList.filter((n) => n.category === "DISCHARGE_SUMMARY").length} Discharges
               </div>
-            </div>
-
-            <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs">
-              <div className="text-slate-500 text-xs font-medium">Scheduled Shifts</div>
-              <div className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-1">
-                {appointmentsList.filter((a) => a.status === "SCHEDULED").length}
-              </div>
-              <div className="text-[11px] text-slate-400 font-medium mt-0.5 truncate">Upcoming visits</div>
             </div>
           </div>
 
@@ -642,19 +573,7 @@ export function AdminDashboardClient({
               </span>
             </button>
 
-            <button
-              onClick={() => setActiveTab("appointments")}
-              className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition-all shrink-0 cursor-pointer ${
-                activeTab === "appointments"
-                  ? "border-rose-600 text-rose-700"
-                  : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
-              }`}
-            >
-              <Calendar className="w-4 h-4" /> Shifts & Visits
-              <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full ml-0.5">
-                {appointmentsList.length}
-              </span>
-            </button>
+
 
             <button
               onClick={() => setActiveTab("audit")}
@@ -1024,7 +943,7 @@ export function AdminDashboardClient({
                       </span>
                     </div>
                     <div className="text-[11px] text-slate-400">
-                      {client.notesCount || 0} Notes • {client.appointmentsCount || 0} Shifts
+                      {client.notesCount || 0} Notes
                     </div>
                   </div>
 
@@ -1270,184 +1189,7 @@ export function AdminDashboardClient({
           </div>
         )}
 
-        {/* ================================================================= */}
-        {/* TAB 4: SHIFTS & APPOINTMENTS                                     */}
-        {/* ================================================================= */}
-        {activeTab === "appointments" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  Scheduled Shifts
-                </h2>
-                <p className="text-xs text-slate-500">Upcoming visits, discharge transitions, and caregiver shifts.</p>
-              </div>
-              <button
-                onClick={() => setIsAppointmentModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-              >
-                <Calendar className="w-4 h-4" /> Schedule New Shift
-              </button>
-            </div>
 
-            {/* Desktop Table */}
-            <div className="hidden sm:block bg-white border border-slate-200/80 rounded-xl overflow-x-auto shadow-xs">
-              <table className="min-w-[680px] w-full divide-y divide-slate-200 text-left text-xs">
-                <thead className="bg-slate-50/80 text-slate-500 font-semibold uppercase tracking-wider">
-                  <tr>
-                    <th className="px-4 py-3">Scheduled Time</th>
-                    <th className="px-4 py-3">Patient</th>
-                    <th className="px-4 py-3">Caregiver</th>
-                    <th className="px-4 py-3">Type</th>
-                    <th className="px-4 py-3">Location</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {appointmentsList.map((appt) => (
-                    <tr key={appt.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-4 py-3 font-semibold text-slate-900">
-                        <div>
-                          {new Date(appt.startTime).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </div>
-                        <div className="text-[11px] text-slate-500 font-normal">
-                          {new Date(appt.startTime).toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                          {appt.endTime &&
-                            ` - ${new Date(appt.endTime).toLocaleTimeString("en-US", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}`}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 font-medium text-slate-900">
-                        {appt.client?.firstName} {appt.client?.lastName}
-                      </td>
-
-                      <td className="px-4 py-3 text-slate-700 font-medium">
-                        {appt.employee?.name}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
-                          {APPOINTMENT_TYPE_LABELS[appt.type as AppointmentType] || appt.type}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 text-slate-500 max-w-xs truncate">
-                        {appt.location || "Client residence"}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            appt.status === "COMPLETED"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                              : appt.status === "SCHEDULED"
-                              ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-                              : "bg-slate-100 text-slate-600 border border-slate-200/60"
-                          }`}
-                        >
-                          {APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus] ||
-                            appt.status}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 text-right">
-                        {appt.status === "SCHEDULED" && (
-                          <div className="inline-flex gap-1.5">
-                            <button
-                              onClick={() => handleUpdateStatus(appt.id, "COMPLETED")}
-                              className="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/70 rounded-md text-[11px] font-semibold cursor-pointer"
-                            >
-                              Complete
-                            </button>
-                            <button
-                              onClick={() => handleUpdateStatus(appt.id, "CANCELLED")}
-                              className="px-2.5 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-md text-[11px] cursor-pointer"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="sm:hidden space-y-3">
-              {appointmentsList.map((appt) => (
-                <div key={appt.id} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs space-y-3 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-slate-900 truncate">
-                      {appt.client?.firstName} {appt.client?.lastName}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                        appt.status === "COMPLETED"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                          : appt.status === "SCHEDULED"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-                          : "bg-slate-100 text-slate-600 border border-slate-200/60"
-                      }`}
-                    >
-                      {APPOINTMENT_STATUS_LABELS[appt.status as AppointmentStatus] || appt.status}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Caregiver</span>
-                      <span className="font-medium text-slate-800">{appt.employee?.name || "Unassigned"}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Type</span>
-                      <span className="font-medium text-slate-800">
-                        {APPOINTMENT_TYPE_LABELS[appt.type as AppointmentType] || appt.type}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-100 flex items-center justify-between">
-                    <span>
-                      {new Date(appt.startTime).toLocaleDateString("en-US", { month: "short", day: "numeric" })} at{" "}
-                      {new Date(appt.startTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                    <span className="text-slate-400 truncate max-w-[130px]">{appt.location || "Client residence"}</span>
-                  </div>
-
-                  {appt.status === "SCHEDULED" && (
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleUpdateStatus(appt.id, "COMPLETED")}
-                        className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/70 rounded-md text-xs font-semibold cursor-pointer"
-                      >
-                        Complete
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(appt.id, "CANCELLED")}
-                        className="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-md text-xs cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* ================================================================= */}
         {/* TAB 5: AUDIT LOGS                                                */}
@@ -2630,301 +2372,7 @@ export function AdminDashboardClient({
         </div>
       )}
 
-      {/* =================================================================== */}
-      {/* MODAL 4: SCHEDULE SHIFT / APPOINTMENT                              */}
-      {/* =================================================================== */}
-      {isAppointmentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsAppointmentModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
 
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                <Calendar className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-slate-900">Schedule Caregiver Shift</h3>
-                <p className="text-xs text-slate-500">Assign shift time, client, and visit goals</p>
-              </div>
-            </div>
-
-            {formError && (
-              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-medium text-rose-800">
-                {formError}
-              </div>
-            )}
-
-            <form onSubmit={handleCreateAppointment} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">Select Client</label>
-                {/* Selected Client Display Card */}
-                {appointmentForm.clientId && (
-                  <div className="mb-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
-                    {(() => {
-                      const sel = clientsList.find((x) => x.id === appointmentForm.clientId);
-                      return sel ? (
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
-                            {sel.firstName[0]}{sel.lastName[0]}
-                          </div>
-                          <div className="min-w-0">
-                            <span className="font-semibold text-slate-900 block truncate">
-                              {sel.firstName} {sel.lastName}
-                            </span>
-                            <span className="text-[10px] text-slate-500 block truncate">
-                              {sel.address || "Fredericksburg, VA"}
-                            </span>
-                          </div>
-                        </div>
-                      ) : null;
-                    })()}
-                    <span className="text-[10px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200/60 shrink-0">
-                      Selected
-                    </span>
-                  </div>
-                )}
-
-                {/* Suggestive Search Input */}
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Search client name, care type, or address..."
-                    value={apptClientSearchQuery}
-                    onChange={(e) => {
-                      setApptClientSearchQuery(e.target.value);
-                      setIsApptClientDropdownOpen(true);
-                    }}
-                    onFocus={() => setIsApptClientDropdownOpen(true)}
-                    className="w-full border border-slate-200 rounded-lg pl-9 pr-8 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                  />
-                  {apptClientSearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setApptClientSearchQuery("")}
-                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-
-                  {isApptClientDropdownOpen && (
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto divide-y divide-slate-100">
-                      {clientsList
-                        .filter((c) => {
-                          if (!apptClientSearchQuery.trim()) return true;
-                          const q = apptClientSearchQuery.toLowerCase();
-                          return (
-                            `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) ||
-                            (c.address && c.address.toLowerCase().includes(q)) ||
-                            (c.primaryCareType && c.primaryCareType.toLowerCase().includes(q))
-                          );
-                        })
-                        .map((c) => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            onClick={() => {
-                              setAppointmentForm({
-                                ...appointmentForm,
-                                clientId: c.id,
-                                employeeId: c.assignedEmployeeId || appointmentForm.employeeId,
-                                location: c.address || "",
-                              });
-                              setApptClientSearchQuery("");
-                              setIsApptClientDropdownOpen(false);
-                            }}
-                            className={`w-full p-2.5 text-left hover:bg-slate-50 transition-colors flex items-center justify-between gap-2 cursor-pointer text-xs ${
-                              appointmentForm.clientId === c.id ? "bg-rose-50/60 font-semibold" : ""
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center shrink-0">
-                                {c.firstName[0]}{c.lastName[0]}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="text-slate-900 truncate">
-                                  {c.firstName} {c.lastName}
-                                </div>
-                                <div className="text-[10px] text-slate-400 truncate">
-                                  {c.address || "Fredericksburg, VA"}
-                                </div>
-                              </div>
-                            </div>
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                              {CARE_TYPE_LABELS[c.primaryCareType as CareType] || c.primaryCareType}
-                            </span>
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center justify-between">
-                  <span>Assign Caregiver *</span>
-                  <span className="text-[10px] text-slate-500 font-normal">Active Client-Caregiver Mapping</span>
-                </label>
-                {(() => {
-                  const selClient = clientsList.find((c) => c.id === appointmentForm.clientId);
-                  const assignedCaregivers = staffList.filter(
-                    (s) => s.id === selClient?.assignedEmployeeId
-                  );
-
-                  if (!selClient) {
-                    return (
-                      <div className="p-2.5 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
-                        Please select a client first.
-                      </div>
-                    );
-                  }
-
-                  if (assignedCaregivers.length === 0) {
-                    return (
-                      <div className="p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-xs">
-                        <div className="flex items-center gap-1.5 font-semibold">
-                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span>Strict Safeguard: No Caregiver Assigned</span>
-                        </div>
-                        <p className="mt-1 text-[11px] text-amber-700">
-                          {selClient.firstName} {selClient.lastName} does not currently have an assigned caregiver. Shifts can only be scheduled for caregivers actively mapped to this client.
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div>
-                      <select
-                        value={appointmentForm.employeeId}
-                        onChange={(e) =>
-                          setAppointmentForm({ ...appointmentForm, employeeId: e.target.value })
-                        }
-                        required
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                      >
-                        {assignedCaregivers.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name} ({s.role}) • Assigned Caregiver
-                          </option>
-                        ))}
-                      </select>
-                      <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                        <span>Restricted to caregivers actively assigned to this client</span>
-                      </p>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">Visit / Shift Type</label>
-                <select
-                  value={appointmentForm.type}
-                  onChange={(e) =>
-                    setAppointmentForm({
-                      ...appointmentForm,
-                      type: e.target.value as AppointmentType,
-                    })
-                  }
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                >
-                  {Object.entries(APPOINTMENT_TYPES).map(([k, v]) => (
-                    <option key={k} value={v}>
-                      {APPOINTMENT_TYPE_LABELS[v as AppointmentType]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Start Time</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={appointmentForm.startTime}
-                    onChange={(e) =>
-                      setAppointmentForm({ ...appointmentForm, startTime: e.target.value })
-                    }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">End Time</label>
-                  <input
-                    type="datetime-local"
-                    value={appointmentForm.endTime}
-                    onChange={(e) =>
-                      setAppointmentForm({ ...appointmentForm, endTime: e.target.value })
-                    }
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">Location / Address</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 104 Washington Ave, Fredericksburg, VA"
-                  value={appointmentForm.location}
-                  onChange={(e) =>
-                    setAppointmentForm({ ...appointmentForm, location: e.target.value })
-                  }
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  Visit Objectives & Notes
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Bathing assistance, meal prep, hospital discharge review..."
-                  value={appointmentForm.summary}
-                  onChange={(e) =>
-                    setAppointmentForm({ ...appointmentForm, summary: e.target.value })
-                  }
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all bg-white"
-                />
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setIsAppointmentModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={
-                    isPending ||
-                    !staffList.some(
-                      (s) =>
-                        s.id ===
-                        clientsList.find((c) => c.id === appointmentForm.clientId)?.assignedEmployeeId
-                    )
-                  }
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  {isPending ? "Scheduling..." : "Schedule Shift"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

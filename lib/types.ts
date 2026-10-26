@@ -147,6 +147,7 @@ export interface ClientNoteData {
   heartRate?: number | null;
   oxygenSaturation?: number | null;
   respiratoryRate?: number | null;
+  bloodGlucose?: number | null;
   createdAt: Date | string;
   updatedAt?: Date | string;
 }
@@ -172,8 +173,41 @@ export interface RawClientNoteWithVitals {
   heartRate?: number | null;
   oxygenSaturation?: number | null;
   respiratoryRate?: number | null;
+  bloodGlucose?: number | null;
   createdAt: Date | string;
   updatedAt?: Date | string;
+}
+
+export const STREAMLINED_NOTE_CATEGORIES = {
+  DAILY_CARE_LOG: "DAILY_CARE_LOG",
+  DISCHARGE_SUMMARY: "DISCHARGE_SUMMARY",
+} as const;
+
+export const STREAMLINED_NOTE_CATEGORY_LABELS: Record<string, string> = {
+  DAILY_CARE_LOG: "Daily Care Log",
+  DISCHARGE_SUMMARY: "Discharge Summary",
+};
+
+export interface IncidentReportData {
+  id: string;
+  clientId: string;
+  client?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  employeeId: string;
+  employee?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  incidentDate: Date | string;
+  description: string;
+  notificationsMade: string;
+  actionsTaken: string;
+  status: string;
+  createdAt: Date | string;
 }
 
 export interface AppointmentData {

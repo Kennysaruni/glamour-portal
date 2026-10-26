@@ -67,6 +67,7 @@ model User {
   assignedClients Client[]      @relation("AssignedCaregiver")
   appointments    Appointment[]
   clientNotes     ClientNote[]
+  incidentReports IncidentReport[]
   auditLogs       AuditLog[]
 }
 
@@ -133,6 +134,7 @@ model Client {
 
   appointments        Appointment[]
   notes               ClientNote[]
+  incidentReports     IncidentReport[]
 
   @@index([assignedEmployeeId])
   @@index([lastName, firstName])
@@ -191,6 +193,7 @@ model ClientNote {
   heartRate         Int?         // Heart Rate (BPM e.g. 72)
   oxygenSaturation  Int?         // Oxygen Saturation SpO2 % (e.g. 98)
   respiratoryRate   Int?         // Breaths per min (e.g. 16)
+  bloodGlucose      Int?         // Blood Glucose mg/dL (e.g. 110)
   
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
@@ -199,6 +202,28 @@ model ClientNote {
   @@index([clientId])
   @@index([category])
   @@index([createdAt])
+}
+
+model IncidentReport {
+  id                 String   @id @default(cuid())
+  clientId           String
+  client             Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  employeeId         String
+  employee           User     @relation(fields: [employeeId], references: [id])
+  
+  incidentDate       DateTime
+  description        String   @db.Text
+  notificationsMade  String   @db.Text
+  actionsTaken       String   @db.Text
+  status             String   @default("SUBMITTED")
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([employeeId])
+  @@index([incidentDate])
 }
 
 model AuditLog {

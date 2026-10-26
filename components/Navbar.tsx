@@ -80,8 +80,8 @@ export function Navbar({ user }: NavbarProps) {
                 </span>
                 <span className="text-[10px] flex items-center gap-1">
                   {isAdmin ? (
-                    <span className="text-rose-600 font-semibold flex items-center gap-0.5">
-                      <ShieldCheck className="w-3 h-3 inline text-rose-600" /> Admin
+                    <span className="text-pink-600 font-semibold flex items-center gap-0.5">
+                      <ShieldCheck className="w-3 h-3 inline text-pink-600" /> Admin
                     </span>
                   ) : (
                     <span className="text-slate-500 font-medium flex items-center gap-0.5">
@@ -105,10 +105,10 @@ export function Navbar({ user }: NavbarProps) {
               onClick={handleLogout}
               disabled={isPending}
               title="Sign Out"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/80 active:bg-slate-200 transition-colors focus:outline-hidden cursor-pointer min-h-[36px] sm:min-h-[38px]"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-slate-300 text-xs font-semibold text-black hover:bg-slate-100 active:bg-slate-200 transition-colors focus:outline-hidden cursor-pointer min-h-[36px] sm:min-h-[38px]"
             >
-              <LogOut className="w-4 h-4 text-slate-500 shrink-0" />
-              <span className="text-xs font-medium">
+              <LogOut className="w-4 h-4 text-black shrink-0" />
+              <span className="text-xs font-semibold text-black">
                 {isPending ? "Signing out..." : "Sign Out"}
               </span>
             </button>
@@ -129,7 +129,7 @@ export function Navbar({ user }: NavbarProps) {
               href="/admin"
               className={`px-2 py-0.5 rounded transition-all ${
                 isOnAdmin
-                  ? "bg-rose-600 text-white shadow-2xs font-semibold"
+                  ? "bg-pink-600 text-white shadow-2xs font-semibold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -139,7 +139,7 @@ export function Navbar({ user }: NavbarProps) {
               href="/app"
               className={`px-2 py-0.5 rounded transition-all ${
                 !isOnAdmin
-                  ? "bg-rose-600 text-white shadow-2xs font-semibold"
+                  ? "bg-pink-600 text-white shadow-2xs font-semibold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >

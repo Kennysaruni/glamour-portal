@@ -149,16 +149,18 @@ export async function getCaregiverNotes() {
     heartRate: n.heartRate ?? null,
     oxygenSaturation: n.oxygenSaturation ?? null,
     respiratoryRate: n.respiratoryRate ?? null,
+    bloodGlucose: n.bloodGlucose ?? null,
     createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : String(n.createdAt),
   }));
 }
 
 export async function getCaregiverDashboardData() {
   const session = await requireAuth();
-  const [clients, appointments, recentNotes] = await Promise.all([
+  const [clients, appointments, recentNotes, incidentReports] = await Promise.all([
     getAssignedClients(),
     getCaregiverAppointments(),
     getCaregiverNotes(),
+    getCaregiverIncidentReports(),
   ]);
 
   return {
@@ -171,6 +173,7 @@ export async function getCaregiverDashboardData() {
     clients,
     appointments,
     recentNotes,
+    incidentReports,
   };
 }
 
@@ -320,6 +323,7 @@ export async function getClientDetailsAndHistory(
       heartRate: n.heartRate ?? null,
       oxygenSaturation: n.oxygenSaturation ?? null,
       respiratoryRate: n.respiratoryRate ?? null,
+      bloodGlucose: n.bloodGlucose ?? null,
       createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : String(n.createdAt),
     })),
     appointments: appointments.map((a) => ({
@@ -346,7 +350,7 @@ export async function submitVisitLog(data: {
   clientId: string;
   appointmentId?: string;
   category: NoteCategory;
-  adlTasksCompleted: string[];
+  adlTasksCompleted?: string[];
   content: string;
   attachmentUrl?: string | null;
   attachmentName?: string | null;
@@ -358,6 +362,7 @@ export async function submitVisitLog(data: {
   heartRate?: number | null;
   oxygenSaturation?: number | null;
   respiratoryRate?: number | null;
+  bloodGlucose?: number | null;
 }) {
   const session = await requireAuth();
   const userId = session.user.id;
@@ -387,6 +392,7 @@ export async function submitVisitLog(data: {
     heartRate: data.heartRate,
     oxygenSaturation: data.oxygenSaturation,
     respiratoryRate: data.respiratoryRate,
+    bloodGlucose: data.bloodGlucose,
   };
   const vitalsValidation = validateVitals(vitalsToCheck);
   if (!vitalsValidation.isValid) {
@@ -413,6 +419,7 @@ export async function submitVisitLog(data: {
     if (data.heartRate) parts.push(`HR: ${data.heartRate} BPM`);
     if (data.oxygenSaturation) parts.push(`SpO2: ${data.oxygenSaturation}%`);
     if (data.respiratoryRate) parts.push(`RR: ${data.respiratoryRate} bpm`);
+    if (data.bloodGlucose) parts.push(`Glucose: ${data.bloodGlucose} mg/dL`);
     finalContent = `Routine Vitals Check recorded (${parts.join(", ")}).`;
   } else if (!finalContent && data.attachmentName) {
     finalContent = `Attached clinical summary document: ${data.attachmentName}`;
@@ -437,6 +444,7 @@ export async function submitVisitLog(data: {
       heartRate: data.heartRate !== undefined ? data.heartRate : null,
       oxygenSaturation: data.oxygenSaturation !== undefined ? data.oxygenSaturation : null,
       respiratoryRate: data.respiratoryRate !== undefined ? data.respiratoryRate : null,
+      bloodGlucose: data.bloodGlucose !== undefined ? data.bloodGlucose : null,
     },
   });
 
@@ -466,8 +474,8 @@ export async function submitVisitLog(data: {
 }
 
 /**
- * Updates a submitted visit log / note within the mandatory 2-hour grace period.
- * Enforces: Date.now() - new Date(visitLog.createdAt).getTime() <= 2 * 60 * 60 * 1000
+ * Updates a submitted visit log / note within the mandatory 24-hour grace period.
+ * Enforces: Date.now() - new Date(visitLog.createdAt).getTime() <= 24 * 60 * 60 * 1000
  */
 export async function updateVisitLog(
   noteId: string,
@@ -482,6 +490,7 @@ export async function updateVisitLog(
     heartRate?: number;
     oxygenSaturation?: number;
     respiratoryRate?: number;
+    bloodGlucose?: number;
   }
 ) {
   const session = await requireAuth();
@@ -501,14 +510,14 @@ export async function updateVisitLog(
     return { success: false, error: "Unauthorized: You can only edit your own visit logs." };
   }
 
-  // Strict 2-Hour Time Window Validation (Caregiver Grace Period)
+  // Strict 24-Hour Time Window Validation (Caregiver Grace Period)
   const elapsedMs = Date.now() - new Date(existingNote.createdAt).getTime();
-  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
-  if (!isAdmin && elapsedMs > TWO_HOURS_MS) {
+  if (!isAdmin && elapsedMs > TWENTY_FOUR_HOURS_MS) {
     return {
       success: false,
-      error: "403 Forbidden: This record has been locked and can no longer be edited.",
+      error: "403 Forbidden: This clinical record has been locked (exceeded 24-hour edit window) and can no longer be edited.",
     };
   }
 
@@ -531,6 +540,7 @@ export async function updateVisitLog(
   if (data.heartRate !== undefined) updateData.heartRate = data.heartRate;
   if (data.oxygenSaturation !== undefined) updateData.oxygenSaturation = data.oxygenSaturation;
   if (data.respiratoryRate !== undefined) updateData.respiratoryRate = data.respiratoryRate;
+  if (data.bloodGlucose !== undefined) updateData.bloodGlucose = data.bloodGlucose;
 
   // Compute diff of changed fields
   const diff: Record<string, { from: unknown; to: unknown }> = {};
@@ -567,5 +577,104 @@ export async function updateVisitLog(
     const errorMsg = err instanceof Error ? err.message : "Failed to update visit log.";
     return { success: false, error: errorMsg };
   }
+}
+
+// ============================================================================
+// INCIDENT REPORTING
+// ============================================================================
+
+export async function submitIncidentReport(data: {
+  clientId: string;
+  incidentDate: string;
+  description: string;
+  notificationsMade?: string;
+  actionsTaken?: string;
+}) {
+  const session = await requireAuth();
+  const userId = session.user.id;
+
+  const client = await prisma.client.findUnique({
+    where: { id: data.clientId },
+  });
+
+  if (!client) {
+    return { success: false, error: "Patient record not found." };
+  }
+
+  if (session.user.role !== "ADMIN" && client.assignedEmployeeId !== userId) {
+    return {
+      success: false,
+      error: "Access Denied: You can only file incident reports for patients assigned to you.",
+    };
+  }
+
+  if (!data.description || !data.description.trim()) {
+    return { success: false, error: "Please enter what happened during the incident." };
+  }
+
+  const incidentDate = data.incidentDate ? new Date(data.incidentDate) : new Date();
+
+  const report = await (prisma as any).incidentReport.create({
+    data: {
+      clientId: data.clientId,
+      employeeId: userId,
+      incidentDate,
+      description: data.description.trim(),
+      notificationsMade: data.notificationsMade?.trim() || null,
+      actionsTaken: data.actionsTaken?.trim() || null,
+      status: "REPORTED",
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      userId,
+      action: "CREATE_INCIDENT_REPORT",
+      entityType: "IncidentReport",
+      entityId: report.id,
+      details: JSON.stringify({ clientId: data.clientId }),
+    },
+  });
+
+  revalidatePath("/app");
+  revalidatePath("/admin");
+  revalidatePath(`/clients/${data.clientId}`);
+
+  return { success: true, reportId: report.id };
+}
+
+export async function getCaregiverIncidentReports() {
+  const session = await requireAuth();
+  const userId = session.user.id;
+
+  const reports = await (prisma as any).incidentReport.findMany({
+    where: session.user.role === "ADMIN" ? {} : {
+      employeeId: userId,
+    },
+    orderBy: { incidentDate: "desc" },
+    take: 50,
+    include: {
+      client: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
+    },
+  });
+
+  return reports.map((r: any) => ({
+    id: r.id,
+    clientId: r.clientId,
+    client: r.client,
+    employeeId: r.employeeId,
+    incidentDate: r.incidentDate instanceof Date ? r.incidentDate.toISOString() : String(r.incidentDate),
+    description: r.description,
+    notificationsMade: r.notificationsMade,
+    actionsTaken: r.actionsTaken,
+    status: r.status,
+    createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
+  }));
 }
 

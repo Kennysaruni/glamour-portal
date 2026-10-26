@@ -7,6 +7,7 @@ import {
   Heart,
   Wind,
   AlertCircle,
+  Droplet,
 } from "lucide-react";
 import {
   getTemperatureStatus,
@@ -14,6 +15,7 @@ import {
   getHeartRateStatus,
   getOxygenSaturationStatus,
   getRespiratoryRateStatus,
+  getBloodGlucoseStatus,
 } from "@/lib/vitals-utils";
 
 interface VitalsInputFieldsProps {
@@ -31,6 +33,8 @@ interface VitalsInputFieldsProps {
   setOxygenSaturation: (val: string) => void;
   respiratoryRate: string;
   setRespiratoryRate: (val: string) => void;
+  bloodGlucose?: string;
+  setBloodGlucose?: (val: string) => void;
   errors?: Record<string, string>;
 }
 
@@ -49,6 +53,8 @@ export function VitalsInputFields({
   setOxygenSaturation,
   respiratoryRate,
   setRespiratoryRate,
+  bloodGlucose,
+  setBloodGlucose,
   errors = {},
 }: VitalsInputFieldsProps) {
   const tempNum = temperature ? parseFloat(temperature) : null;
@@ -57,19 +63,21 @@ export function VitalsInputFields({
   const hrNum = heartRate ? parseInt(heartRate, 10) : null;
   const spo2Num = oxygenSaturation ? parseInt(oxygenSaturation, 10) : null;
   const rrNum = respiratoryRate ? parseInt(respiratoryRate, 10) : null;
+  const bgNum = bloodGlucose ? parseInt(bloodGlucose, 10) : null;
 
   const tempStatus = getTemperatureStatus(tempNum, temperatureUnit);
   const bpStatus = getBloodPressureStatus(sysNum, diaNum);
   const hrStatus = getHeartRateStatus(hrNum);
   const spo2Status = getOxygenSaturationStatus(spo2Num);
   const rrStatus = getRespiratoryRateStatus(rrNum);
+  const bgStatus = getBloodGlucoseStatus(bgNum);
 
   return (
     <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-200/70 pb-3">
         <div>
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-            <Activity className="w-4 h-4 text-rose-600" />
+            <Activity className="w-4 h-4 text-pink-600" />
             <span>Structured Vital Signs</span>
           </h3>
           <p className="text-[11px] text-slate-500 mt-0.5">
@@ -297,6 +305,46 @@ export function VitalsInputFields({
             </p>
           )}
         </div>
+
+        {/* 6. Blood Glucose (Blood Sugar) */}
+        {setBloodGlucose && (
+          <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                <Droplet className="w-3.5 h-3.5 text-pink-600" />
+                <span>Blood Glucose (Sugar)</span>
+              </label>
+              {bgStatus && (
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${bgStatus.badgeClass}`}
+                >
+                  {bgStatus.label}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                step="1"
+                inputMode="numeric"
+                placeholder="e.g. 110"
+                value={bloodGlucose || ""}
+                onChange={(e) => setBloodGlucose(e.target.value)}
+                className="flex-1 text-xs border border-slate-300 rounded-lg py-2 px-2.5 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+              />
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">mg/dL</span>
+            </div>
+            {errors.bloodGlucose ? (
+              <p className="text-[10px] text-rose-600 mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3 shrink-0" />
+                <span>{errors.bloodGlucose}</span>
+              </p>
+            ) : (
+              <p className="text-[10px] text-slate-400 mt-1">Normal fasting: 70 - 140 mg/dL</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

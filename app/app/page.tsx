@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 export const metadata = {
   title: "Caregiver Field Portal | Glamour Homecare",
   description:
-    "Mobile care visit documentation, ADL checklist, and assigned patient schedule for Glamour Homecare caregivers.",
+    "Mobile care visit documentation, vital signs logging, and patient care for Glamour Homecare caregivers.",
 };
 
 export const dynamic = "force-dynamic";

@@ -11,6 +11,7 @@ export interface VitalsData {
   heartRate?: number | null;
   oxygenSaturation?: number | null;
   respiratoryRate?: number | null;
+  bloodGlucose?: number | null;
 }
 
 export interface VitalStatus {
@@ -30,6 +31,7 @@ export const VITALS_BOUNDS = {
   heartRate: { min: 30, max: 220, step: 1 },
   oxygenSaturation: { min: 50, max: 100, step: 1 },
   respiratoryRate: { min: 6, max: 60, step: 1 },
+  bloodGlucose: { min: 20, max: 600, step: 1 },
 };
 
 /**
@@ -111,6 +113,16 @@ export function validateVitals(vitals: VitalsData): {
     }
   }
 
+  if (vitals.bloodGlucose !== undefined && vitals.bloodGlucose !== null) {
+    if (
+      isNaN(vitals.bloodGlucose) ||
+      vitals.bloodGlucose < VITALS_BOUNDS.bloodGlucose.min ||
+      vitals.bloodGlucose > VITALS_BOUNDS.bloodGlucose.max
+    ) {
+      errors.bloodGlucose = `Blood glucose must be between ${VITALS_BOUNDS.bloodGlucose.min} and ${VITALS_BOUNDS.bloodGlucose.max} mg/dL.`;
+    }
+  }
+
   return {
     isValid: Object.keys(errors).length === 0,
     errors,
@@ -127,7 +139,8 @@ export function hasAnyVitals(vitals: VitalsData): boolean {
     (vitals.bloodPressureDia !== undefined && vitals.bloodPressureDia !== null) ||
     (vitals.heartRate !== undefined && vitals.heartRate !== null) ||
     (vitals.oxygenSaturation !== undefined && vitals.oxygenSaturation !== null) ||
-    (vitals.respiratoryRate !== undefined && vitals.respiratoryRate !== null)
+    (vitals.respiratoryRate !== undefined && vitals.respiratoryRate !== null) ||
+    (vitals.bloodGlucose !== undefined && vitals.bloodGlucose !== null)
   );
 }
 
@@ -399,5 +412,44 @@ export function getRespiratoryRateStatus(rr?: number | null): VitalStatus | null
     badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
     textClass: "text-rose-700",
     borderClass: "border-rose-300",
+  };
+}
+
+export function getBloodGlucoseStatus(glucose?: number | null): VitalStatus | null {
+  if (glucose === undefined || glucose === null || isNaN(glucose)) return null;
+
+  if (glucose < 60) {
+    return {
+      status: "critical",
+      label: "Low (Hypo)",
+      badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
+      textClass: "text-rose-700",
+      borderClass: "border-rose-300",
+    };
+  }
+  if (glucose >= 200) {
+    return {
+      status: "critical",
+      label: "High (Hyper)",
+      badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
+      textClass: "text-rose-700",
+      borderClass: "border-rose-300",
+    };
+  }
+  if (glucose < 70 || glucose >= 140) {
+    return {
+      status: "warning",
+      label: glucose < 70 ? "Slightly Low" : "Elevated",
+      badgeClass: "bg-amber-50 text-amber-800 border-amber-200",
+      textClass: "text-amber-700",
+      borderClass: "border-amber-300",
+    };
+  }
+  return {
+    status: "normal",
+    label: "Normal",
+    badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    textClass: "text-emerald-700",
+    borderClass: "border-emerald-200",
   };
 }
