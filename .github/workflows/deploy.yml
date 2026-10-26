@@ -27,19 +27,56 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
-      - name: Prepare EC2 Workspace Directory
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "mkdir -p /home/ubuntu/glamour-portal/public/uploads"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Sync Source Code to EC2 via SCP / Rsync
+      - name: Build Production Docker Image on Runner
         run: |
-          rsync -avz --delete \
+          echo "=== 1. Building Production Standalone Image on GitHub Runner ==="
+          docker build -t glamour-portal:latest .
+          echo "=== Docker Image Built Successfully ==="
+          docker images glamour-portal:latest
+
+      - name: Deep Clean EC2 Host Disk Space
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "bash -s" << 'EOF'
+            set -e
+
+            echo "=== Initial Disk Space on EC2 ==="
+            df -h /
+
+            echo "=== 1. Vacuuming Systemd Journal Logs ==="
+            sudo journalctl --vacuum-size=50M --vacuum-time=1d 2>/dev/null || true
+
+            echo "=== 2. Cleaning APT Cache and Orphan Packages ==="
+            sudo apt-get clean 2>/dev/null || true
+            sudo apt-get autoremove -y 2>/dev/null || true
+
+            echo "=== 3. Purging Temporary Files and Rotated Logs ==="
+            sudo rm -rf /tmp/* /var/tmp/* /var/log/*.gz /var/log/*.[0-9] 2>/dev/null || true
+
+            echo "=== 4. Cleaning Dangling Docker Resources & Builder Cache ==="
+            docker builder prune -af 2>/dev/null || true
+            docker system prune -af --volumes 2>/dev/null || true
+
+            echo "=== 5. Ensuring App Directories Exist ==="
+            mkdir -p /home/ubuntu/glamour-portal/public/uploads
+
+            echo "=== Disk Space After EC2 Cleanup ==="
+            df -h /
+          EOF
+
+      - name: Sync Configuration and Caddyfile to EC2
+        run: |
+          rsync -avz \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='.next' \
-            --exclude='.env' \
-            --exclude='.env.local' \
+            --exclude='.env*' \
             --exclude='*.pem' \
+            --exclude='public/uploads' \
+            --exclude='dev.db*' \
+            --exclude='*.db' \
             -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" \
             ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/glamour-portal/
 
@@ -61,7 +98,13 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "cp /home/ubuntu/glamour-portal/.env.production /home/ubuntu/glamour-portal/.env && chmod 600 /home/ubuntu/glamour-portal/.env.production /home/ubuntu/glamour-portal/.env"
           rm -f /tmp/.env.production
 
-      - name: Build and Restart Docker Container on EC2
+      - name: Stream and Load Docker Image to EC2
+        run: |
+          echo "=== Streaming Compressed Image to EC2 Docker Daemon ==="
+          docker save glamour-portal:latest | gzip -1 | ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "gzip -dc | docker load"
+          echo "=== Docker Image Successfully Loaded on EC2 ==="
+
+      - name: Launch Container and Verify Health on EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "bash -s" << 'EOF'
             set -e
@@ -72,18 +115,11 @@ jobs:
               sudo systemctl reload caddy || sudo systemctl restart caddy || true
             fi
 
-            echo "=== 2. Stopping and Removing Existing Container ==="
+            echo "=== 2. Stopping and Removing Previous Container ==="
             docker stop glamour-portal-app 2>/dev/null || true
             docker rm glamour-portal-app 2>/dev/null || true
 
-            echo "=== 3. Cleaning Dangling Docker Resources ==="
-            docker system prune -af || true
-
-            echo "=== 4. Building Fresh Standalone Docker Image ==="
-            cd /home/ubuntu/glamour-portal
-            docker build -t glamour-portal:latest .
-
-            echo "=== 5. Launching Container with Restart-Always Policy ==="
+            echo "=== 3. Launching Container with Restart-Always Policy ==="
             docker run -d \
               --name glamour-portal-app \
               --restart always \
@@ -92,9 +128,15 @@ jobs:
               -v /home/ubuntu/glamour-portal/public/uploads:/app/public/uploads \
               glamour-portal:latest
 
-            echo "=== 6. Verifying Container Status & Health ==="
+            echo "=== 4. Cleaning Dangling Old Images ==="
+            docker image prune -f 2>/dev/null || true
+
+            echo "=== 5. Verifying Container Status & Health ==="
             sleep 6
             docker ps --filter "name=glamour-portal-app"
+
+            echo "=== 6. Final Disk Status on EC2 ==="
+            df -h /
 
             echo "=== Deployment Successfully Completed ==="
           EOF

@@ -1,0 +1,14 @@
+.git
+.github
+.next
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env*
+*.pem
+dev.db*
+*.db
+README.md
+prd_glamour_homecare_portal.md
+*.tsbuildinfo
