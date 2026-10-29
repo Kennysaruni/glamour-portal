@@ -4,7 +4,7 @@ import React, { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { GlamourLogo } from "@/components/GlamourLogo";
 import { loginAction } from "@/lib/actions/auth-actions";
-import { Lock, Mail, AlertCircle, ArrowRight, ShieldCheck, HeartHandshake, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -40,13 +40,6 @@ export default function LoginPage() {
         setError(res.error || "Invalid email or password.");
       }
     });
-  };
-
-  // Quick select helper for testing/reviewing
-  const setQuickCreds = (userEmail: string, pass: string = "Password123!") => {
-    setEmail(userEmail);
-    setPassword(pass);
-    setError(null);
   };
 
   return (
@@ -154,71 +147,6 @@ export default function LoginPage() {
               </button>
             </div>
           </form>
-
-          {/* Quick Demo Access Bar for Mobile / Desktop */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center mb-2.5">
-              Quick Demo Access
-            </p>
-            <div className="grid grid-cols-1 gap-2">
-              <button
-                type="button"
-                onClick={() => setQuickCreds("shavonnah@glamourhomecare.org")}
-                className="flex items-center justify-between p-3 sm:py-2.5 sm:px-3 text-xs rounded-lg border border-slate-200/80 bg-slate-50/80 hover:bg-slate-100 active:bg-slate-200 text-slate-800 transition-colors text-left cursor-pointer min-h-[48px]"
-              >
-                <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-5 h-5 sm:w-4 sm:h-4 text-pink-600 shrink-0" />
-                  <div>
-                    <span className="font-semibold block text-slate-900">Shavonnah (RN Owner)</span>
-                    <span className="text-[11px] sm:text-[10px] text-slate-500 font-mono">
-                      shavonnah@glamourhomecare.org
-                    </span>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-pink-50 text-pink-700 border border-pink-200/70 px-2 py-0.5 rounded-md font-semibold uppercase shrink-0">
-                  ADMIN
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setQuickCreds("martha@glamourhomecare.org")}
-                className="flex items-center justify-between p-3 sm:py-2.5 sm:px-3 text-xs rounded-lg border border-slate-200/80 bg-slate-50/80 hover:bg-slate-100 active:bg-slate-200 text-slate-800 transition-colors text-left cursor-pointer min-h-[48px]"
-              >
-                <div className="flex items-center gap-2.5">
-                  <HeartHandshake className="w-5 h-5 sm:w-4 sm:h-4 text-slate-500 shrink-0" />
-                  <div>
-                    <span className="font-semibold block text-slate-900">Martha Jenkins</span>
-                    <span className="text-[11px] sm:text-[10px] text-slate-500 font-mono">
-                      martha@glamourhomecare.org
-                    </span>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-slate-100 text-slate-700 border border-slate-200/70 px-2 py-0.5 rounded-md font-semibold uppercase shrink-0">
-                  CAREGIVER
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setQuickCreds("gloria@glamourhomecare.org")}
-                className="flex items-center justify-between p-3 sm:py-2.5 sm:px-3 text-xs rounded-lg border border-slate-200/80 bg-slate-50/80 hover:bg-slate-100 active:bg-slate-200 text-slate-800 transition-colors text-left cursor-pointer min-h-[48px]"
-              >
-                <div className="flex items-center gap-2.5">
-                  <HeartHandshake className="w-5 h-5 sm:w-4 sm:h-4 text-slate-500 shrink-0" />
-                  <div>
-                    <span className="font-semibold block text-slate-900">Gloria Ramirez</span>
-                    <span className="text-[11px] sm:text-[10px] text-slate-500 font-mono">
-                      gloria@glamourhomecare.org
-                    </span>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-slate-100 text-slate-700 border border-slate-200/70 px-2 py-0.5 rounded-md font-semibold uppercase shrink-0">
-                  CAREGIVER
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Security Notice */}

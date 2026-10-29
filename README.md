@@ -101,7 +101,6 @@ In-depth electronic chart accessible to administrators and the patient's assigne
 
 ### 4. Authentication & Password Recovery
 - **Zero Public Registration**: Accounts are strictly provisioned by administration to prevent unauthorized access.
-- **Quick-Demo Switcher**: Built-in credential presets for rapid testing between the Supervising RN Administrator and Field Caregivers.
 - **Self-Service Password Reset**: Rate-limited, secure recovery via 6-digit OTP verification codes with 10-minute expiry windows.
 
 ---
@@ -253,13 +252,12 @@ npm run db:postgres
 npx prisma db push
 ```
 
-### Sample Seed Credentials
-The database seed script initializes ready-to-test clinical staff:
+### Initial Administrator Account
+The database seed script provisions the initial administrative user:
 
-| Role | Name | Email | Password |
+| Role | Name | Email | Default Password |
 |:---|:---|:---|:---|
-| **Supervising RN Administrator** | Shavonnah | `shavonnah@glamourhomecare.org` | `glamour2025` |
-| **Field Caregiver** | Martha Jenkins | `martha@glamourhomecare.org` | `glamour2025` |
+| **Supervising Administrator** | Shavonnah Upchurch | `glamourhomecare@gmail.com` | `Password123!` |
 
 ---
 
