@@ -30,6 +30,7 @@ import {
   Lock,
 } from "lucide-react";
 import { getDocumentUrl, calculateAge } from "@/lib/document-utils";
+import { formatPhoneNumber } from "@/lib/phone";
 import { VitalsInputFields } from "@/components/vitals/VitalsInputFields";
 import { VitalsBadges, VitalsTable } from "@/components/vitals/VitalsDisplay";
 import { validateVitals, hasAnyVitals } from "@/lib/vitals-utils";
@@ -447,7 +448,7 @@ export function ClientDetailView({
               <div className="mt-1 text-xs font-medium text-slate-900">
                 {client.phone ? (
                   <a href={`tel:${client.phone}`} className="hover:text-rose-600 hover:underline text-slate-900">
-                    {client.phone}
+                    {formatPhoneNumber(client.phone)}
                   </a>
                 ) : (
                   <span className="text-slate-400">Not recorded</span>
@@ -464,7 +465,7 @@ export function ClientDetailView({
                 {client.assignedEmployee?.name || "Unassigned"}
               </div>
               {client.assignedEmployee?.phone && (
-                <div className="text-[11px] text-slate-500 mt-0.5">{client.assignedEmployee.phone}</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">{formatPhoneNumber(client.assignedEmployee.phone)}</div>
               )}
             </div>
 
@@ -481,7 +482,7 @@ export function ClientDetailView({
                   href={`tel:${client.emergencyPhone}`}
                   className="text-xs text-rose-700 font-medium hover:underline block mt-0.5"
                 >
-                  {client.emergencyPhone}
+                  {formatPhoneNumber(client.emergencyPhone)}
                 </a>
               )}
             </div>
@@ -861,7 +862,7 @@ export function ClientDetailView({
                   Emergency Protocols
                 </h4>
                 <div className="p-4 rounded-xl bg-rose-50/60 border border-rose-200/70 text-xs text-rose-950 leading-relaxed">
-                  In case of critical clinical deterioration, chest pain, or emergency, staff are instructed to contact 911 immediately, followed by the agency RN clinical administrator at <strong>(540) 555-0199</strong> and designated emergency contact: <strong>{client.emergencyContact || "Family"} ({client.emergencyPhone || "N/A"})</strong>.
+                  In case of critical clinical deterioration, chest pain, or emergency, staff are instructed to contact 911 immediately, followed by the agency RN clinical administrator at <strong>(678) 468-7009</strong> and designated emergency contact: <strong>{client.emergencyContact || "Family"}{client.emergencyPhone ? ` • ${formatPhoneNumber(client.emergencyPhone)}` : " (N/A)"}</strong>.
                 </div>
               </div>
             </div>

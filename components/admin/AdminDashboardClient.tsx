@@ -28,6 +28,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getDocumentUrl, calculateAge } from "@/lib/document-utils";
+import { formatPhoneNumber } from "@/lib/phone";
 import { VitalsBadges } from "@/components/vitals/VitalsDisplay";
 import {
   createStaffMember,
@@ -910,7 +911,7 @@ export function AdminDashboardClient({
                     {client.phone && (
                       <div className="flex items-center gap-1.5">
                         <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>{client.phone}</span>
+                        <span>{formatPhoneNumber(client.phone)}</span>
                       </div>
                     )}
                     {client.emergencyContact && (
@@ -918,7 +919,7 @@ export function AdminDashboardClient({
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
                         <span className="font-medium">
                           Emergency: {client.emergencyContact}{" "}
-                          {client.emergencyPhone && `(${client.emergencyPhone})`}
+                          {client.emergencyPhone && `• ${formatPhoneNumber(client.emergencyPhone)}`}
                         </span>
                       </div>
                     )}
@@ -1063,7 +1064,7 @@ export function AdminDashboardClient({
                           </td>
 
                           <td className="px-4 py-3 text-slate-600">
-                            {staff.phone || <span className="text-slate-400">N/A</span>}
+                            {staff.phone ? formatPhoneNumber(staff.phone) : <span className="text-slate-400">N/A</span>}
                           </td>
 
                           <td className="px-4 py-3 font-medium text-slate-700">
@@ -1140,7 +1141,7 @@ export function AdminDashboardClient({
                       <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-slate-100 text-slate-600">
                         <div>
                           <span className="text-slate-400 block text-[10px]">Phone</span>
-                          <span className="font-medium text-slate-800">{staff.phone || "N/A"}</span>
+                          <span className="font-medium text-slate-800">{staff.phone ? formatPhoneNumber(staff.phone) : "N/A"}</span>
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[10px]">Assigned Clients</span>
@@ -1527,9 +1528,9 @@ export function AdminDashboardClient({
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">Phone Number</label>
                 <input
                   type="tel"
-                  placeholder="(540) 555-0100"
+                  placeholder="(678) 468-7009"
                   value={staffForm.phone}
-                  onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
+                  onChange={(e) => setStaffForm({ ...staffForm, phone: formatPhoneNumber(e.target.value) })}
                   className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
@@ -1842,9 +1843,9 @@ export function AdminDashboardClient({
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">Phone Number</label>
                 <input
                   type="tel"
-                  placeholder="(540) 555-0100"
+                  placeholder="(678) 468-7009"
                   value={staffToEdit.phone}
-                  onChange={(e) => setStaffToEdit({ ...staffToEdit, phone: e.target.value })}
+                  onChange={(e) => setStaffToEdit({ ...staffToEdit, phone: formatPhoneNumber(e.target.value) })}
                   className="w-full border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>
@@ -2077,9 +2078,9 @@ export function AdminDashboardClient({
                   <label className="block text-xs font-medium text-slate-700 mb-1.5">Client Phone</label>
                   <input
                     type="tel"
-                    placeholder="(540) 555-0123"
+                    placeholder="(555) 000-0000"
                     value={clientForm.phone}
-                    onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+                    onChange={(e) => setClientForm({ ...clientForm, phone: formatPhoneNumber(e.target.value) })}
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
                 </div>
@@ -2119,10 +2120,10 @@ export function AdminDashboardClient({
                   </label>
                   <input
                     type="tel"
-                    placeholder="(540) 555-8821"
+                    placeholder="(555) 000-0000"
                     value={clientForm.emergencyPhone}
                     onChange={(e) =>
-                      setClientForm({ ...clientForm, emergencyPhone: e.target.value })
+                      setClientForm({ ...clientForm, emergencyPhone: formatPhoneNumber(e.target.value) })
                     }
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                   />
@@ -2273,6 +2274,49 @@ export function AdminDashboardClient({
                   type="text"
                   value={clientToEdit.address || ""}
                   onChange={(e) => setClientToEdit({ ...clientToEdit, address: e.target.value })}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Client Phone</label>
+                  <input
+                    type="tel"
+                    placeholder="(555) 000-0000"
+                    value={clientToEdit.phone || ""}
+                    onChange={(e) =>
+                      setClientToEdit({ ...clientToEdit, phone: formatPhoneNumber(e.target.value) })
+                    }
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">Emergency Phone</label>
+                  <input
+                    type="tel"
+                    placeholder="(555) 000-0000"
+                    value={clientToEdit.emergencyPhone || ""}
+                    onChange={(e) =>
+                      setClientToEdit({
+                        ...clientToEdit,
+                        emergencyPhone: formatPhoneNumber(e.target.value),
+                      })
+                    }
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">Emergency Contact Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sarah Vance (Daughter)"
+                  value={clientToEdit.emergencyContact || ""}
+                  onChange={(e) =>
+                    setClientToEdit({ ...clientToEdit, emergencyContact: e.target.value })
+                  }
                   className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all bg-white"
                 />
               </div>

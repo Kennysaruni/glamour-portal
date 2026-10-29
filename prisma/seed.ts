@@ -23,7 +23,7 @@ async function main() {
         email: adminEmail,
         emailVerified: true,
         role: "ADMIN",
-        phone: "(540) 555-0199",
+        phone: "(678) 468-7009",
         isActive: true,
         accounts: {
           create: {

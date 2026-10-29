@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { submitVisitLog, updateVisitLog, submitIncidentReport } from "@/lib/actions/caregiver-actions";
 import { getDocumentUrl, calculateAge } from "@/lib/document-utils";
+import { formatPhoneNumber } from "@/lib/phone";
 import { VitalsInputFields } from "@/components/vitals/VitalsInputFields";
 import { VitalsBadges } from "@/components/vitals/VitalsDisplay";
 import { validateVitals } from "@/lib/vitals-utils";
@@ -667,8 +668,8 @@ export function CaregiverDashboardClient({
                             href={client.emergencyPhone ? `tel:${client.emergencyPhone}` : "#"}
                             className="hover:underline text-pink-700"
                           >
-                            {client.emergencyContact || "Emergency Contact"}{" "}
-                            {client.emergencyPhone && `(${client.emergencyPhone})`}
+                            {client.emergencyContact || "Emergency Contact"}
+                            {client.emergencyPhone && ` • ${formatPhoneNumber(client.emergencyPhone)}`}
                           </a>
                         </div>
                       </div>

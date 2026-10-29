@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/session";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { NoteCategory, CareType, AppointmentStatus, AppointmentType, RawClientNoteWithVitals } from "@/lib/types";
+import { normalizePhoneNumber } from "@/lib/phone";
 
 
 function parseAdlTasks(raw: string | string[] | null | undefined): string[] {
@@ -118,7 +119,7 @@ export async function createStaffMember(data: {
       email,
       emailVerified: true,
       role: data.role,
-      phone: data.phone?.trim() || null,
+      phone: normalizePhoneNumber(data.phone),
       isActive: true,
       accounts: {
         create: {
@@ -229,7 +230,7 @@ export async function updateStaffMember(
   const updateData: Record<string, unknown> = {};
   if (data.name !== undefined) updateData.name = data.name.trim();
   if (data.email !== undefined) updateData.email = data.email.trim().toLowerCase();
-  if (data.phone !== undefined) updateData.phone = data.phone?.trim() || null;
+  if (data.phone !== undefined) updateData.phone = normalizePhoneNumber(data.phone);
   if (data.role !== undefined) updateData.role = data.role;
 
   // Compute diff
@@ -369,10 +370,10 @@ export async function createClient(data: {
       firstName: data.firstName.trim(),
       lastName: data.lastName.trim(),
       dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
-      phone: data.phone?.trim() || null,
+      phone: normalizePhoneNumber(data.phone),
       address: data.address?.trim() || null,
       emergencyContact: data.emergencyContact?.trim() || null,
-      emergencyPhone: data.emergencyPhone?.trim() || null,
+      emergencyPhone: normalizePhoneNumber(data.emergencyPhone),
       primaryCareType: data.primaryCareType,
       carePlanSummary: data.carePlanSummary?.trim() || null,
       assignedEmployeeId: data.assignedEmployeeId,
@@ -417,12 +418,12 @@ export async function updateClient(
   if (data.lastName !== undefined) updatePayload.lastName = data.lastName.trim();
   if (data.dateOfBirth !== undefined)
     updatePayload.dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth) : null;
-  if (data.phone !== undefined) updatePayload.phone = data.phone?.trim() || null;
+  if (data.phone !== undefined) updatePayload.phone = normalizePhoneNumber(data.phone);
   if (data.address !== undefined) updatePayload.address = data.address?.trim() || null;
   if (data.emergencyContact !== undefined)
     updatePayload.emergencyContact = data.emergencyContact?.trim() || null;
   if (data.emergencyPhone !== undefined)
-    updatePayload.emergencyPhone = data.emergencyPhone?.trim() || null;
+    updatePayload.emergencyPhone = normalizePhoneNumber(data.emergencyPhone);
   if (data.primaryCareType !== undefined)
     updatePayload.primaryCareType = data.primaryCareType;
   if (data.carePlanSummary !== undefined)
